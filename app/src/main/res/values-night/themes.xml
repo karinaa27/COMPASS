@@ -1,0 +1,53 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Da" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="nightModeSwitch" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">#FF0040FF</item>
+        <item name="colorSwitchThumbNormal">#CACACA</item>
+        <item name="android:colorForeground">#1BC871FA</item>
+    </style>
+
+    <style name="ScreenBackground">
+        <item name="android:background">#919BE6</item>
+    </style>
+
+    <style name="TextColor">
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="TextColorCard">
+        <item name="android:textColor">#000000</item>
+    </style>
+
+    <style name="Arrow">
+        <item name="android:src">@drawable/ic_chevron_white</item>
+    </style>
+
+    <style name="BackgroundActiveDay">
+        <item name="android:background">@drawable/day_month_selector_white</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="BackgroundSettings">
+        <item name="android:background">@drawable/fon_setting_night</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Da" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    </style>
+</resources>

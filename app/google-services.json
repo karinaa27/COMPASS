@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "479678845373",
+    "project_id": "digital-compass-finance",
+    "storage_bucket": "digital-compass-finance.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:479678845373:android:37205f57b68f84d93c42d4",
+        "android_client_info": {
+          "package_name": "com.mgke.da"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuKSURgIiGbC8Dw682AA6P6fOR3t5eCWY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

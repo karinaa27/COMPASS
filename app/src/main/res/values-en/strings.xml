@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">da</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="balance">Balance</string>
+    <string name="wed_01_nov">Wed 01, Nov</string>
+    <string name="pkr_88_500_00">PKR 88,500.00</string>
+    <string name="income">Income</string>
+    <string name="pkr_120_000_00">PKR 120,000.00</string>
+    <string name="expenses">Expenses</string>
+    <string name="pkr_31_500_00">PKR 31,500.00</string>
+    <string name="transactions">Transactions</string>
+    <string name="day">Day</string>
+    <string name="monthly">Monthly</string>
+    <string name="january_30_2024">January 30, 2024</string>
+    <string name="settings">Settings</string>
+    <string name="user_name_settings">Karina Markina</string>
+    <string name="email_settings">markinakarina1122@gmail.com</string>
+    <string name="night_mode">Night Mode</string>
+    <string name="notifications">Notifications</string>
+    <string name="language">Language</string>
+    <string name="add_category">Create Category</string>
+    <string name="select_icon">Select icon</string>
+        <string name="select_color">Select color</string>
+    <string name="enter_category_name">Enter Category Name</string>
+    <string name="Categories">Categories</string>
+    <string name="button_add_category">Create</string>
+    <string name="tab_expenses">Expenses</string>
+    <string name="tab_income">Income</string>
+    <string name="categories_string_settings">Categories</string>
+</resources>

@@ -127,7 +127,7 @@
                     } else if (icon.getId() == R.id.icon5) {
                         icon.setBackgroundResource(R.drawable.account_fon5);
                     }
-                    // Сбрасываем масштаб для всех иконк
+                    // Сбрасываем масштаб для всех иконок
                     icon.setScaleX(1.0f);
                     icon.setScaleY(1.0f);
                 }

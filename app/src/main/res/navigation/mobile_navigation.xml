@@ -46,4 +46,8 @@
         android:id="@+id/addCategoryFragment"
         android:name="com.mgke.da.ui.categories.AddCategoryFragment"
         tools:layout="@layout/fragment_add_category" />
+    <fragment
+        android:id="@+id/addTransactionFragment"
+        android:name="com.mgke.da.ui.transactions.AddTransactionFragment"
+        tools:layout="@layout/fragment_add_transaction" />
 </navigation>

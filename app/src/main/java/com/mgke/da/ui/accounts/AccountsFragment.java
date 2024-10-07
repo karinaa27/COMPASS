@@ -5,20 +5,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
 import com.mgke.da.adapters.AccountsAdapter;
 import com.mgke.da.models.Account;
 import com.mgke.da.repository.AccountRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 

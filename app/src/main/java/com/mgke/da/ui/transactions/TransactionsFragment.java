@@ -7,10 +7,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import com.mgke.da.Constants;
 import com.mgke.da.R;
 import com.mgke.da.databinding.FragmentTransactionsBinding;
@@ -20,20 +23,24 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+
+
 public class TransactionsFragment extends Fragment {
 
     private FragmentTransactionsBinding binding;
     private Calendar calendar;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                              ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
+        // Инициализация привязки
+        binding = FragmentTransactionsBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+
         // Считываем язык из SharedPreferences
         setLocaleFromPreferences();
         TransactionsViewModel transactionsViewModel =
                 new ViewModelProvider(this).get(TransactionsViewModel.class);
-
-        binding = FragmentTransactionsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
 
         // Инициализация календаря
         calendar = Calendar.getInstance();
@@ -48,7 +55,14 @@ public class TransactionsFragment extends Fragment {
         // Установка обработчиков нажатий для кнопок
         setupButtonListeners();
 
-        return root;
+        // Настройка кнопки добавления транзакции
+        Button addTransactionButton = binding.addTransactionButton; // Используем binding для доступа к кнопке
+        addTransactionButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.addTransactionFragment); // Замените на правильный ID вашего фрагмента
+        });
+
+        return root; // Возвращаем корневое представление
     }
 
     private void resetToCurrentDate() {

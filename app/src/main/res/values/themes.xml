@@ -14,6 +14,12 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="CustomButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/balance_fon</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:backgroundTint">@null</item>
+    </style>
+
     <style name="nightModeSwitch" parent="Theme.AppCompat.Light">
         <item name="colorControlActivated">#FF0040FF</item>
         <item name="colorSwitchThumbNormal">#CACACA</item>
@@ -54,5 +60,16 @@
     <style name="Base.Theme.Da" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+
+
+
+    <style name="TextInputEditText">
+        <item name="android:textColor">#090808</item>
+        <item name="android:textColorHighlight">#000000</item>
+        <item name="android:textColorHint">#C4CCCC</item>
+        <item name = "android:backgroundTint">#ACACAC</item>
+        <item name = "android:drawableTint">#000</item>
     </style>
 </resources>

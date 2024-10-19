@@ -10,7 +10,7 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -19,22 +19,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat"
-            android:text="Home"
+            android:text="@string/home"
             android:id="@+id/textAccounts"
             android:textSize="30sp"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="13dp"
+            android:layout_marginTop="15dp"
             android:textStyle="bold"
             android:textColor="@color/black"
             android:layout_weight="1"/>
 
         <Button
-            android:layout_width="90dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add"
-            android:layout_marginRight="10dp"
+            android:text="@string/add"
+            android:layout_marginRight="15dp"
             android:id="@+id/add_transaction_button"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:layout_marginTop="10dp"
             style="@style/CustomButtonStyle"
             app:cornerRadius="16dp"
@@ -55,14 +55,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/balance_fon"
+            style="@style/Balance"
             android:orientation="vertical"
             android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="7dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -107,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/montserrat"
                 android:text="@string/pkr_88_500_00"
                 android:textSize="24sp" />
 
@@ -128,8 +128,9 @@
                         style="@style/TextColorCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
+                        android:fontFamily="@font/montserrat"
                         android:text="@string/income"
+                        android:textStyle="bold"
                         android:textSize="16sp" />
 
                     <TextView
@@ -137,7 +138,7 @@
                         style="@style/TextColorCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
+                        android:fontFamily="@font/montserrat"
                         android:text="@string/pkr_120_000_00"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -154,8 +155,9 @@
                         style="@style/TextColorCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
+                        android:fontFamily="@font/montserrat"
                         android:text="@string/expenses"
+                        android:textStyle="bold"
                         android:textSize="16sp" />
 
                     <TextView
@@ -163,7 +165,7 @@
                         style="@style/TextColorCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
+                        android:fontFamily="@font/montserrat"
                         android:text="@string/pkr_31_500_00"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -184,11 +186,11 @@
                 android:layout_width="0dp"
                 android:layout_weight="2"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/montserrat"
                 android:layout_margin="10sp"
                 android:text="@string/transactions"
                 style="@style/TextColor"
-                android:textSize="25sp" />
+                android:textSize="22sp" />
                 <TextView
                 android:id="@+id/dayBtn"
                 android:layout_width="0dp"
@@ -196,7 +198,7 @@
                     style="@style/BackgroundActiveDay"
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/montserrat"
                 android:gravity="center"
                 android:padding="8sp"
                 android:text="@string/day"
@@ -208,13 +210,50 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
                 android:background="@drawable/day_month_selector"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/montserrat"
                 android:gravity="center"
                 android:padding="8sp"
                 style="@style/BackgroundActiveDay"
                 android:text="@string/monthly"
                 android:textStyle="bold" />
         </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/row_transaction" />
+
+    <ImageView
+        android:id="@+id/emptyStateImageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:id="@+id/emptyStateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="-90dp"
+        android:fontFamily="@font/montserrat"
+        android:text="@string/add_transaction_prompt"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
+
+
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -234,10 +273,11 @@
                 android:layout_width="123dp"
                 android:layout_height="22dp"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-medium"
+                android:fontFamily="@font/montserrat"
                 android:gravity="center"
                 android:text="@string/january_30_2024"
-                style="@style/TextColor"
+               android:textColor="@color/black"
+                android:textStyle="bold"
                 android:textSize="16sp"
                 android:clickable="true"
             android:focusable="true" />
@@ -250,9 +290,5 @@
                 android:rotation="180"/>
         </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

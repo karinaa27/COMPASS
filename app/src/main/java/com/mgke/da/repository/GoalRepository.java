@@ -1,5 +1,6 @@
 package com.mgke.da.repository;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -26,8 +27,8 @@ public class GoalRepository {
         goalCollection.document(id).delete();
     }
 
-    public void updateGoal(Goal goal) {
-       goalCollection.document(goal.id).set(goal);
+    public Task<Void> updateGoal(Goal goal) {
+        return goalCollection.document(goal.id).set(goal);
     }
 
     public CompletableFuture<List<Goal>> getAllGoal() {
@@ -41,6 +42,18 @@ public class GoalRepository {
                    goals.add(goal);
                 }
                 future.complete(goals);
+            }
+        });
+        return future;
+    }
+    public CompletableFuture<Goal> getGoalById(String id) {
+        CompletableFuture<Goal> future = new CompletableFuture<>();
+        goalCollection.document(id).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                Goal goal = task.getResult().toObject(Goal.class);
+                future.complete(goal);
+            } else {
+                future.complete(null);
             }
         });
         return future;

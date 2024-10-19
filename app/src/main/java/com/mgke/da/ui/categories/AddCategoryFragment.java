@@ -22,6 +22,8 @@ import com.mgke.da.R;
 import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
 
+import java.util.Locale;
+
 public class AddCategoryFragment extends Fragment {
     private EditText categoryNameEditText;
     private RadioGroup incomeExpenseRadioGroup;
@@ -41,6 +43,12 @@ public class AddCategoryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_category, container, false);
+
+        // Получение аргумента "source"
+        String source = null;
+        if (getArguments() != null) {
+            source = getArguments().getString("source");
+        }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         categoryRepository = new CategoryRepository(db);
@@ -62,11 +70,6 @@ public class AddCategoryFragment extends Fragment {
             }
         });
 
-        backButton.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-            navController.navigate(R.id.navigation_settings_category); // Замените на ID вашего фрагмента
-        });
-
         setupIconSelection();
 
         addCategoryButton.setOnClickListener(v -> {
@@ -74,6 +77,7 @@ public class AddCategoryFragment extends Fragment {
             boolean isIncome = incomeExpenseRadioGroup.getCheckedRadioButtonId() == R.id.radioIncome;
             addCategory(categoryName, isIncome);
         });
+
         return view;
     }
 
@@ -104,26 +108,24 @@ public class AddCategoryFragment extends Fragment {
             return;
         }
 
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null ?
+                FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        if (userId == null) {
+            Log.d("AddCategoryFragment", "Ошибка: Не удалось получить ID пользователя.");
+            return;
+        }
+
         String type = isIncome ? "income" : "expense";
 
-        Category category = new Category();
-        category.categoryName = categoryName;
-        category.type = type;
-        category.categoryImage = selectedImageResId;
-        category.categoryColor = selectedColor;
-        category.userId = userId;
-
-        categoryRepository.addCategory(category)
-                .addOnSuccessListener(aVoid -> {
+        categoryRepository.addCategory(categoryName, type, selectedImageResId, selectedColor, userId)
+                .thenAccept(aVoid -> {
                     Log.d("AddCategoryFragment", "Категория успешно добавлена: " + categoryName);
-
-                    // Переход к CategoryFragment
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-                    navController.navigate(R.id.navigation_settings_category); // Замените на ID вашего фрагмента
+                    navController.navigate(R.id.navigation_settings_category);
                 })
-                .addOnFailureListener(e -> {
+                .exceptionally(e -> {
                     Log.e("AddCategoryFragment", "Ошибка при добавлении категории", e);
+                    return null; // Возврат значения не обязателен, но требуется для компиляции
                 });
     }
 
@@ -135,4 +137,5 @@ public class AddCategoryFragment extends Fragment {
 
         selectedIcon.setBackgroundResource(R.drawable.category_selected_icon);
     }
+
 }

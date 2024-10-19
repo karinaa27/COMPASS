@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -37,12 +38,12 @@ public class ExpensesFragment extends Fragment {
         categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
 
         if (currentUser != null) {
-            userId = currentUser.getUid(); // Получаем уникальный идентификатор пользователя
+            userId = currentUser.getUid();
         } else {
             Log.d("YourTag", "User is not logged in");
         }
 
-        loadCategories(); // Загружаем категории
+        loadCategories();
 
         return view;
     }
@@ -51,15 +52,15 @@ public class ExpensesFragment extends Fragment {
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository);
+                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository, true, "ru"); // Передаем язык
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
                 Log.d("ExpensesFragment", "No expense categories found. Creating default categories.");
-                categoryRepository.createDefaultExpenseCategories(userId); // Создаем базовые категории расходов
-                loadCategories(); // Затем снова загружаем категории
+                categoryRepository.createDefaultExpenseCategories(userId);
+                loadCategories();
             }
         }).exceptionally(e -> {
             Log.e("ExpensesFragment", "Error loading expense categories", e);

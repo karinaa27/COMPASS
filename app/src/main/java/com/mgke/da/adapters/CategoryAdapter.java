@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,29 +16,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mgke.da.R;
 import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
-
 import java.util.List;
+import java.util.Locale;
 
 public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Category> categories;
     private Context context;
+    private String selectedCategory;
+    private int selectedCategoryImage;
+    private int selectedCategoryColor;
+    private CategoryRepository categoryRepository;
+    private boolean isSelectionEnabled;
+    private String language;
 
-    private CategoryRepository categoryRepository; // Добавляем поле для репозитория
-
-    public CategoryAdapter(Context context, List<Category> categories, CategoryRepository categoryRepository) {
+    public CategoryAdapter(Context context, List<Category> categories, CategoryRepository categoryRepository, boolean isSelectionEnabled, String language) {
         this.context = context;
         this.categories = categories;
-        this.categoryRepository = categoryRepository; // Инициализируем репозиторий
+        this.categoryRepository = categoryRepository;
+        this.isSelectionEnabled = isSelectionEnabled;
+        this.language = language;
     }
 
     private static final int VIEW_TYPE_CATEGORY = 0;
     private static final int VIEW_TYPE_ADD_BUTTON = 1;
-
-    public CategoryAdapter(Context context, List<Category> categories) {
-        this.context = context;
-        this.categories = categories;
-    }
 
     @NonNull
     @Override
@@ -57,33 +57,51 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof CategoryViewHolder) {
             Category category = categories.get(position);
-            ((CategoryViewHolder) holder).categoryText.setText(category.categoryName);
+            String categoryName = category.getNameLan(language);
+            ((CategoryViewHolder) holder).categoryText.setText(categoryName);
             ((CategoryViewHolder) holder).categoryIcon.setImageResource(category.categoryImage);
             ((CategoryViewHolder) holder).categoryIcon.setBackgroundTintList(ColorStateList.valueOf(category.categoryColor));
-            Log.d("CategoryAdapter", "Binding category: " + category.categoryName);
+
+            if (selectedCategory != null && selectedCategory.equals(categoryName)) {
+                holder.itemView.setScaleX(1.1f);
+                holder.itemView.setScaleY(1.1f);
+                selectedCategoryImage = category.categoryImage;
+                selectedCategoryColor = category.categoryColor;
+            } else {
+                holder.itemView.setScaleX(1.0f);
+                holder.itemView.setScaleY(1.0f);
+            }
+
+            holder.itemView.setOnClickListener(v -> {
+                if (isSelectionEnabled) {
+                    selectedCategory = categoryName;
+                    notifyDataSetChanged();
+                }
+            });
 
             holder.itemView.setOnLongClickListener(v -> {
-                if (!category.categoryName.equals("Другое")) {
+                if (!categoryName.equals("Другое")) {
                     showDeleteConfirmationDialog(category, position);
-                } else {
-                    Log.d("CategoryAdapter", "Категорию 'Другое' удалить нельзя.");
                 }
                 return true;
             });
         } else if (holder instanceof AddCategoryViewHolder) {
             holder.itemView.setOnClickListener(v -> {
-                // Получаем NavController и выполняем навигацию
                 NavController navController = Navigation.findNavController((Activity) context, R.id.nav_host_fragment_activity_main);
-                navController.navigate(R.id.addCategoryFragment); // Переход к фрагменту добавления категории
+                navController.navigate(R.id.addCategoryFragment);
             });
         }
     }
+
     private void showDeleteConfirmationDialog(Category category, int position) {
+        String categoryName = categoryRepository.getCategoryName(category);
+        String currentLanguage = Locale.getDefault().getLanguage();
+
         new AlertDialog.Builder(context)
                 .setTitle("Подтверждение удаления")
-                .setMessage("Вы действительно хотите удалить категорию " + category.categoryName + "?")
+                .setMessage("Вы действительно хотите удалить категорию " + categoryName + "?")
                 .setPositiveButton("Да", (dialog, which) -> {
-                    categoryRepository.removeCategory(category); // Удаляем через репозиторий
+                    categoryRepository.removeCategory(category, currentLanguage);
                     categories.remove(position);
                     notifyItemRemoved(position);
                 })
@@ -112,7 +130,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-
     static class AddCategoryViewHolder extends RecyclerView.ViewHolder {
         ImageView addCategoryIcon;
 
@@ -126,4 +143,21 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.categories = newCategories;
         notifyDataSetChanged();
     }
+
+    public String getSelectedCategory() {
+        return selectedCategory;
+    }
+
+    public int getSelectedCategoryImage() {
+        return selectedCategoryImage;
+    }
+
+    public int getSelectedCategoryColor() {
+        return selectedCategoryColor;
+    }
+    public String getCategoryName(Category category) {
+        // Предположим, что у вас есть метод в классе Category для получения имени по языку
+        return category.getNameLan(Locale.getDefault().getLanguage());
+    }
+
 }

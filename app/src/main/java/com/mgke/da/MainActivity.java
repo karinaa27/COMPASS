@@ -25,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private FirebaseAuth auth;
-    public static final String PREFS_NAME = "UserPrefs";
-    public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +32,14 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = auth.getCurrentUser();
-        // Проверка, вошёл ли пользователь в систему
         if (currentUser == null) {
-            // Если не вошёл, перенаправляем на экран регистрации
             startActivity(new Intent(MainActivity.this, SignUpActivity.class));
             finish();
         }
         setLocale();
 
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-            boolean nightMode = sharedPreferences.getBoolean("nightMode", false);
+        boolean nightMode = sharedPreferences.getBoolean("nightMode", false);
         AppCompatDelegate.setDefaultNightMode(nightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -97,23 +93,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void logout() {
-        FirebaseAuth.getInstance().signOut();
-
-        // Очистите состояние входа
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(KEY_IS_LOGGED_IN, false);
-        editor.apply();
-
-        // Вернуться на экран входа
-        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-        finish();
-    }
-
     private void setLocale() {
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        String languageCode = sharedPreferences.getString("selectedLanguage", "en");
+        String languageCode = sharedPreferences.getString("selectedLanguage", "ru");
         Locale locale = new Locale(languageCode);
         Locale.setDefault(locale);
         Configuration config = getResources().getConfiguration();

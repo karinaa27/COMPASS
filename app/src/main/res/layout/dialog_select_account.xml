@@ -2,29 +2,37 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="20dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Выберите счёт"
+        android:text="@string/select_account"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="@font/montserrat"
         android:layout_gravity="center"/>
 
     <RadioGroup
         android:id="@+id/radioGroupAccounts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:buttonTint="@color/purple_200"
         android:layout_marginTop="10dp">
-        <!-- Радио-кнопки будут добавлены программно -->
     </RadioGroup>
 
     <Button
         android:id="@+id/buttonSelectAccount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Выбрать"
+        android:text="@string/select"
+        android:textStyle="bold"
+        style="@style/CustomButtonStyle"
+        app:cornerRadius="16dp"
+        app:backgroundTint="@null"
+        android:fontFamily="@font/montserrat"
         android:layout_marginTop="20dp"/>
 </LinearLayout>

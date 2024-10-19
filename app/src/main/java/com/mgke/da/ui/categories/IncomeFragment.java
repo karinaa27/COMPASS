@@ -22,8 +22,8 @@ public class IncomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private CategoryAdapter categoryAdapter;
     private CategoryRepository categoryRepository;
-    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-    String userId = null;
+    private FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+    private String userId = null;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -37,12 +37,12 @@ public class IncomeFragment extends Fragment {
         categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
 
         if (currentUser != null) {
-            userId = currentUser.getUid(); // Получаем уникальный идентификатор пользователя
+            userId = currentUser.getUid();
         } else {
             Log.d("YourTag", "User is not logged in");
         }
 
-        loadCategories(); // Загружаем категории
+        loadCategories();
 
         return view;
     }
@@ -51,15 +51,15 @@ public class IncomeFragment extends Fragment {
         categoryRepository.getAllCategory(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository);
+                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository, true, "ru"); // Передаем язык
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
                 Log.d("IncomeFragment", "No categories found. Creating default categories.");
-                categoryRepository.createDefaultCategories(userId); // Создаем базовые категории
-                loadCategories(); // Затем снова загружаем категории
+                categoryRepository.createDefaultCategories(userId);
+                loadCategories();
             }
         }).exceptionally(e -> {
             Log.e("IncomeFragment", "Error loading categories", e);

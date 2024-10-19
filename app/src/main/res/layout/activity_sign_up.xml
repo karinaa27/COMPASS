@@ -1,95 +1,217 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    tools:context=".SignUpActivity">
+    style="@style/ScreenBackgroundLogin"
+    android:layout_height="match_parent">
 
-    <androidx.cardview.widget.CardView
+    <LinearLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="30dp"
-        app:cardCornerRadius="30dp"
-        app:cardElevation="20dp">
-        <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        tools:context=".SignUpActivity">
+
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            android:padding="24dp"
-            android:background="@drawable/custom_edittext">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Sign Up"
-                android:textSize="36sp"
-                android:textAlignment="center"
-                android:textStyle="bold"
-                android:textColor="@color/lavander"
-                />
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:id="@+id/signup_email"
-                android:background="@drawable/custom_edittext"
-                android:layout_marginTop="40dp"
-                android:padding="8dp"
-                android:hint="Email"
-                android:drawableLeft="@drawable/baseline_person_24"
-                android:drawablePadding="8dp"
-                android:textColor="@color/black"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:id="@+id/signup_password"
-                android:background="@drawable/custom_edittext"
-                android:layout_marginTop="40dp"
-                android:padding="8dp"
-                android:hint="Password"
-                android:drawableLeft="@drawable/baseline_lock_24"
-                android:drawablePadding="8dp"
-                android:textColor="@color/black"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:id="@+id/signup_password2"
-                android:background="@drawable/custom_edittext"
-                android:layout_marginTop="40dp"
-                android:padding="8dp"
-                android:hint="Confirm password"
-                android:drawableLeft="@drawable/baseline_lock_24"
-                android:drawablePadding="8dp"
-                android:textColor="@color/black"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="SIGN UP"
-                android:id="@+id/sign_up_button"
-                android:textSize="18sp"
-                android:layout_marginTop="30dp"
-                android:backgroundTint="@color/lavander"
-                app:cornerRadius = "20dp"/>
-            <com.google.android.gms.common.SignInButton
-                android:id="@+id/googleSignInButton"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="Sign in with Google" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/loginRedirectText"
-                android:text="Already an user? Login"
-                android:layout_gravity="center"
-                android:padding="8dp"
-                android:layout_marginTop="10dp"
-                android:textColor="@color/lavander"
-                android:textSize="18sp"/>
+            android:layout_margin="30dp"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="20dp">
 
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                style="@style/CardViewLogin"
+                android:layout_gravity="center_horizontal"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/signup_title"
+                    style="@style/TextColorLogin"
+                    android:textSize="36sp"
+                    android:fontFamily="@font/montserrat"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:id="@+id/signup_email"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:hint="@string/hint_email"
+                    style="@style/EdittextLogin"
+                    android:fontFamily="@font/montserrat"
+                    android:drawableLeft="@drawable/baseline_person_24"
+                    android:drawablePadding="8dp"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:inputType="textPassword"
+                    android:id="@+id/signup_password"
+                    style="@style/EdittextLogin"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:hint="@string/hint_password"
+                    android:fontFamily="@font/montserrat"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="8dp"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:inputType="textPassword"
+                    android:id="@+id/signup_password2"
+                    style="@style/EdittextLogin"
+                    android:layout_marginTop="20dp"
+                    android:fontFamily="@font/montserrat"
+                    android:padding="8dp"
+                    android:hint="@string/hint_confirm_password"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="8dp"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:id="@+id/signup_username"
+                    style="@style/EdittextLogin"
+                    android:drawableLeft="@drawable/baseline_person_24"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="@string/hint_username"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:id="@+id/signup_first_name"
+                    style="@style/EdittextLogin"
+                    android:drawableLeft="@drawable/baseline_person_24"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="@string/hint_first_name"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:id="@+id/signup_last_name"
+                    style="@style/EdittextLogin"
+                    android:drawableLeft="@drawable/baseline_person_24"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="@string/hint_last_name"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:id="@+id/signup_birth_date"
+                    style="@style/EdittextLogin"
+                    android:drawableLeft="@drawable/baseline_calendar_month_24"
+                    android:focusable="false"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:hint="@string/hint_birth_date"/>
+
+                <EditText
+                    android:id="@+id/signup_country"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="20dp"
+                    android:padding="8dp"
+                    android:hint="@string/hint_country"
+                    android:focusable="false"
+                    android:fontFamily="@font/montserrat"
+                    android:drawableLeft="@drawable/baseline_map_24"
+                    style="@style/EdittextLogin"/>
+
+                <EditText
+                    android:id="@+id/signup_currency"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="20dp"
+                    android:focusable="false"
+                    style="@style/EdittextLogin"
+                    android:padding="8dp"
+                    android:fontFamily="@font/montserrat"
+                    android:drawableLeft="@drawable/baseline_currency_exchange_24"
+                    android:hint="@string/hint_currency"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gender_label"
+                    android:fontFamily="@font/montserrat"
+                    android:layout_marginTop="20dp"
+                    android:textSize="16sp"
+                    style="@style/TextColorLogin"/>
+
+                <RadioGroup
+                    android:id="@+id/radioGroupGender"
+                    android:layout_width="match_parent"
+                    android:fontFamily="@font/montserrat"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radioMale"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gender_male"
+                        android:fontFamily="@font/montserrat"
+                        style="@style/TextColorLogin"/>
+
+                    <RadioButton
+                        android:id="@+id/radioFemale"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gender_female"
+                        android:fontFamily="@font/montserrat"
+                        style="@style/TextColorLogin"/>
+                </RadioGroup>
+
+                <Button
+                    android:id="@+id/sign_up_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_margin="10dp"
+                    android:fontFamily="@font/montserrat"
+                    android:onClick="onClickSave"
+                    style="@style/CustomButtonStyle"
+                    app:cornerRadius="16dp"
+                    app:backgroundTint="@null"
+                    android:textStyle="bold"
+                    android:text="@string/signup_button"
+                    android:textSize="13sp"/>
+
+                <com.google.android.gms.common.SignInButton
+                    android:id="@+id/googleSignInButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="@string/google_signin_button"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/loginRedirectText"
+                    android:text="@string/login_redirect_text"
+                    android:layout_gravity="center"
+                    android:padding="8dp"
+                    style="@style/TextColorLogin"
+                    android:fontFamily="@font/montserrat"
+                    android:layout_marginTop="10dp"
+                    android:textSize="18sp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</ScrollView>

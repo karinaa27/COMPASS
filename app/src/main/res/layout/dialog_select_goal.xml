@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Выберите цель"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:fontFamily="@font/montserrat"
+        android:layout_gravity="center"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroupGoals"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/purple_200"
+        android:layout_marginTop="10dp">
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/buttonSelectGoal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select"
+        android:textStyle="bold"
+        style="@style/CustomButtonStyle"
+        app:cornerRadius="16dp"
+        app:backgroundTint="@null"
+        android:fontFamily="@font/montserrat"
+        android:layout_marginTop="20dp"/>
+</LinearLayout>

@@ -10,6 +10,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
 import com.mgke.da.adapters.AccountsAdapter;
@@ -42,7 +43,7 @@ public class AccountsFragment extends Fragment {
         // Инициализация репозитория
         accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
 
-        // Загрузка счетов
+        // Загрузка счетов для текущего пользователя
         loadAccounts();
 
         // Настройка кнопки добавления счета
@@ -56,11 +57,23 @@ public class AccountsFragment extends Fragment {
     }
 
     private void loadAccounts() {
-        accountRepository.getAllAccount().thenAccept(accounts -> {
-            accountList.clear(); // Очистка списка перед добавлением новых данных
-            accountList.addAll(accounts);
-            accountsAdapter.notifyDataSetChanged(); // Уведомляем адаптер об изменениях
-        });
+        String userId = getCurrentUserId();
+        if (userId != null) {
+            accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
+                accountList.clear(); // Очистка списка перед добавлением новых данных
+                accountList.addAll(accounts);
+                accountsAdapter.notifyDataSetChanged(); // Уведомляем адаптер об изменениях
+            }).exceptionally(e -> {
+                e.printStackTrace(); // Логируем ошибку
+                return null;
+            });
+        }
+    }
+
+    private String getCurrentUserId() {
+        return FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null; // Возвращает ID пользователя или null, если не аутентифицирован
     }
 
     @Override

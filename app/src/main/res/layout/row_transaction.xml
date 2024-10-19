@@ -18,13 +18,14 @@
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_marginStart="8dp"
+            style="@style/Category_bg"
             android:background="@drawable/category_bg"
             android:padding="10dp"
             app:layout_constraintBottom_toBottomOf="@+id/linearLayout3"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/category_ic_investment"
-            app:tint="@color/white" />
+             />
 
         <LinearLayout
             android:id="@+id/linearLayout3"
@@ -32,6 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_weight="1"
             android:orientation="vertical"
             app:layout_constraintStart_toEndOf="@+id/categoryicon"
             app:layout_constraintTop_toTopOf="parent">
@@ -42,7 +44,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat"
                 android:text="@{transaction.category}"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="@color/black"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -55,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/balance_fon"
+                    android:background="@drawable/account_fon1"
                     android:fontFamily="@font/montserrat"
                     android:paddingLeft="5dp"
                     android:paddingTop="2dp"
@@ -63,21 +66,35 @@
                     android:paddingBottom="2dp"
                     android:text="@{transaction.account}"
                     android:textColor="#FFFFFF" />
-
-
             </LinearLayout>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/transactionAmount"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:fontFamily="sans-serif-medium"
-            android:text="@{String.valueOf(transaction.amount)}"
-            android:textStyle="bold"
+            android:layout_marginEnd="10dp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="@+id/linearLayout3"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/linearLayout3" />
+            app:layout_constraintTop_toTopOf="@+id/linearLayout3">
+
+            <TextView
+                android:id="@+id/transactionAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:fontFamily="@font/montserrat"
+                android:text="@{String.valueOf(transaction.amount)}"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/currencyLbl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/montserrat"
+                android:text="@{transaction.currency}"
+                android:textColor="#000000" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

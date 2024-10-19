@@ -9,7 +9,11 @@
         android:id="@+id/navigation_home"
         android:name="com.mgke.da.ui.transactions.TransactionsFragment"
         android:label="Transactions"
-        tools:layout="@layout/fragment_transactions" />
+        tools:layout="@layout/fragment_transactions" >
+        <action
+            android:id="@+id/action_navigation_home_to_addTransactionFragment"
+            app:destination="@id/addTransactionFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_stats"
@@ -49,5 +53,21 @@
     <fragment
         android:id="@+id/addTransactionFragment"
         android:name="com.mgke.da.ui.transactions.AddTransactionFragment"
-        tools:layout="@layout/fragment_add_transaction" />
+        tools:layout="@layout/fragment_add_transaction" >
+        <action
+            android:id="@+id/action_addTransactionFragment_to_addCategoryFragment"
+            app:destination="@id/addCategoryFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/PersonalDataFragment"
+        android:name="com.mgke.da.PersonalDataFragment"
+        tools:layout="@layout/fragment_personal_data" />
+    <fragment
+        android:id="@+id/AddGoalFragment"
+        android:name="com.mgke.da.AddGoalFragment"
+        tools:layout="@layout/fragment_add_goal"/>
+    <fragment
+        android:id="@+id/fragment_update_transactions"
+        android:name="com.mgke.da.ui.transactions.UpdateTransactionsFragment"
+        tools:layout="@layout/fragment_update_transactions"/>
 </navigation>

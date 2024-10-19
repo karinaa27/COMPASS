@@ -31,4 +31,286 @@
     <string name="tab_expenses">Expenses</string>
     <string name="tab_income">Income</string>
     <string name="categories_string_settings">Categories</string>
+    <string name="home">Home</string>
+    <string name="add">Add</string>
+    <string name="add_transaction">Add Transaction</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_account">Select Account</string>
+    <string name="Save">Save</string>
+    <string name="income1">Income</string>
+    <string name="expense1">Expense</string>
+    <string name="accounts">Accounts</string>
+    <string name="select">Select</string>
+
+
+
+        <string name="toast_select_account">Please select an account</string>
+        <string name="toast_select_category">Please select a category</string>
+        <string name="toast_select_date">Please select a date</string>
+        <string name="toast_enter_amount">Please enter an amount</string>
+        <string name="toast_invalid_amount">Please enter a valid amount</string>
+        <string name="toast_negative_value">Please enter a positive value</string>
+        <string name="toast_conversion_error">Conversion error</string>
+        <string name="toast_save_success">Transaction saved, ID: %1$s</string>
+        <string name="toast_save_failure">Error save: %1$s</string>
+        <string name="toast_invalid_date">Invalid date</string>
+
+
+    <string name="DeleteUser">Delete account</string>
+    <string name="exit">Exit</string>
+
+    <string-array name="countries_array">
+        <item>Afghanistan</item>
+        <item>Albania</item>
+        <item>Algeria</item>
+        <item>Andorra</item>
+        <item>Angola</item>
+        <item>Antigua and Barbuda</item>
+        <item>Argentina</item>
+        <item>Armenia</item>
+        <item>Australia</item>
+        <item>Austria</item>
+        <item>Azerbaijan</item>
+        <item>Bahamas</item>
+        <item>Bahrain</item>
+        <item>Bangladesh</item>
+        <item>Barbados</item>
+        <item>Belarus</item>
+        <item>Belgium</item>
+        <item>Belize</item>
+        <item>Benin</item>
+        <item>Bhutan</item>
+        <item>Bolivia</item>
+        <item>Bosnia and Herzegovina</item>
+        <item>Botswana</item>
+        <item>Brazil</item>
+        <item>Brunei</item>
+        <item>Bulgaria</item>
+        <item>Burkina Faso</item>
+        <item>Burundi</item>
+        <item>Cabo Verde</item>
+        <item>Cambodia</item>
+        <item>Cameroon</item>
+        <item>Canada</item>
+        <item>Central African Republic</item>
+        <item>Chad</item>
+        <item>Chile</item>
+        <item>China</item>
+        <item>Colombia</item>
+        <item>Comoros</item>
+        <item>Congo</item>
+        <item>Costa Rica</item>
+        <item>Croatia</item>
+        <item>Cuba</item>
+        <item>Cyprus</item>
+        <item>Czech Republic</item>
+        <item>Democratic Republic of the Congo</item>
+        <item>Denmark</item>
+        <item>Djibouti</item>
+        <item>Dominica</item>
+        <item>Dominican Republic</item>
+        <item>Ecuador</item>
+        <item>Egypt</item>
+        <item>El Salvador</item>
+        <item>Equatorial Guinea</item>
+        <item>Eritrea</item>
+        <item>Estonia</item>
+        <item>Eswatini</item>
+        <item>Ethiopia</item>
+        <item>Fiji</item>
+        <item>Finland</item>
+        <item>France</item>
+        <item>Gabon</item>
+        <item>Gambia</item>
+        <item>Georgia</item>
+        <item>Germany</item>
+        <item>Ghana</item>
+        <item>Greece</item>
+        <item>Grenada</item>
+        <item>Guatemala</item>
+        <item>Guinea</item>
+        <item>Guinea-Bissau</item>
+        <item>Guyana</item>
+        <item>Haiti</item>
+        <item>Honduras</item>
+        <item>Hungary</item>
+        <item>Iceland</item>
+        <item>India</item>
+        <item>Indonesia</item>
+        <item>Iran</item>
+        <item>Iraq</item>
+        <item>Ireland</item>
+        <item>Israel</item>
+        <item>Italy</item>
+        <item>Jamaica</item>
+        <item>Japan</item>
+        <item>Jordan</item>
+        <item>Kazakhstan</item>
+        <item>Kenya</item>
+        <item>Kiribati</item>
+        <item>Korea, North</item>
+        <item>Korea, South</item>
+        <item>Kuwait</item>
+        <item>Kyrgyzstan</item>
+        <item>Laos</item>
+        <item>Latvia</item>
+        <item>Lebanon</item>
+        <item>Lesotho</item>
+        <item>Liberia</item>
+        <item>Libya</item>
+        <item>Liechtenstein</item>
+        <item>Lithuania</item>
+        <item>Luxembourg</item>
+        <item>Madagascar</item>
+        <item>Malawi</item>
+        <item>Malaysia</item>
+        <item>Maldives</item>
+        <item>Mali</item>
+        <item>Malta</item>
+        <item>Marshall Islands</item>
+        <item>Mauritania</item>
+        <item>Mauritius</item>
+        <item>Mexico</item>
+        <item>Micronesia</item>
+        <item>Moldova</item>
+        <item>Monaco</item>
+        <item>Mongolia</item>
+        <item>Montenegro</item>
+        <item>Morocco</item>
+        <item>Mozambique</item>
+        <item>Myanmar</item>
+        <item>Namibia</item>
+        <item>Nauru</item>
+        <item>Nepal</item>
+        <item>Netherlands</item>
+        <item>New Zealand</item>
+        <item>Nicaragua</item>
+        <item>Niger</item>
+        <item>Nigeria</item>
+        <item>North Macedonia</item>
+        <item>Norway</item>
+        <item>Oman</item>
+        <item>Pakistan</item>
+        <item>Palau</item>
+        <item>Palestine</item>
+        <item>Panama</item>
+        <item>Papua New Guinea</item>
+        <item>Paraguay</item>
+        <item>Peru</item>
+        <item>Philippines</item>
+        <item>Poland</item>
+        <item>Portugal</item>
+        <item>Qatar</item>
+        <item>Romania</item>
+        <item>Russia</item>
+        <item>Rwanda</item>
+        <item>Saint Kitts and Nevis</item>
+        <item>Saint Lucia</item>
+        <item>Saint Vincent and the Grenadines</item>
+        <item>Samoa</item>
+        <item>San Marino</item>
+        <item>Sao Tome and Principe</item>
+        <item>Saudi Arabia</item>
+        <item>Senegal</item>
+        <item>Serbia</item>
+        <item>Seychelles</item>
+        <item>Sierra Leone</item>
+        <item>Singapore</item>
+        <item>Slovakia</item>
+        <item>Slovenia</item>
+        <item>Solomon Islands</item>
+        <item>Somalia</item>
+        <item>South Africa</item>
+        <item>South Sudan</item>
+        <item>Spain</item>
+        <item>Sri Lanka</item>
+        <item>Sudan</item>
+        <item>Suriname</item>
+        <item>Sweden</item>
+        <item>Switzerland</item>
+        <item>Syria</item>
+        <item>Tajikistan</item>
+        <item>Tanzania</item>
+        <item>Thailand</item>
+        <item>Togo</item>
+        <item>Tonga</item>
+        <item>Trinidad and Tobago</item>
+        <item>Tunisia</item>
+        <item>Turkey</item>
+        <item>Turkmenistan</item>
+        <item>Tuvalu</item>
+        <item>Uganda</item>
+        <item>Ukraine</item>
+        <item>United Arab Emirates</item>
+        <item>United Kingdom</item>
+        <item>United States</item>
+        <item>Uruguay</item>
+        <item>Uzbekistan</item>
+        <item>Vanuatu</item>
+        <item>Vatican City</item>
+        <item>Venezuela</item>
+        <item>Vietnam</item>
+        <item>Yemen</item>
+        <item>Zambia</item>
+        <item>Zimbabwe</item>
+    </string-array>
+    <string name="select_country">Select country</string>
+    <string name="cancel">Cancel</string>
+    <string name="stats">Stats</string>
+    <string name="_3_months">3 Months</string>
+
+    <string name="email_empty">Email cannot be empty</string>
+    <string name="email_invalid">Please enter a valid email</string>
+    <string name="password_empty">Password cannot be empty</string>
+    <string name="login_failed">Login Failed: %1$s</string>
+    <string name="verify_email">Please verify your email before logging in</string>
+    <string name="reset_link_sent">Reset link sent to your email</string>
+    <string name="error">Error: %1$s</string>
+
+    <string name="signup_title">Sign Up</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_first_name">First Name</string>
+    <string name="hint_last_name">Last Name</string>
+    <string name="hint_birth_date">Birth Date</string>
+    <string name="hint_country">Country</string>
+    <string name="hint_currency">Currency</string>
+    <string name="gender_label">Gender</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="signup_button">SIGN UP</string>
+    <string name="google_signin_button">Sign in with Google</string>
+    <string name="login_redirect_text">Already a user? Login</string>
+    <string name="login_error">Login Error: %1$s</string>
+    <string name="enter_password">Enter password</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="not_yet_registered_sign_up">Not yet registered? Sign Up</string>
+    <string name="google_signin_success">Google signing success</string>
+    <string name="google_auth_error">Google auth error: %1$s</string>
+    <string name="email_exists_prompt">Please enter your password to log in.</string>
+
+    <string name="email_error">Please enter a valid email</string>
+    <string name="password_error">Password must be between 8 and 20 characters, and include at least one uppercase letter, one lowercase letter, one digit, and one special character.</string>
+    <string name="password_mismatch">Passwords do not match</string>
+    <string name="username_error">Please enter a username</string>
+    <string name="registration_success">Registration successful</string>
+    <string name="registration_error">Registration error: %1$s</string>
+    <string name="google_sign_in_error">GoogleSignInClient not initialized</string>
+    <string name="sign_in_error">Sign-in error: %1$s</string>
+    <string name="verification_email_sent">Verification email sent to %1$s</string>
+    <string name="verification_email_failed">Failed to send verification email.</string>
+    <string name="google_sign_in_success">Google sign-in successful</string>
+    <string name="auth_error">Authentication error: %1$s</string>
+    <string name="first_name_error">First name must start with a capital letter</string>
+    <string name="last_name_error">Last name must start with a capital letter</string>
+    <string name="username_taken_error">This username is already taken</string>
+    <string name="error_checking_username">Error checking username</string>
+    <string name="select_currency">Select currency</string>
+    <string name="account_exists_with_password">An account already exists. Please enter your password to log in.</string>
 </resources>

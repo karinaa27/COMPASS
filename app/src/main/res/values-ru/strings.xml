@@ -8,13 +8,13 @@
     <string name="balance">Баланс</string>
     <string name="wed_01_nov">Ср 01, Ноя</string>
     <string name="pkr_88_500_00">PKR 88,500.00</string>
-    <string name="income">Доход</string>
+    <string name="income">Доходы</string>
     <string name="pkr_120_000_00">PKR 120,000.00</string>
     <string name="expenses">Расходы</string>
     <string name="pkr_31_500_00">PKR 31,500.00</string>
     <string name="transactions">Транзакции</string>
     <string name="day">День</string>
-    <string name="monthly">Ежемесячно</string>
+    <string name="monthly">Месяц</string>
     <string name="january_30_2024">30 января 2024</string>
     <string name="settings">Настройки</string>
     <string name="user_name_settings">Карина Маркина</string>
@@ -31,4 +31,288 @@
     <string name="tab_expenses">Расходы</string>
     <string name="tab_income">Доходы</string>
     <string name="categories_string_settings">Категории</string>
+    <string name="home">Главная</string>
+    <string name="add">Добавить</string>
+    <string name="accounts">Счета</string>
+    <string name="add_transaction">Добавить транзакцию</string>
+    <string name="select_date">Выберите дату</string>
+    <string name="select_account">Выберите счёт</string>
+    <string name="Save">Сохранить</string>
+    <string name="income1">Доход</string>
+    <string name="expense1">Расход</string>
+    <string name="select">Выбрать</string>
+
+
+
+
+        <string name="toast_select_account">Пожалуйста, выберите счет</string>
+        <string name="toast_select_category">Пожалуйста, выберите категорию</string>
+        <string name="toast_select_date">Пожалуйста, выберите дату</string>
+        <string name="toast_enter_amount">Пожалуйста, введите сумму</string>
+        <string name="toast_invalid_amount">Введите корректное значение суммы</string>
+        <string name="toast_negative_value">Введите положительное значение</string>
+        <string name="toast_conversion_error">Ошибка конвертации</string>
+        <string name="toast_save_success">Транзакция сохранена, ID: %1$s</string>
+        <string name="toast_save_failure">Ошибка сохранения: %1$s</string>
+        <string name="toast_invalid_date">Неверная дата</string>
+
+
+    <string name="DeleteUser">Удалить аккаунт</string>
+    <string name="exit">Выйти</string>
+
+    <string-array name="countries_array">
+        <item>Афганистан</item>
+        <item>Албания</item>
+        <item>Алжир</item>
+        <item>Андорра</item>
+        <item>Ангола</item>
+        <item>Антигуа и Барбуда</item>
+        <item>Аргентина</item>
+        <item>Армения</item>
+        <item>Австралия</item>
+        <item>Австрия</item>
+        <item>Азербайджан</item>
+        <item>Багамы</item>
+        <item>Бахрейн</item>
+        <item>Бангладеш</item>
+        <item>Барбадос</item>
+        <item>Беларусь</item>
+        <item>Бельгия</item>
+        <item>Белиз</item>
+        <item>Бенин</item>
+        <item>Бутан</item>
+        <item>Боливия</item>
+        <item>Босния и Герцеговина</item>
+        <item>Ботсвана</item>
+        <item>Бразилия</item>
+        <item>Бруней</item>
+        <item>Болгария</item>
+        <item>Буркина-Фасо</item>
+        <item>Бурунди</item>
+        <item>Кабо-Верде</item>
+        <item>Камбоджа</item>
+        <item>Камерун</item>
+        <item>Канада</item>
+        <item>Центральноафриканская Республика</item>
+        <item>Чад</item>
+        <item>Чили</item>
+        <item>Китай</item>
+        <item>Колумбия</item>
+        <item>Коморы</item>
+        <item>Конго</item>
+        <item>Коста-Рика</item>
+        <item>Хорватия</item>
+        <item>Куба</item>
+        <item>Кипр</item>
+        <item>Чешская Республика</item>
+        <item>Демократическая Республика Конго</item>
+        <item>Дания</item>
+        <item>Джибути</item>
+        <item>Доминика</item>
+        <item>Доминиканская Республика</item>
+        <item>Эквадор</item>
+        <item>Египет</item>
+        <item>Сальвадор</item>
+        <item>Экваториальная Гвинея</item>
+        <item>Эритрея</item>
+        <item>Эстония</item>
+        <item>Эсватини</item>
+        <item>Эфиопия</item>
+        <item>Фиджи</item>
+        <item>Финляндия</item>
+        <item>Франция</item>
+        <item>Габон</item>
+        <item>Гамбия</item>
+        <item>Грузия</item>
+        <item>Германия</item>
+        <item>Гана</item>
+        <item>Греция</item>
+        <item>Гренада</item>
+        <item>Гватемала</item>
+        <item>Гвинея</item>
+        <item>Гвинея-Бисау</item>
+        <item>Гайана</item>
+        <item>Гаити</item>
+        <item>Гондурас</item>
+        <item>Венгрия</item>
+        <item>Исландия</item>
+        <item>Индия</item>
+        <item>Индонезия</item>
+        <item>Иран</item>
+        <item>Ирак</item>
+        <item>Ирландия</item>
+        <item>Израиль</item>
+        <item>Италия</item>
+        <item>Ямайка</item>
+        <item>Япония</item>
+        <item>Иордания</item>
+        <item>Казахстан</item>
+        <item>Кения</item>
+        <item>Кирибати</item>
+        <item>Корея, Северная</item>
+        <item>Корея, Южная</item>
+        <item>Кувейт</item>
+        <item>Киргизия</item>
+        <item>Лаос</item>
+        <item>Латвия</item>
+        <item>Ливан</item>
+        <item>Лесото</item>
+        <item>Либерия</item>
+        <item>Ливия</item>
+        <item>Лихтенштейн</item>
+        <item>Литва</item>
+        <item>Люксембург</item>
+        <item>Мадагаскар</item>
+        <item>Малави</item>
+        <item>Малайзия</item>
+        <item>Мальдивы</item>
+        <item>Мали</item>
+        <item>Мальта</item>
+        <item>Маршалловы Острова</item>
+        <item>Мавритания</item>
+        <item>Маврикий</item>
+        <item>Мексика</item>
+        <item>Микронезия</item>
+        <item>Молдова</item>
+        <item>Монако</item>
+        <item>Монголия</item>
+        <item>Черногория</item>
+        <item>Марокко</item>
+        <item>Мозамбик</item>
+        <item>Мьянма</item>
+        <item>Намибия</item>
+        <item>Науру</item>
+        <item>Непал</item>
+        <item>Нидерланды</item>
+        <item>Новая Зеландия</item>
+        <item>Никарагуа</item>
+        <item>Нигер</item>
+        <item>Нигерия</item>
+        <item>Северная Македония</item>
+        <item>Норвегия</item>
+        <item>Оман</item>
+        <item>Пакистан</item>
+        <item>Палау</item>
+        <item>Филестинские территории</item>
+        <item>Панама</item>
+        <item>Папуа — Новая Гвинея</item>
+        <item>Парагвай</item>
+        <item>Перу</item>
+        <item>Филиппины</item>
+        <item>Польша</item>
+        <item>Португалия</item>
+        <item>Катар</item>
+        <item>Румыния</item>
+        <item>Россия</item>
+        <item>Руанда</item>
+        <item>Сент-Китс и Невис</item>
+        <item>Сент-Люсия</item>
+        <item>Сент-Винсент и Гренадины</item>
+        <item>Самоа</item>
+        <item>Сан-Марино</item>
+        <item>Сан-Томе и Принсипи</item>
+        <item>Саудовская Аравия</item>
+        <item>Сенегал</item>
+        <item>Сербия</item>
+        <item>Сейшельские Острова</item>
+        <item>Сьерра-Леоне</item>
+        <item>Сингапур</item>
+        <item>Словакия</item>
+        <item>Словения</item>
+        <item>Соломоновы Острова</item>
+        <item>Сомали</item>
+        <item>Южноафриканская Республика</item>
+        <item>Южный Судан</item>
+        <item>Испания</item>
+        <item>Шри-Ланка</item>
+        <item>Судан</item>
+        <item>Суринам</item>
+        <item>Швеция</item>
+        <item>Швейцария</item>
+        <item>Сирия</item>
+        <item>Таджикистан</item>
+        <item>Танзания</item>
+        <item>Таиланд</item>
+        <item>Того</item>
+        <item>Тонга</item>
+        <item>Тринидад и Тобаго</item>
+        <item>Тунис</item>
+        <item>Турция</item>
+        <item>Туркменистан</item>
+        <item>Тувалу</item>
+        <item>Уганда</item>
+        <item>Украина</item>
+        <item>Объединенные Арабские Эмираты</item>
+        <item>Соединенное Королевство</item>
+        <item>Соединенные Штаты</item>
+        <item>Уругвай</item>
+        <item>Узбекистан</item>
+        <item>Вануату</item>
+        <item>Ватикан</item>
+        <item>Венесуэла</item>
+        <item>Вьетнам</item>
+        <item>Йемен</item>
+        <item>Замбия</item>
+        <item>Зимбабве</item>
+    </string-array>
+    <string name="select_country">Выберите страну</string>
+    <string name="cancel">Отмена</string>
+    <string name="stats">Статистика</string>
+    <string name="_3_months">3 Месяца</string>
+
+    <string name="signup_title">Регистрация</string>
+    <string name="hint_email">Электронная почта</string>
+    <string name="hint_password">Пароль</string>
+    <string name="hint_confirm_password">Подтвердите пароль</string>
+    <string name="hint_username">Имя пользователя</string>
+    <string name="hint_first_name">Имя</string>
+    <string name="hint_last_name">Фамилия</string>
+    <string name="hint_birth_date">Дата рождения</string>
+    <string name="hint_country">Страна</string>
+    <string name="hint_currency">Валюта</string>
+    <string name="gender_label">Пол</string>
+    <string name="gender_male">Мужской</string>
+    <string name="gender_female">Женский</string>
+    <string name="signup_button">ЗАРЕГИСТРИРОВАТЬСЯ</string>
+    <string name="google_signin_button">Войти с помощью Google</string>
+    <string name="login_redirect_text">Уже зарегистрированы? Войдите</string>
+
+    <string name="email_empty">Email не может быть пустым</string>
+    <string name="email_invalid">Пожалуйста, введите корректный email</string>
+    <string name="password_empty">Пароль не может быть пустым</string>
+    <string name="login_failed">Ошибка входа: %1$s</string>
+    <string name="verify_email">Пожалуйста, подтвердите вашу почту перед входом</string>
+    <string name="reset_link_sent">Ссылка для сброса отправлена на ваш email</string>
+    <string name="error">Ошибка: %1$s</string>
+    <string name="enter_password">Введите пароль</string>
+    <string name="sign_in_with_google">Войдите с Google</string>
+    <string name="login">Вход</string>
+    <string name="email">Почта</string>
+    <string name="password">Пароль</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="not_yet_registered_sign_up">Нет аккаунта? Создать</string>
+    <string name="login_error">Ошибка входа: %1$s</string>
+    <string name="google_signin_success">Вход через Google успешен</string>
+    <string name="google_auth_error">Ошибка аутентификации: %1$s</string>
+    <string name="email_exists_prompt">Пожалуйста, введите пароль для входа.</string>
+
+    <string name="email_error">Введите корректный email</string>
+    <string name="password_error">Пароль должен содержать от 8 до 20 символов и включать хотя бы одну заглавную букву, одну строчную букву, одну цифру и один специальный символ.</string>
+    <string name="password_mismatch">Пароли не совпадают</string>
+    <string name="username_error">Введите имя пользователя</string>
+    <string name="registration_success">Регистрация успешна</string>
+    <string name="registration_error">Ошибка регистрации: %1$s</string>
+    <string name="google_sign_in_error">GoogleSignInClient не инициализирован</string>
+    <string name="sign_in_error">Ошибка входа: %1$s</string>
+    <string name="verification_email_sent">Письмо для подтверждения отправлено на %1$s</string>
+    <string name="verification_email_failed">Не удалось отправить письмо для подтверждения.</string>
+    <string name="google_sign_in_success">Вход через Google успешен</string>
+    <string name="auth_error">Ошибка аутентификации: %1$s</string>
+
+    <string name="first_name_error">Имя должно начинаться с заглавной буквы</string>
+    <string name="last_name_error">Фамилия должна начинаться с заглавной буквы</string>
+    <string name="username_taken_error">Это имя пользователя уже занято</string>
+    <string name="error_checking_username">Ошибка проверки имени пользователя</string>
+    <string name="select_currency">Выберите валюту</string>
+    <string name="account_exists_with_password">Аккаунт уже существует. Пожалуйста, введите пароль для входа.</string>
 </resources>

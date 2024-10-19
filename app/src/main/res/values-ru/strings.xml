@@ -8,13 +8,21 @@
     <string name="balance">Баланс</string>
     <string name="wed_01_nov">Ср 01, Ноя</string>
     <string name="pkr_88_500_00">PKR 88,500.00</string>
+<<<<<<< HEAD
     <string name="income">Доходы</string>
+=======
+    <string name="income">Доход</string>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     <string name="pkr_120_000_00">PKR 120,000.00</string>
     <string name="expenses">Расходы</string>
     <string name="pkr_31_500_00">PKR 31,500.00</string>
     <string name="transactions">Транзакции</string>
     <string name="day">День</string>
+<<<<<<< HEAD
     <string name="monthly">Месяц</string>
+=======
+    <string name="monthly">Ежемесячно</string>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     <string name="january_30_2024">30 января 2024</string>
     <string name="settings">Настройки</string>
     <string name="user_name_settings">Карина Маркина</string>
@@ -22,6 +30,7 @@
     <string name="night_mode">Ночной режим</string>
     <string name="notifications">Уведомления</string>
     <string name="language">Язык</string>
+<<<<<<< HEAD
     <string name="add_category">Создание категории</string>
     <string name="select_icon">Выберите иконку</string>
     <string name="select_color">Выберите цвет</string>
@@ -315,4 +324,6 @@
     <string name="error_checking_username">Ошибка проверки имени пользователя</string>
     <string name="select_currency">Выберите валюту</string>
     <string name="account_exists_with_password">Аккаунт уже существует. Пожалуйста, введите пароль для входа.</string>
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 </resources>

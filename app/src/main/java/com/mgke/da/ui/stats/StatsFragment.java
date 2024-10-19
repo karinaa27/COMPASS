@@ -1,5 +1,6 @@
 package com.mgke.da.ui.stats;
 
+<<<<<<< HEAD
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -734,6 +735,38 @@ public class StatsFragment extends Fragment {
         updateDateText();
     }
 
+=======
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.mgke.da.databinding.FragmentStatsBinding;
+
+public class StatsFragment extends Fragment {
+
+    private FragmentStatsBinding binding;
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        StatsViewModel statsViewModel =
+                new ViewModelProvider(this).get(StatsViewModel.class);
+
+        binding = FragmentStatsBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+
+        final TextView textView = binding.textStats;
+        statsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        return root;
+    }
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     @Override
     public void onDestroyView() {
         super.onDestroyView();

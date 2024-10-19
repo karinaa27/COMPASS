@@ -2,10 +2,18 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
+<<<<<<< HEAD
     <corners android:radius="16dp" />
 
     <gradient
         android:startColor="#B8ADFE"
     android:endColor="#676BC2"
+=======
+    <corners android:radius="16dp" /> <!-- Закругленные углы -->
+
+    <gradient
+        android:startColor="#0040FF"
+    android:endColor="#B338F6"
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     android:angle="45"/>
 </shape>

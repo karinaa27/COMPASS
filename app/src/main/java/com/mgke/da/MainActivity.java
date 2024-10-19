@@ -4,7 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+<<<<<<< HEAD
 import android.content.Intent;
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -16,19 +19,28 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+<<<<<<< HEAD
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.mgke.da.databinding.ActivityMainBinding;
+=======
+import com.mgke.da.databinding.ActivityMainBinding;
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+<<<<<<< HEAD
     private FirebaseAuth auth;
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+<<<<<<< HEAD
 
         auth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -36,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, SignUpActivity.class));
             finish();
         }
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         setLocale();
 
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
@@ -95,7 +109,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void setLocale() {
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
+<<<<<<< HEAD
         String languageCode = sharedPreferences.getString("selectedLanguage", "ru");
+=======
+        String languageCode = sharedPreferences.getString("selectedLanguage", "en");
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         Locale locale = new Locale(languageCode);
         Locale.setDefault(locale);
         Configuration config = getResources().getConfiguration();

@@ -1,5 +1,6 @@
 package com.mgke.da.ui.settings;
 
+<<<<<<< HEAD
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -10,11 +11,18 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+=======
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.os.Bundle;
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
+<<<<<<< HEAD
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -44,15 +52,34 @@ import com.mgke.da.models.PersonalData;
 import com.mgke.da.repository.CategoryRepository;
 import com.mgke.da.repository.PersonalDataRepository;
 import java.util.Arrays;
+=======
+import android.widget.RelativeLayout;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
+import com.mgke.da.R;
+import com.mgke.da.databinding.FragmentSettingsBinding;
+import com.mgke.da.ui.categories.CategoryFragment;
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import java.util.Locale;
 
 public class SettingsFragment extends Fragment {
 
     private FragmentSettingsBinding binding;
+<<<<<<< HEAD
     private FirebaseAuth auth;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private static final int GALLERY_REQUEST_CODE = 1000;
     private final String[] currencies = {"BYN", "USD", "RUB", "UAH", "PLN", "EUR"};
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
     @Nullable
     @Override
@@ -60,6 +87,7 @@ public class SettingsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
+<<<<<<< HEAD
         auth = FirebaseAuth.getInstance();
 
 
@@ -240,6 +268,23 @@ public class SettingsFragment extends Fragment {
         categoriesSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.navigation_settings_category);
+=======
+
+        setupLanguageSpinner();
+        setupNightModeSwitch();
+
+        setupCategoriesSettingsClick();
+        return view;
+    }
+
+    private void setupCategoriesSettingsClick() {
+        RelativeLayout categoriesSettings = binding.CategoriesSettings; // Получаем ссылку на CategoriesSettings
+        categoriesSettings.setOnClickListener(v -> {
+            // Получаем NavController
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            // Переход к новому фрагменту
+            navController.navigate(R.id.navigation_settings_category); // Замените на ID вашего фрагмента
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         });
     }
 
@@ -248,10 +293,16 @@ public class SettingsFragment extends Fragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, languages);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.languageSpinner.setAdapter(adapter);
+<<<<<<< HEAD
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
         String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
+=======
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
+        String selectedLanguage = sharedPreferences.getString("selectedLanguage", "English");
+        int spinnerPosition = selectedLanguage.equals("Русский") ? 0 : 1;
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         binding.languageSpinner.setSelection(spinnerPosition);
 
         binding.languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -261,11 +312,18 @@ public class SettingsFragment extends Fragment {
                 setLocale(languageCode);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
+<<<<<<< HEAD
                 editor.putString("selectedLanguage", languageCode);
                 editor.apply();
                 updateUI();
             }
 
+=======
+                editor.putString("selectedLanguage", position == 0 ? "Русский" : "English");
+                editor.apply();
+                updateUI();
+            }
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -273,15 +331,27 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupNightModeSwitch() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
         boolean nightMode = sharedPreferences.getBoolean("nightMode", false);
         AppCompatDelegate.setDefaultNightMode(nightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         binding.switchNightMode.setChecked(nightMode);
 
         binding.switchNightMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+<<<<<<< HEAD
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("nightMode", isChecked);
             editor.apply();
+=======
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("nightMode", isChecked);
+            editor.apply();
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
             AppCompatDelegate.setDefaultNightMode(isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         });
     }
@@ -292,6 +362,7 @@ public class SettingsFragment extends Fragment {
         Configuration config = getResources().getConfiguration();
         config.setLocale(locale);
         getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+<<<<<<< HEAD
 
         if (!languageCode.equals(getCurrentLanguage())) {
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -309,10 +380,30 @@ public class SettingsFragment extends Fragment {
         String selectedLanguage = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE)
                 .getString("selectedLanguage", "en");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
+=======
+        if (!languageCode.equals(getCurrentLanguage())) {
+            if (languageCode.equals("ru")) {
+                requireActivity().recreate();
+            }
+        }
+    }
+    private void updateUI() {
+        binding.textSettings.setText(getString(R.string.settings));
+        binding.textUser.setText(getString(R.string.user_name_settings));
+        binding.textUserEmail.setText(getString(R.string.email_settings));
+        binding.textNightMode.setText(getString(R.string.night_mode));
+        binding.textNotifications.setText(getString(R.string.notifications));
+        binding.textLanguage.setText(getString(R.string.language));
+
+        String selectedLanguage = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE)
+                .getString("selectedLanguage", "English");
+        int spinnerPosition = selectedLanguage.equals("Русский") ? 0 : 1;
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         binding.languageSpinner.setSelection(spinnerPosition);
     }
 
     private String getCurrentLanguage() {
+<<<<<<< HEAD
         return getResources().getConfiguration().getLocales().get(0).getLanguage();
     }
 
@@ -473,6 +564,9 @@ public class SettingsFragment extends Fragment {
                 });
             }
         });
+=======
+        return getResources().getConfiguration().locale.getLanguage();
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 
     @Override

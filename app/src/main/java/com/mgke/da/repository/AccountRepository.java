@@ -1,7 +1,10 @@
 package com.mgke.da.repository;
 
 import com.google.firebase.firestore.CollectionReference;
+<<<<<<< HEAD
 import com.google.firebase.firestore.DocumentSnapshot;
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.mgke.da.models.Account;
@@ -19,11 +22,15 @@ public class AccountRepository {
     public Account addAccount(Account account) {
         String id = accountCollection.document().getId();
         account.id = id;
+<<<<<<< HEAD
         accountCollection.document(id).set(account).addOnSuccessListener(aVoid -> {
             // Успешное сохранение
         }).addOnFailureListener(e -> {
             // Обработка ошибок при сохранении
         });
+=======
+        accountCollection.document(id).set(account);
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         return account;
     }
 
@@ -35,6 +42,7 @@ public class AccountRepository {
         accountCollection.document(account.id).set(account);
     }
 
+<<<<<<< HEAD
     public CompletableFuture<Account> getAccountByName(String accountName) {
         CompletableFuture<Account> future = new CompletableFuture<>();
 
@@ -53,6 +61,8 @@ public class AccountRepository {
         return future;
     }
 
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     public CompletableFuture<List<Account>> getAllAccount() {
         CompletableFuture<List<Account>> future = new CompletableFuture<>();
         List<Account> accounts = new ArrayList<>();
@@ -69,6 +79,7 @@ public class AccountRepository {
 
         return future;
     }
+<<<<<<< HEAD
     // Обновленный метод для получения всех счетов по userId
     public CompletableFuture<List<Account>> getAccountsByUserId(String userId) {
         CompletableFuture<List<Account>> future = new CompletableFuture<>();
@@ -90,4 +101,6 @@ public class AccountRepository {
 
         return future;
     }
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 }

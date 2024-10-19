@@ -9,11 +9,18 @@
     <LinearLayout
         android:id="@+id/topContainer"
         android:layout_width="match_parent"
+<<<<<<< HEAD
         android:layout_height="120dp"
         android:background="@drawable/add_category_top"
         android:orientation="vertical"
         android:paddingBottom="8dp"
         android:gravity="center"
+=======
+        android:layout_height="wrap_content"
+        android:background="@drawable/blabla"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -22,16 +29,26 @@
             android:id="@+id/text_category"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+<<<<<<< HEAD
             android:text="@string/Categories"
             android:textSize="24sp"
             android:fontFamily="@font/montserrat"
             android:textStyle="bold"
             android:textColor="@android:color/white"
             android:layout_marginTop="10dp"
+=======
+            android:text="Категории"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
             android:gravity="center" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
+<<<<<<< HEAD
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
@@ -53,3 +70,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
+=======
+           android:layout_gravity="center"
+            android:background="@color/lavander"
+            android:layout_width="380dp"
+            android:layout_height="wrap_content"
+            app:tabIndicatorColor="@android:color/transparent"
+            app:tabIndicatorHeight="0dp"
+            app:tabBackground="@android:color/transparent" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/tabIndicator"
+        android:layout_width="100dp"
+        android:layout_height="2dp"
+        android:layout_marginEnd="200dp"
+        android:background="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topContainer" />
+
+<androidx.viewpager.widget.ViewPager
+android:id="@+id/viewPager"
+android:layout_width="0dp"
+android:layout_height="0dp"
+app:layout_constraintTop_toBottomOf="@id/tabIndicator"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee

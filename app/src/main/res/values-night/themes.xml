@@ -13,17 +13,22 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+<<<<<<< HEAD
     <style name="CustomButtonStyle" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/balance_fon_night</item>
         <item name="android:textColor">#000000</item>
         <item name="android:backgroundTint">@null</item>
     </style>
+=======
+
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     <style name="nightModeSwitch" parent="Theme.AppCompat.Light">
         <item name="colorControlActivated">#FF0040FF</item>
         <item name="colorSwitchThumbNormal">#CACACA</item>
         <item name="android:colorForeground">#1BC871FA</item>
     </style>
 
+<<<<<<< HEAD
     <!-- Login -->
     <style name="CardViewLogin">
         <item name="android:background">@drawable/backgroundloginnightmini</item>
@@ -56,6 +61,14 @@
 
     <style name="TextColor">
         <item name="android:textColor">#000000</item>
+=======
+    <style name="ScreenBackground">
+        <item name="android:background">#919BE6</item>
+    </style>
+
+    <style name="TextColor">
+        <item name="android:textColor">#FFFFFF</item>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     </style>
 
     <style name="TextColorCard">
@@ -63,6 +76,7 @@
     </style>
 
     <style name="Arrow">
+<<<<<<< HEAD
         <item name="android:src">@drawable/ic_chevron</item>
     </style>
     <style name = "Category_bg">
@@ -71,6 +85,14 @@
     <style name="BackgroundActiveDay">
         <item name="android:background">@drawable/day_month_selector</item>
         <item name="android:textColor">#000000</item>
+=======
+        <item name="android:src">@drawable/ic_chevron_white</item>
+    </style>
+
+    <style name="BackgroundActiveDay">
+        <item name="android:background">@drawable/day_month_selector_white</item>
+        <item name="android:textColor">#FFFFFF</item>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     </style>
 
     <style name="BackgroundSettings">
@@ -82,9 +104,12 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
+<<<<<<< HEAD
     <style name="ArrowAddCategory">
         <item name="android:src">@drawable/ic_chevron</item>
         <item name="android:tint">@color/black</item>
     </style>
 
+=======
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 </resources>

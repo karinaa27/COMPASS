@@ -3,7 +3,11 @@
     android:shape="rectangle">
     <stroke
         android:width="2dp"
+<<<<<<< HEAD
         android:color="@color/purple_500"/>
+=======
+        android:color="@color/lavander"/>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     <corners
         android:radius="30dp"/>
 

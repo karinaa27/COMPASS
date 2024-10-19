@@ -1,3 +1,4 @@
+<<<<<<< HEAD
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -9,3 +10,17 @@
             android:layout_height="500dp"
             android:padding="16dp" />
     </LinearLayout>
+=======
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Доходы"
+        android:textSize="24sp"
+        android:layout_gravity="center" />
+</LinearLayout>
+>>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee

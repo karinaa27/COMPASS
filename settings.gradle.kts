@@ -1,8 +1,4 @@
-<<<<<<< HEAD
     pluginManagement {
-=======
-pluginManagement {
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     repositories {
         google {
             content {
@@ -20,11 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-<<<<<<< HEAD
         maven("https://oss.sonatype.org/content/repositories/snapshots/")
         maven ("https://jitpack.io")
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 }
 

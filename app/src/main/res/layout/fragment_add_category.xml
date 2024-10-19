@@ -10,7 +10,7 @@
         android:id="@+id/topContainer"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@drawable/add_category_top"
+        android:background="@drawable/add_category_top_night"
         android:orientation="horizontal"
         android:paddingBottom="8dp"
         android:gravity="center"

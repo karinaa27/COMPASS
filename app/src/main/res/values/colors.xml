@@ -9,10 +9,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="lavander">#8692f7</color>
     <color name="grey">#d2d2d2</color>
-<<<<<<< HEAD
+
 
     <color name="category_add_type_income">#C51162</color>
     <color name="category_add_type_expense">#00C853</color>
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 </resources>

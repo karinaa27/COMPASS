@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.transactions.TransactionsFragment"
     style="@style/ScreenBackground">
-<<<<<<< HEAD
 
     <LinearLayout
         android:id="@+id/linearLayout3"
@@ -21,12 +20,12 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat"
             android:text="@string/home"
+            style="@style/TextHome"
             android:id="@+id/textAccounts"
             android:textSize="30sp"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="15dp"
             android:textStyle="bold"
-            android:textColor="@color/black"
             android:layout_weight="1"/>
 
         <Button
@@ -173,136 +172,6 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-=======
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/balance_fon"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/balanceTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/balance"
-                           style="@style/TextColorCard"
-                            android:textSize="24sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="end"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/dateText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/wed_01_nov"
-                            style="@style/TextColorCard"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/balanceAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="@string/pkr_88_500_00"
-                    style="@style/TextColorCard"
-                    android:textSize="24sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/incomeLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/income"
-                            style="@style/TextColorCard"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/incomeAmount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/pkr_120_000_00"
-                            style="@style/TextColorCard"
-                            android:textSize="18sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="end"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/expenseLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/expenses"
-                            style="@style/TextColorCard"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/expenseAmount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="@string/pkr_31_500_00"
-                            style="@style/TextColorCard"
-                            android:textSize="18sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
         <LinearLayout
             android:id="@+id/selectionLayout"
@@ -317,19 +186,11 @@
                 android:layout_width="0dp"
                 android:layout_weight="2"
                 android:layout_height="wrap_content"
-<<<<<<< HEAD
                 android:fontFamily="@font/montserrat"
                 android:layout_margin="10sp"
                 android:text="@string/transactions"
                 style="@style/TextColor"
                 android:textSize="22sp" />
-=======
-                android:fontFamily="sans-serif-medium"
-                android:layout_margin="10sp"
-                android:text="@string/transactions"
-                style="@style/TextColor"
-                android:textSize="25sp" />
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
                 <TextView
                 android:id="@+id/dayBtn"
                 android:layout_width="0dp"
@@ -337,11 +198,7 @@
                     style="@style/BackgroundActiveDay"
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
-<<<<<<< HEAD
                 android:fontFamily="@font/montserrat"
-=======
-                android:fontFamily="sans-serif-medium"
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
                 android:gravity="center"
                 android:padding="8sp"
                 android:text="@string/day"
@@ -353,18 +210,13 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
                 android:background="@drawable/day_month_selector"
-<<<<<<< HEAD
                 android:fontFamily="@font/montserrat"
-=======
-                android:fontFamily="sans-serif-medium"
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
                 android:gravity="center"
                 android:padding="8sp"
                 style="@style/BackgroundActiveDay"
                 android:text="@string/monthly"
                 android:textStyle="bold" />
         </LinearLayout>
-<<<<<<< HEAD
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -392,7 +244,7 @@
         android:layout_marginTop="-90dp"
         android:fontFamily="@font/montserrat"
         android:text="@string/add_transaction_prompt"
-        android:textColor="@color/black"
+       android:textColor="@color/black"
         android:textStyle="bold"
         android:textSize="12sp"
         android:gravity="center"
@@ -402,8 +254,6 @@
         app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
 
 
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -423,18 +273,11 @@
                 android:layout_width="123dp"
                 android:layout_height="22dp"
                 android:layout_weight="1"
-<<<<<<< HEAD
                 android:fontFamily="@font/montserrat"
                 android:gravity="center"
                 android:text="@string/january_30_2024"
-               android:textColor="@color/black"
+              style="@style/TextColor"
                 android:textStyle="bold"
-=======
-                android:fontFamily="sans-serif-medium"
-                android:gravity="center"
-                android:text="@string/january_30_2024"
-                style="@style/TextColor"
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
                 android:textSize="16sp"
                 android:clickable="true"
             android:focusable="true" />
@@ -446,10 +289,6 @@
                 android:layout_weight="0"
                 android:rotation="180"/>
         </LinearLayout>
-<<<<<<< HEAD
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-=======
-    </androidx.constraintlayout.widget.ConstraintLayout>
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee

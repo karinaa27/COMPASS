@@ -22,7 +22,6 @@
     <string name="night_mode">Night Mode</string>
     <string name="notifications">Notifications</string>
     <string name="language">Language</string>
-<<<<<<< HEAD
     <string name="biz">Бизнес</string>
     <string name="client_id">479678845373-4c5td2vikud746ukpi03kkstqh9se4ir.apps.googleusercontent.com</string>
     <string name="add_category">Создание категории</string>
@@ -325,9 +324,5 @@
     <string name="goals">Goals</string>
     <string name="pick_goal">Выберите цель</string>
     <string name="delete_transaction">Delete Transaction</string>
-=======
-    <string name="client_id">479678845373-4c5td2vikud746ukpi03kkstqh9se4ir.apps.googleusercontent.com</string>
-    <!-- Strings used for fragments for navigation -->
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
 </resources>

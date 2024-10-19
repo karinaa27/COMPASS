@@ -2,10 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#fff"
+    style="@style/ScreenBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="10dp"
     tools:context="ui.transactions.AddTransactionFragment">
     <ScrollView
         android:layout_width="match_parent"
@@ -27,14 +26,14 @@
                     android:textStyle="bold"
                     android:textSize="28sp"
                     android:layout_marginLeft="15dp"
-                    android:textColor="@color/black"
+                    style="@style/TextColor"
                     android:fontFamily="@font/montserrat"
                     />
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_close_24"
-                    android:backgroundTint="@color/black"
+                    style="@style/CalendarIcon"
                     android:layout_marginTop="10dp"
                     android:id="@+id/close"
                     />
@@ -53,7 +52,7 @@
                     android:background="@drawable/transaction_add_default_selector"
                     android:gravity="center"
                     android:padding="12dp"
-                    android:textColor="@color/black"
+                    style="@style/Btn"
                     android:text="@string/income1"
                     android:fontFamily="@font/montserrat"
                     android:textStyle="bold" />
@@ -62,7 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    android:textColor="@color/black"
+                    style="@style/Btn"
                     android:layout_weight="1"
                     android:background="@drawable/transaction_add_default_selector"
                     android:gravity="center"
@@ -86,6 +85,7 @@
                     android:singleLine="true"
                     android:maxWidth="90dp"
                     android:scrollHorizontally="true"
+                    style="@style/EdittextTransactions"
                     android:maxLength="9"
                     android:maxLines="1"
                     android:textSize="25sp"
@@ -111,12 +111,13 @@
                     android:textSize="25sp"
                     android:fontFamily="@font/montserrat"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
+                    style="@style/TextColor"
                     android:text=" = "/>
                 <EditText
                     android:layout_width="wrap_content"
                     android:id="@+id/sum"
                     android:inputType="numberDecimal"
+                    style="@style/EdittextTransactions"
                     android:textSize="25sp"
                     android:singleLine="true"
                     android:maxLines="1"
@@ -150,7 +151,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
-                    android:backgroundTint="@color/purple_500"
+                    style="@style/EdittextTransactions"
                     android:fontFamily="@font/montserrat"
                     android:backgroundTintMode="add"
                     android:focusable="false"
@@ -160,6 +161,7 @@
                     android:id="@+id/calendarBtn"
                     android:layout_width="wrap_content"
                     android:background="@null"
+                    style="@style/CalendarIcon"
                     android:layout_gravity="center"
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_calendar_month_24"/>
@@ -174,11 +176,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/TextColor"
                     android:text="@string/Categories"
                     android:textSize="18sp"
                     android:fontFamily="@font/montserrat"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
                     />
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewCategories"
@@ -205,7 +207,7 @@
                         android:layout_weight="2"
                         android:fontFamily="@font/montserrat"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
+                        style="@style/TextColor"
                         />
                     <TextView
                         android:layout_width="wrap_content"
@@ -216,7 +218,9 @@
                         android:textSize="18sp"
                         android:fontFamily="@font/montserrat"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
+                        style="@style/TextColor"
+                        android:visibility="gone"
+                        android:id="@+id/goal"
                         />
                 </LinearLayout>
 
@@ -233,7 +237,7 @@
                         android:fontFamily="@font/montserrat"
                         android:textStyle="normal"
                         android:layout_weight="2"
-                        android:textColor="@color/black"
+                        style="@style/EdittextTransactions"
                         android:id="@+id/nameAccount"
                         android:focusable="false"
                         android:clickable="true"
@@ -247,11 +251,11 @@
                         android:layout_weight="2"
                         android:fontFamily="@font/montserrat"
                         android:textStyle="normal"
-                        android:textColor="@color/black"
+                        style="@style/EdittextTransactions"
                         android:id="@+id/nameGoal"
                         android:focusable="false"
                         android:clickable="true"
-                        />
+                        android:visibility="gone" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -276,6 +280,7 @@
                 android:fontFamily="@font/montserrat"
                 android:textColor="#F44336"
                 android:textStyle="bold"
+                android:id="@+id/textViewDeleteTransaction"
                 android:textSize="18sp"
                 android:layout_gravity="center"
                 android:drawableEnd="@drawable/baseline_delete_24"

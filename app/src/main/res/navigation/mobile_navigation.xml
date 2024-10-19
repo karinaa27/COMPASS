@@ -9,15 +9,11 @@
         android:id="@+id/navigation_home"
         android:name="com.mgke.da.ui.transactions.TransactionsFragment"
         android:label="Transactions"
-<<<<<<< HEAD
         tools:layout="@layout/fragment_transactions" >
         <action
             android:id="@+id/action_navigation_home_to_addTransactionFragment"
             app:destination="@id/addTransactionFragment" />
     </fragment>
-=======
-        tools:layout="@layout/fragment_transactions" />
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
     <fragment
         android:id="@+id/navigation_stats"
@@ -31,14 +27,11 @@
         android:label="Accounts"
         tools:layout="@layout/fragment_accounts" />
     <fragment
-<<<<<<< HEAD
         android:id="@+id/navigation_add_account"
         android:name="com.mgke.da.ui.accounts.AddAccountFragment"
         android:label="AddAccounts"
         tools:layout="@layout/fragment_add_account" />
     <fragment
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         android:id="@+id/navigation_articles"
         android:name="com.mgke.da.ui.articles.ArticlesFragment"
         android:label="Articles"
@@ -53,7 +46,6 @@
         android:name="com.mgke.da.ui.categories.CategoryFragment"
         android:label="Settings"
         tools:layout="@layout/fragment_category" />
-<<<<<<< HEAD
     <fragment
         android:id="@+id/addCategoryFragment"
         android:name="com.mgke.da.ui.categories.AddCategoryFragment"
@@ -78,6 +70,4 @@
         android:id="@+id/fragment_update_transactions"
         android:name="com.mgke.da.ui.transactions.UpdateTransactionsFragment"
         tools:layout="@layout/fragment_update_transactions"/>
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 </navigation>

@@ -22,7 +22,6 @@
     <string name="night_mode">Night Mode</string>
     <string name="notifications">Notifications</string>
     <string name="language">Language</string>
-<<<<<<< HEAD
     <string name="add_category">Create Category</string>
     <string name="select_icon">Select icon</string>
         <string name="select_color">Select color</string>
@@ -314,6 +313,9 @@
     <string name="error_checking_username">Error checking username</string>
     <string name="select_currency">Select currency</string>
     <string name="account_exists_with_password">An account already exists. Please enter your password to log in.</string>
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
+    <string name="add_transaction_prompt">Add Transaction</string>
+    <string name="goals">Goals</string>
+    <string name="update_transaction">Update Transaction</string>
+    <string name="pick_goal">Select goal</string>
+    <string name="delete_transaction">Delete Transaction</string>
 </resources>

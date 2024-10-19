@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<<<<<<< HEAD
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-=======
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    style="@style/ScreenBackground"
     android:layout_height="match_parent"
     tools:context=".ui.stats.StatsFragment">
 
-<<<<<<< HEAD
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -27,7 +23,7 @@
                 android:id="@+id/topContainer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:background="@drawable/add_category_top"
+                style="@style/BackgroundTopStats"
                 android:orientation="vertical"
                 android:paddingBottom="8dp"
                 android:gravity="center"
@@ -82,8 +78,7 @@
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:padding="8sp"
-                    android:text="@string/day"
-                    android:textStyle="bold" />
+                    android:text="@string/day" />
 
                 <TextView
                     android:id="@+id/monthlyBtn"
@@ -93,12 +88,10 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="2dp"
                     android:layout_weight="1.75"
-                    android:background="@drawable/day_month_selector"
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:padding="8sp"
-                    android:text="@string/monthly"
-                    android:textStyle="bold" />
+                    android:text="@string/monthly"/>
 
                 <TextView
                     android:id="@+id/monthsBtn"
@@ -110,8 +103,7 @@
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:padding="8sp"
-                    android:text="@string/_3_months"
-                    android:textStyle="bold" />
+                    android:text="@string/_3_months" />
             </LinearLayout>
 
 
@@ -168,12 +160,12 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_weight="1"
+                    style="@style/Btn"
                     android:background="@drawable/transaction_add_default_selector"
                     android:fontFamily="@font/montserrat"
                     android:gravity="center"
                     android:padding="12dp"
                     android:text="@string/income1"
-                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
                 <TextView
@@ -182,22 +174,23 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:layout_weight="1"
+                    style="@style/Btn"
                     android:background="@drawable/transaction_add_default_selector"
                     android:fontFamily="@font/montserrat"
                     android:gravity="center"
                     android:padding="12dp"
                     android:text="@string/expense1"
-                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
             <com.github.mikephil.charting.charts.PieChart
                 android:id="@+id/pieChart"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center"
+
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout4" />
@@ -205,8 +198,8 @@
             <com.github.mikephil.charting.charts.HorizontalBarChart
                 android:id="@+id/horizontalBarChart"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_marginTop="16dp"
+                android:layout_gravity="center"
+                android:layout_height="170dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/pieChart" />
@@ -216,12 +209,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="380dp"
                 android:layout_marginTop="16dp"
-
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout4" />
+
+            <TextView
+                android:id="@+id/noDataTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Нет доступных данных для отображения"
+                android:visibility="gone"
+            android:layout_gravity="center" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -293,19 +294,3 @@
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
-=======
-    <TextView
-        android:id="@+id/text_stats"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee

@@ -13,22 +13,17 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
-<<<<<<< HEAD
     <style name="CustomButtonStyle" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/balance_fon_night</item>
-        <item name="android:textColor">#000000</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:backgroundTint">@null</item>
     </style>
-=======
-
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     <style name="nightModeSwitch" parent="Theme.AppCompat.Light">
         <item name="colorControlActivated">#FF0040FF</item>
         <item name="colorSwitchThumbNormal">#CACACA</item>
         <item name="android:colorForeground">#1BC871FA</item>
     </style>
 
-<<<<<<< HEAD
     <!-- Login -->
     <style name="CardViewLogin">
         <item name="android:background">@drawable/backgroundloginnightmini</item>
@@ -56,43 +51,27 @@
     </style>
 
     <style name="ScreenBackground">
-        <item name="android:background">#1D0141</item>
+        <item name="android:background">#46656565</item>
     </style>
 
     <style name="TextColor">
-        <item name="android:textColor">#000000</item>
-=======
-    <style name="ScreenBackground">
-        <item name="android:background">#919BE6</item>
-    </style>
-
-    <style name="TextColor">
-        <item name="android:textColor">#FFFFFF</item>
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
+        <item name="android:textColor">@color/white</item>
     </style>
 
     <style name="TextColorCard">
-        <item name="android:textColor">#000000</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
     <style name="Arrow">
-<<<<<<< HEAD
-        <item name="android:src">@drawable/ic_chevron</item>
-    </style>
-    <style name = "Category_bg">
-        <item name="tint">@color/black</item>
-    </style>
-    <style name="BackgroundActiveDay">
-        <item name="android:background">@drawable/day_month_selector</item>
-        <item name="android:textColor">#000000</item>
-=======
         <item name="android:src">@drawable/ic_chevron_white</item>
     </style>
-
+    <style name = "Category_bg">
+        <item name="tint">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
     <style name="BackgroundActiveDay">
         <item name="android:background">@drawable/day_month_selector_white</item>
-        <item name="android:textColor">#FFFFFF</item>
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
+        <item name="android:textColor">@color/white</item>
     </style>
 
     <style name="BackgroundSettings">
@@ -104,12 +83,39 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
-<<<<<<< HEAD
     <style name="ArrowAddCategory">
         <item name="android:src">@drawable/ic_chevron</item>
         <item name="android:tint">@color/black</item>
     </style>
 
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
+    <!-- TransactionsFragment -->
+    <style name="TextHome">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- AddTransactionFragment -->
+    <style name="Btn">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/transaction_add_default_selector</item>
+    </style>
+    <style name="CalendarIcon">
+        <item name="tint">@color/white</item>
+    </style>
+    <style name="EdittextTransactions">
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- SettingsFragment -->
+    <style name="UserIcon">
+        <item name="android:src">@drawable/user_icon_night</item>
+    </style>
+    <style name="BackgroundIconSettings">
+        <item name="android:background">@drawable/icon_settings_fon_night</item>
+    </style>
+
+    <!-- StatsFragment -->
+    <style name="BackgroundTopStats">
+        <item name="android:background">@drawable/add_category_top_night</item>
+    </style>
 </resources>

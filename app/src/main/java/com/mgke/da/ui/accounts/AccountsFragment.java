@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-<<<<<<< HEAD
 import android.widget.Button;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -75,42 +74,12 @@ public class AccountsFragment extends Fragment {
         return FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : null; // Возвращает ID пользователя или null, если не аутентифицирован
-=======
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.mgke.da.databinding.FragmentAccountsBinding;
-
-public class AccountsFragment extends Fragment {
-
-    private FragmentAccountsBinding binding;
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        AccountsViewModel statsViewModel =
-                new ViewModelProvider(this).get(AccountsViewModel.class);
-
-        binding = FragmentAccountsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
-        final TextView textView = binding.textAccounts;
-        statsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        return root;
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-<<<<<<< HEAD
         // Обнуляем ссылки на элементы, если они были использованы
         recyclerView.setAdapter(null);
-=======
-        binding = null;
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 }

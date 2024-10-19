@@ -1,13 +1,18 @@
 package com.mgke.da.ui.stats;
 
-<<<<<<< HEAD
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.YAxis;
 import com.mgke.da.models.Goal;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -101,10 +106,10 @@ public class StatsFragment extends Fragment {
         tabLayout = binding.tabLayout; // Изменено на binding
         statisticsContainer = binding.statisticsContainer;
         goalsContainer = binding.goalsContainer;
+// Добавляем табы
+        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.stats)));
+        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.goals)));
 
-        // Добавляем табы
-        tabLayout.addTab(tabLayout.newTab().setText("Статистика"));
-        tabLayout.addTab(tabLayout.newTab().setText("Цели"));
 
         // Установите слушатель для обработки нажатий на табы
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -290,12 +295,27 @@ public class StatsFragment extends Fragment {
     }
 
     private void setSelectedButton(TextView selected, TextView... unselected) {
-        selected.setBackgroundResource(R.drawable.day_month_selector_active);
-        selected.setTextColor(Color.BLACK); // Установите цвет текста для выбранной кнопки
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
+        // Установка фона и цвета текста для выбранной кнопки
+        if (isDarkTheme) {
+            selected.setBackgroundResource(R.drawable.day_month_selector_night);
+            selected.setTextColor(Color.WHITE);
+        } else {
+            selected.setBackgroundResource(R.drawable.day_month_selector_active);
+            selected.setTextColor(Color.WHITE);
+        }
+
+        // Установка фона и цвета текста для невыбранных кнопок
         for (TextView button : unselected) {
-            button.setBackgroundResource(R.drawable.day_month_selector);
-            button.setTextColor(Color.BLACK); // Установите цвет текста для невыбранных кнопок
+            if (isDarkTheme) {
+                button.setBackgroundResource(R.drawable.day_month_selector_white);
+                button.setTextColor(Color.WHITE);
+            } else {
+                button.setBackgroundResource(R.drawable.day_month_selector);
+                button.setTextColor(Color.BLACK); // Установите цвет текста для невыбранных кнопок
+            }
         }
     }
 
@@ -303,7 +323,7 @@ public class StatsFragment extends Fragment {
         pieChart.setUsePercentValues(true);
         pieChart.getDescription().setEnabled(false);
         pieChart.setDrawHoleEnabled(true);
-        pieChart.setHoleColor(Color.WHITE);
+        pieChart.setHoleColor(Color.TRANSPARENT);
         pieChart.setTransparentCircleColor(Color.WHITE);
         pieChart.setTransparentCircleAlpha(110);
         pieChart.setHoleRadius(58f);
@@ -311,6 +331,23 @@ public class StatsFragment extends Fragment {
         pieChart.setDrawCenterText(true);
         pieChart.setRotationEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
+
+        // Устанавливаем цвет текста в зависимости от темы
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+
+        // Цвет текста для центра
+        pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+
+        // Настраиваем цвет меток (названий категорий)
+        pieChart.setEntryLabelColor(isDarkTheme ? Color.WHITE : Color.BLACK);  // Цвет названий категорий
+        pieChart.setEntryLabelTextSize(12f);  // Можно настроить размер текста
+
+        // Настройка легенды (метки под диаграммой)
+        Legend legend = pieChart.getLegend();
+        legend.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);  // Цвет текста легенды
+        legend.setTextSize(12f);  // Размер текста легенды
+        legend.setForm(Legend.LegendForm.CIRCLE);  // Форма значков легенды (можно использовать другие: LINE, SQUARE)
 
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
@@ -329,6 +366,8 @@ public class StatsFragment extends Fragment {
             }
         });
     }
+
+
 
     private void setupHorizontalBarChart() {
         horizontalBarChart.getDescription().setEnabled(false);
@@ -480,8 +519,6 @@ public class StatsFragment extends Fragment {
                 });
     }
 
-
-
     private void loadMonthlysTransactions() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Log.e("StatsFragment", "Пользователь не аутентифицирован");
@@ -540,9 +577,21 @@ public class StatsFragment extends Fragment {
                 });
     }
 
-
-
     private void updateRadarChart(Map<String, Float[]> categorySums) {
+        // Получаем ссылку на TextView для отображения сообщения через View Binding
+        FragmentStatsBinding binding = FragmentStatsBinding.bind(getView()); // Получаем биндинг для текущего представления
+        TextView noDataTextView = binding.noDataTextView; // Используем биндинг для доступа к TextView
+
+        // Проверяем, есть ли данные для отображения
+        if (categorySums.isEmpty()) {
+            radarChart.setVisibility(View.GONE); // Скрываем график
+            noDataTextView.setVisibility(View.VISIBLE); // Показываем сообщение о отсутствии данных
+            return; // Прекращаем выполнение метода
+        } else {
+            radarChart.setVisibility(View.VISIBLE); // Показываем график, если есть данные
+            noDataTextView.setVisibility(View.GONE); // Скрываем сообщение, если есть данные
+        }
+
         // Создаем объект RadarData
         RadarData radarData = new RadarData();
 
@@ -556,6 +605,10 @@ public class StatsFragment extends Fragment {
         // Получаем текущую дату для определения названий месяцев
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MONTH, -2); // Устанавливаем календарь на два месяца назад
+
+        // Определяем, темная ли тема
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
         // Создаем список для хранения RadarDataSet для каждого месяца
         for (int month = 0; month < 3; month++) {
@@ -579,7 +632,7 @@ public class StatsFragment extends Fragment {
             dataSet.setColor(monthColors.get(month)); // Устанавливаем цвет для месяца
             dataSet.setDrawFilled(true);
             dataSet.setFillColor(monthColors.get(month));
-            dataSet.setValueTextColor(Color.WHITE);
+            dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста значений
             dataSet.setValueTextSize(16f);
 
             // Добавляем набор данных в RadarData
@@ -596,8 +649,23 @@ public class StatsFragment extends Fragment {
         List<String> categoryLabels = new ArrayList<>(categorySums.keySet());
         radarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(categoryLabels));
 
+        // Убираем описание и числа на осях
+        radarChart.getDescription().setEnabled(false); // Отключаем описание графика
+        radarChart.getYAxis().setDrawLabels(false); // Убираем метки на оси Y
+
+        // Устанавливаем цвет меток категорий в зависимости от темы
+        radarChart.getXAxis().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста меток
+
+        // Установка цвета текста в легенде в зависимости от темы
+        radarChart.getLegend().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста в легенде
+
+        // Настройка анимации
+        radarChart.animateXY(1000, 1000); // Анимация появления графика
+
         radarChart.invalidate(); // Обновление графика
     }
+
+
 
     private void updatePieChart(Map<String, Float> categorySums) {
         List<PieEntry> entries = new ArrayList<>();
@@ -614,22 +682,46 @@ public class StatsFragment extends Fragment {
             return;
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Транзакции за " + (selectedTab == 0 ? "день" : "месяц"));
+        // Устанавливаем настройки для PieChart
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColor(Color.TRANSPARENT);
+        pieChart.setTransparentCircleColor(Color.WHITE);
+        pieChart.setTransparentCircleAlpha(110);
+        pieChart.setHoleRadius(58f);
+        pieChart.setTransparentCircleRadius(61f);
+        pieChart.setDrawCenterText(true);
+
+        // Проверка темы
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+
+        // Устанавливаем цвет текста для центра (пояснительная надпись)
+        pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста центра
+
+        // Создаем PieDataSet
+        PieDataSet dataSet = new PieDataSet(entries, "");  // Пустая строка вместо заголовка
+
+        // Устанавливаем цвет текста значений
+        dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста значений
+        dataSet.setValueTextSize(16f); // Размер текста значений
+
+        // Устанавливаем цвета для секторов
         dataSet.setColors(getPieChartColors(entries));
-        dataSet.setValueTextColor(Color.WHITE);
-        dataSet.setValueTextSize(16f);
 
         PieData pieData = new PieData(dataSet);
         pieChart.setData(pieData);
         pieChart.invalidate(); // Обновление графика
+
+        // Добавляем анимацию
+        pieChart.animateY(1000, Easing.EaseInOutQuad); // Анимация по оси Y за 1000 мс
     }
+
 
     private void updateHorizontalBarChart(Map<String, Float> categorySums) {
         List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
         int index = 0;
-        float fixedBarHeight = 50f;
 
         for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
             if (entry.getValue() > 0) {
@@ -644,30 +736,62 @@ public class StatsFragment extends Fragment {
             return;
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "Транзакции");
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-        dataSet.setValueTextColor(Color.WHITE);
-        dataSet.setValueTextSize(16f);
+        BarDataSet dataSet = new BarDataSet(entries, "");
+        dataSet.setColors(getBarChartColors(entries));
 
-        // Установка ширины баров
-        float barWidth = 0.3f; // Установите ширину баров (значение от 0 до 1)
+        // Цвет текста значений в зависимости от темы
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        dataSet.setValueTextSize(12f);
+        dataSet.setDrawValues(true);
+
+        float barWidth = 0.25f; // Ширина баров
         BarData barData = new BarData(dataSet);
         barData.setBarWidth(barWidth);
 
         horizontalBarChart.setData(barData);
+
+        // Настройка осей
+        XAxis xAxis = horizontalBarChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setGranularity(1f);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawAxisLine(false); // Отключаем осевую линию
+        xAxis.setDrawGridLines(false); // Отключаем сетку
+        xAxis.setTextColor(Color.TRANSPARENT); // Убираем цвет текста меток (делаем прозрачными)
+        xAxis.setLabelCount(0, true); // Отключаем метки
+
+        // Настройка оси Y
+        YAxis yAxisLeft = horizontalBarChart.getAxisLeft();
+        yAxisLeft.setEnabled(false);
+        yAxisLeft.setGranularity(0.2f);
+        yAxisLeft.setLabelCount(5, true);
+        yAxisLeft.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        yAxisLeft.setDrawGridLines(false);
+
+        YAxis yAxisRight = horizontalBarChart.getAxisRight();
+        yAxisRight.setEnabled(false);
+
+        // Установка минимального значения для оси X
+        xAxis.setAxisMinimum(0f); // Установка минимального значения оси X
+
+        // Установка анимации
+        horizontalBarChart.animateY(1000);
+
+        // Настройки оформления графика
+        horizontalBarChart.getLegend().setEnabled(false);
+        horizontalBarChart.setDescription(null);
+        horizontalBarChart.setDrawGridBackground(false);
+        horizontalBarChart.setDrawBarShadow(false);
+
+        // Обновляем график
         horizontalBarChart.invalidate();
-
-        // Установка меток по оси X
-        horizontalBarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
-        horizontalBarChart.getXAxis().setGranularity(1f);
-        horizontalBarChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-
-        horizontalBarChart.invalidate(); // Обновление графика
     }
 
     private List<Integer> getPieChartColors(List<PieEntry> entries) {
         List<Integer> colors = new ArrayList<>();
-        int[] colorPalette = ColorTemplate.MATERIAL_COLORS; // Массив цветов
+        int[] colorPalette = ColorTemplate.JOYFUL_COLORS; // Массив цветов
 
         for (int i = 0; i < entries.size(); i++) {
             colors.add(colorPalette[i % colorPalette.length]); // Циклическое использование цветов
@@ -677,7 +801,7 @@ public class StatsFragment extends Fragment {
 
     private List<Integer> getBarChartColors(List<BarEntry> entries) {
         List<Integer> colors = new ArrayList<>();
-        int[] colorPalette = ColorTemplate.MATERIAL_COLORS; // Массив цветов
+        int[] colorPalette = ColorTemplate.JOYFUL_COLORS; // Массив цветов
 
         for (int i = 0; i < entries.size(); i++) {
             colors.add(colorPalette[i % colorPalette.length]); // Циклическое использование цветов
@@ -693,24 +817,25 @@ public class StatsFragment extends Fragment {
         });
     }
 
-    private void setSelectedButton(TextView selected, TextView unselected) {
-        selected.setBackgroundResource(R.drawable.day_month_selector_active);
-        unselected.setBackgroundResource(R.drawable.day_month_selector);
-    }
 
     private void setTransactionType(String type) {
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         if (type.equals("DOHOD")) {
             binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_income_selector);
             binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
-            binding.incomeBtn.setTextColor(Color.parseColor("#00C853")); // Зеленый для дохода
-            binding.expenseBtn.setTextColor(Color.BLACK); // Черный для расхода
+            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.parseColor("#00C853"));
+            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+
             binding.incomeBtn.setSelected(true);
             binding.expenseBtn.setSelected(false);
         } else if (type.equals("RACHOD")) {
             binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
             binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_expence_selector);
-            binding.incomeBtn.setTextColor(Color.BLACK); // Черный для дохода
-            binding.expenseBtn.setTextColor(Color.RED); // Красный для расхода
+            // Устанавливаем цвет текста в зависимости от темы
+            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Черный для дохода в светлой теме
+            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.RED); // Красный для расхода в светлой теме
+
             binding.incomeBtn.setSelected(false);
             binding.expenseBtn.setSelected(true);
         }
@@ -735,38 +860,6 @@ public class StatsFragment extends Fragment {
         updateDateText();
     }
 
-=======
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.mgke.da.databinding.FragmentStatsBinding;
-
-public class StatsFragment extends Fragment {
-
-    private FragmentStatsBinding binding;
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        StatsViewModel statsViewModel =
-                new ViewModelProvider(this).get(StatsViewModel.class);
-
-        binding = FragmentStatsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
-        final TextView textView = binding.textStats;
-        statsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        return root;
-    }
-
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     @Override
     public void onDestroyView() {
         super.onDestroyView();

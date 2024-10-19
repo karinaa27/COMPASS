@@ -122,4 +122,10 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
     public int getSelectedCategoryColor() {
         return selectedCategoryColor;
     }
+
+    // Добавленный метод для установки выделенной категории
+    public void setSelectedCategory(String categoryName) {
+        this.selectedCategory = categoryName; // Устанавливаем выделенное имя категории
+        notifyDataSetChanged(); // Обновляем адаптер
+    }
 }

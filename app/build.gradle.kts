@@ -7,14 +7,11 @@ android {
     namespace = "com.mgke.da"
     compileSdk = 34
 
-<<<<<<< HEAD
     buildFeatures {
         viewBinding = true
         dataBinding = true
     }
 
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     defaultConfig {
         applicationId = "com.mgke.da"
         minSdk = 24
@@ -44,18 +41,14 @@ android {
 }
 
 dependencies {
-<<<<<<< HEAD
     implementation ("com.github.skydoves:colorpickerview:2.3.0")
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
-<<<<<<< HEAD
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
@@ -65,8 +58,6 @@ dependencies {
     implementation ("com.google.firebase:firebase-appcheck-debug")
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)

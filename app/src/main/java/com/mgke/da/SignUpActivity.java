@@ -1,13 +1,9 @@
 package com.mgke.da;
 
-<<<<<<< HEAD
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-=======
-import android.content.Intent;
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -15,21 +11,12 @@ import android.text.TextWatcher;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
-<<<<<<< HEAD
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-=======
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import com.mgke.da.models.PersonalData;
 import com.mgke.da.repository.PersonalDataRepository;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -43,7 +30,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
-<<<<<<< HEAD
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,8 +40,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,53 +47,33 @@ public class SignUpActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private GoogleSignInClient googleSignInClient;
-<<<<<<< HEAD
     private EditText signupEmail, signupPassword, signupPassword2, signupUsername, signupFirstName, signupLastName, signupBirthDate, signupCountry, signupCurrency;
-=======
-    private EditText signupEmail, signupPassword, signupPassword2; // Добавлено поле для подтверждения пароля
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     private Button signupButton;
     private com.google.android.gms.common.SignInButton googleSignInButton;
     private TextView loginRedirectText;
     private static final int RC_SIGN_IN = 9001;
     private PersonalDataRepository personalDataRepository;
-<<<<<<< HEAD
     private FirebaseFirestore firestore;
 
     public static final String PREFS_NAME = "UserPrefs";
     public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
 
     private boolean isGoogleSignUp = false;
-=======
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
 
-<<<<<<< HEAD
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance(); // Инициализация Firestore
         personalDataRepository = new PersonalDataRepository(firestore); // Передача Firestore в репозиторий
 
         FirebaseUser currentUser = auth.getCurrentUser();
-=======
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-        auth = FirebaseAuth.getInstance();
-
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id))
                 .requestEmail()
                 .build();
-<<<<<<< HEAD
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
         if (currentUser != null) {
@@ -306,97 +270,16 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
-=======
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        signupEmail = findViewById(R.id.signup_email);
-        signupPassword = findViewById(R.id.signup_password);
-        signupPassword2 = findViewById(R.id.signup_password2); // Инициализация поля для подтверждения пароля
-        signupButton = findViewById(R.id.sign_up_button);
-        googleSignInButton = findViewById(R.id.googleSignInButton);
-        loginRedirectText = findViewById(R.id.loginRedirectText);
-
-        // Установка фильтров для ввода
-        setupInputFilters();
-
-        signupButton.setOnClickListener(view -> {
-            String user = signupEmail.getText().toString().trim();
-            String pass = signupPassword.getText().toString().trim();
-            String confirmPass = signupPassword2.getText().toString().trim(); // Получаем текст из поля подтверждения
-
-            if (user.isEmpty() || !isValidEmail(user)) {
-                signupEmail.setError("Введите корректный email");
-                return;
-            }
-
-            if (pass.isEmpty()) {
-                signupPassword.setError("Введите пароль");
-                return;
-            }
-
-            if (!isValidPassword(pass)) {
-                signupPassword.setError("Пароль должен содержать минимум 6 символов, включая заглавные, строчные буквы, цифры и специальный символ.");
-                return;
-            }
-
-            if (!pass.equals(confirmPass)) { // Проверка совпадения паролей
-                signupPassword2.setError("Пароли не совпадают");
-                return;
-            }
-
-            auth.createUserWithEmailAndPassword(user, pass).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    sendVerificationEmail();
-                    Toast.makeText(SignUpActivity.this, "Регистрация успешна", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
-                } else {
-                    Toast.makeText(SignUpActivity.this, "Ошибка регистрации: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
-
-        googleSignInButton.setOnClickListener(view -> signInWithGoogle());
-
-        loginRedirectText.setOnClickListener(v -> startActivity(new Intent(SignUpActivity.this, LoginActivity.class)));
-    }
-
-    private void setupInputFilters() {
-        // Фильтры для email
-        signupEmail.setFilters(new InputFilter[]{new InputFilter() {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, android.text.Spanned dest, int dstart, int dend) {
-                return source.toString().replaceAll("[^\\p{L}\\p{N}_.@-]", ""); // Разрешаем только латиницу, цифры, точку, @ и -
-            }
-        }});
-
-        // Фильтры для пароля
-        signupPassword.setFilters(new InputFilter[]{new InputFilter() {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, android.text.Spanned dest, int dstart, int dend) {
-                return source.toString().replaceAll("[^\\p{L}\\p{N}!" +
-                        "@#$%^&*()\\-_=+\\[\\]{};:'\",.<>?/]", ""); // Разрешаем буквы, цифры и специальные символы
-            }
-        }});
-        signupEmail.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().contains(" ")) {
-<<<<<<< HEAD
                     ((EditText) getCurrentFocus()).setText(s.toString().replace(" ", ""));
                     ((EditText) getCurrentFocus()).setSelection(((EditText) getCurrentFocus()).getText().length());
-=======
-                    signupEmail.setText(s.toString().replace(" ", ""));
-                    signupEmail.setSelection(signupEmail.getText().length());
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
                 }
             }
 
             @Override
-<<<<<<< HEAD
             public void afterTextChanged(Editable s) {
             }
         };
@@ -413,47 +296,6 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, getString(R.string.google_sign_in_error), Toast.LENGTH_SHORT).show();
         }
-=======
-            public void afterTextChanged(Editable s) {}
-        });
-
-        signupPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().contains(" ")) {
-                    signupPassword.setText(s.toString().replace(" ", ""));
-                    signupPassword.setSelection(signupPassword.getText().length());
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        signupPassword2.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().contains(" ")) {
-                    signupPassword2.setText(s.toString().replace(" ", ""));
-                    signupPassword2.setSelection(signupPassword2.getText().length());
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-    }
-
-    private void signInWithGoogle() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 
     @Override
@@ -468,7 +310,6 @@ public class SignUpActivity extends AppCompatActivity {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-<<<<<<< HEAD
             if (account != null) {
                 String idToken = account.getIdToken();
                 firebaseAuthWithGoogle(idToken);
@@ -513,26 +354,6 @@ public class SignUpActivity extends AppCompatActivity {
                     Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_failed), Toast.LENGTH_SHORT).show();
                 }
             });
-=======
-            String idToken = account.getIdToken();
-            firebaseAuthWithGoogle(idToken);
-        } catch (ApiException e) {
-            Toast.makeText(this, "Ошибка входа: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void sendVerificationEmail() {
-        FirebaseUser user = auth.getCurrentUser();
-        if (user != null) {
-            user.sendEmailVerification()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(SignUpActivity.this, "Письмо для подтверждения отправлено на " + user.getEmail(), Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(SignUpActivity.this, "Не удалось отправить письмо для подтверждения.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
         }
     }
 
@@ -541,7 +362,6 @@ public class SignUpActivity extends AppCompatActivity {
         auth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
                 FirebaseUser user = auth.getCurrentUser();
-<<<<<<< HEAD
                 if (user != null) {
                     String email = user.getEmail();
                     if (email != null) {
@@ -584,20 +404,10 @@ public class SignUpActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(this, getString(R.string.auth_error, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
-=======
-                PersonalData personalData = new PersonalData();
-                personalDataRepository.addPersonalData(personalData);
-                Toast.makeText(SignUpActivity.this, "Вход через Google успешен", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-                finish();
-            } else {
-                Toast.makeText(this, "Ошибка аутентификации: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
             }
         });
     }
 
-<<<<<<< HEAD
     private Task<PersonalData> checkUserInFirestore(String email) {
         return firestore.collection("users")
                 .whereEqualTo("email", email)
@@ -649,10 +459,6 @@ public class SignUpActivity extends AppCompatActivity {
         if (password.length() < minLength || password.length() > maxLength) {
             return false;
         }
-=======
-    private boolean isValidPassword(String password) {
-        if (password.length() < 6) return false;
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
 
         Pattern upperCase = Pattern.compile("[A-Z]");
         Pattern lowerCase = Pattern.compile("[a-z]");
@@ -668,10 +474,6 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private boolean isValidEmail(String email) {
-<<<<<<< HEAD
         return Patterns.EMAIL_ADDRESS.matcher(email).matches();
-=======
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches(); // Используется встроенная проверка email
->>>>>>> 9f8e75c219182397181d8bbc885a00651fa3edee
     }
 }

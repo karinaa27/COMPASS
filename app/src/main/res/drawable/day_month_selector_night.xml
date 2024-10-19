@@ -7,7 +7,7 @@
 
     <!-- Установка цвета фона -->
     <gradient
-        android:startColor="#B8ADFE"
-        android:endColor="#676BC2"
+        android:startColor="#0E2E8A"
+        android:endColor="#7615A9"
         android:angle="45"/>
 </shape>

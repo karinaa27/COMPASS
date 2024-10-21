@@ -2,14 +2,13 @@ package com.mgke.da.ui.stats;
 
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.RectF;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-
+import com.bumptech.glide.Glide;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.YAxis;
@@ -59,13 +58,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class StatsFragment extends Fragment {
+public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickListener{
     private FragmentStatsBinding binding;
     private PieChart pieChart;
-    private HorizontalBarChart horizontalBarChart;// Добавлен HorizontalBarChart
+    private HorizontalBarChart horizontalBarChart;
     private RadarChart radarChart;
     private Calendar calendar;
-    private int selectedTab; // 0 - Day, 1 - Month
+    private int selectedTab;
     private TransactionRepository transactionRepository;
     private TabLayout tabLayout;
     private LinearLayout statisticsContainer, goalsContainer;
@@ -74,10 +73,17 @@ public class StatsFragment extends Fragment {
     private GoalAdapter goalAdapter;
     private List<Goal> goalList;
     private GoalRepository goalRepository;
+    private String currentCurrency;
 
     public StatsFragment() {
-        // Required empty public constructor
     }
+    @Override
+    public void onGoalClick(Goal goal) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("goal", goal); // Убедитесь, что Goal реализует Serializable
+        NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment, bundle);
+    }
+    
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentStatsBinding.inflate(inflater, container, false);
@@ -86,43 +92,41 @@ public class StatsFragment extends Fragment {
         pieChart = binding.pieChart;
         horizontalBarChart = binding.horizontalBarChart;
         radarChart = binding.radarChart;
-        processBtn=binding.processBtn;
-        completedBtn=binding.completedBtn;
+        processBtn = binding.processBtn;
+        completedBtn = binding.completedBtn;
 
         recyclerViewGoals = root.findViewById(R.id.recyclerViewGoals);
         goalList = new ArrayList<>();
-        goalAdapter = new GoalAdapter(goalList);
+        goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+        transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
 
+        goalAdapter = new GoalAdapter(goalList, requireContext(), goalRepository,transactionRepository, currentCurrency, this);
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewGoals.setAdapter(goalAdapter);
 
-        goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
-        loadGoals(); // Метод для загрузки целей из базы данных
-
+        loadGoals(false);
 
         setupPieChart();
         setupHorizontalBarChart();
 
-        tabLayout = binding.tabLayout; // Изменено на binding
+        // Устанавливаем начальное состояние кнопок
+        setSelectedButtonGoal(processBtn, completedBtn);
+
+        tabLayout = binding.tabLayout;
         statisticsContainer = binding.statisticsContainer;
         goalsContainer = binding.goalsContainer;
-// Добавляем табы
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.stats)));
         tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.goals)));
 
-
-        // Установите слушатель для обработки нажатий на табы
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 0:
-                        // Показываем элементы статистики и скрываем цели
                         statisticsContainer.setVisibility(View.VISIBLE);
                         goalsContainer.setVisibility(View.GONE);
                         break;
                     case 1:
-                        // Показываем цели и скрываем элементы статистики
                         statisticsContainer.setVisibility(View.GONE);
                         goalsContainer.setVisibility(View.VISIBLE);
                         break;
@@ -131,52 +135,50 @@ public class StatsFragment extends Fragment {
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                // Можно оставить пустым
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                // Можно оставить пустым
             }
         });
 
-        // Изначально показываем статистику
         statisticsContainer.setVisibility(View.VISIBLE);
         goalsContainer.setVisibility(View.GONE);
-
-        // Скрыть RadarChart по умолчанию
         radarChart.setVisibility(View.GONE);
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
         calendar = Calendar.getInstance();
-        selectedTab = 0; // Устанавливаем начальный таб
+        selectedTab = 0;
         selectDayButton();
         setTransactionType("DOHOD");
         loadStatsData();
         updateDateText();
 
+        // Обработчики кнопок для статистики
         binding.dayBtn.setOnClickListener(v -> {
             setSelectedButton(binding.dayBtn, binding.monthlyBtn, binding.monthsBtn);
             selectedTab = 0;
             updateDateText();
             loadStatsData();
-            showCharts(true); // Показать PieChart и HorizontalBarChart
+            showCharts(true);
         });
+
         binding.monthlyBtn.setOnClickListener(v -> {
             setSelectedButton(binding.monthlyBtn, binding.dayBtn, binding.monthsBtn);
             selectedTab = 1;
             updateDateText();
             loadStatsData();
-            showCharts(true); // Показать PieChart и HorizontalBarChart
+            showCharts(true);
         });
+
         binding.monthsBtn.setOnClickListener(v -> {
             setSelectedButton(binding.monthsBtn, binding.dayBtn, binding.monthlyBtn);
             selectedTab = 2;
             updateDateText();
             loadStatsData();
-            showCharts(false); // Показать только RadarChart
+            showCharts(false);
         });
+
         binding.previousDate.setOnClickListener(v -> {
             updateCalendar(-1);
             loadStatsData();
@@ -200,36 +202,54 @@ public class StatsFragment extends Fragment {
         setupButtonListeners();
         setupGoalsButtonListeners();
 
-        // Инициализация FloatingActionButton
         FloatingActionButton fabAddGoal = binding.fabAddGoal;
         fabAddGoal.setOnClickListener(v -> {
-            // Переход к фрагменту добавления целей
             NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment);
         });
+
         return root;
     }
 
+
+
     private void setupGoalsButtonListeners() {
-        TextView processBtn = binding.processBtn; // Инициализация кнопки "В процессе"
-        TextView completedBtn = binding.completedBtn; // Инициализация кнопки "Завершенные"
 
         processBtn.setOnClickListener(v -> {
             setSelectedButtonGoal(processBtn, completedBtn);
-            // Логика для обработки нажатия на "В процессе"
+            loadGoals(false);
         });
 
         completedBtn.setOnClickListener(v -> {
             setSelectedButtonGoal(completedBtn, processBtn);
-            // Логика для обработки нажатия на "Завершенные"
+            loadGoals(true);
         });
     }
 
     private void setSelectedButtonGoal(TextView selected, TextView unselected) {
-        selected.setBackgroundResource(R.drawable.transaction_add_income_selector); // Установите активный фон
-        selected.setTextColor(Color.WHITE); // Измените цвет текста для выбранной кнопки
-
-        unselected.setBackgroundResource(R.drawable.transaction_add_default_selector); // Установите фон для невыбранной кнопки
-        unselected.setTextColor(Color.BLACK); // Цвет текста для невыбранной кнопки
+        selected.setBackgroundResource(R.drawable.transaction_add_income_selector);
+        selected.setTextColor(Color.WHITE);
+        unselected.setBackgroundResource(R.drawable.transaction_add_default_selector);
+        unselected.setTextColor(Color.BLACK);
+    }
+    private void loadGoals(boolean showCompleted) {
+        goalRepository.getAllGoal().thenAccept(goals -> {
+            goalList.clear();
+            for (Goal goal : goals) {
+                checkGoalCompletion(goal);
+                if (showCompleted && goal.isCompleted) {
+                    goalList.add(goal);
+                } else if (!showCompleted && !goal.isCompleted) {
+                    goalList.add(goal);
+                }
+            }
+            goalAdapter.notifyDataSetChanged();
+        });
+    }
+    private void checkGoalCompletion(Goal goal) {
+        if (goal.progress >= goal.targetAmount) {
+            goal.isCompleted = true;
+            goalRepository.updateGoal(goal); // Обновляем цель в Firebase
+        }
     }
 
 
@@ -239,7 +259,7 @@ public class StatsFragment extends Fragment {
             selectedTab = 0;
             updateDateText();
             loadStatsData();
-            showCharts(true); // Показать PieChart и HorizontalBarChart
+            showCharts(true);
         });
 
         binding.monthlyBtn.setOnClickListener(v -> {
@@ -247,7 +267,7 @@ public class StatsFragment extends Fragment {
             selectedTab = 1;
             updateDateText();
             loadStatsData();
-            showCharts(true); // Показать PieChart и HorizontalBarChart
+            showCharts(true);
         });
 
         binding.monthsBtn.setOnClickListener(v -> {
@@ -255,7 +275,7 @@ public class StatsFragment extends Fragment {
             selectedTab = 2;
             updateDateText();
             loadStatsData();
-            showCharts(false); // Показать только RadarChart
+            showCharts(false);
         });
 
         binding.previousDate.setOnClickListener(v -> {
@@ -279,18 +299,17 @@ public class StatsFragment extends Fragment {
         });
     }
 
-
     private void showCharts(boolean showStandardCharts) {
         if (showStandardCharts) {
             radarChart.setVisibility(View.GONE);
             pieChart.setVisibility(View.VISIBLE);
             horizontalBarChart.setVisibility(View.VISIBLE);
-            binding.linearLayout.setVisibility(View.VISIBLE); // Показать LinearLayout
+            binding.linearLayout.setVisibility(View.VISIBLE);
         } else {
             radarChart.setVisibility(View.VISIBLE);
             pieChart.setVisibility(View.GONE);
             horizontalBarChart.setVisibility(View.GONE);
-            binding.linearLayout.setVisibility(View.GONE); // Скрыть LinearLayout
+            binding.linearLayout.setVisibility(View.GONE);
         }
     }
 
@@ -298,7 +317,6 @@ public class StatsFragment extends Fragment {
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
-        // Установка фона и цвета текста для выбранной кнопки
         if (isDarkTheme) {
             selected.setBackgroundResource(R.drawable.day_month_selector_night);
             selected.setTextColor(Color.WHITE);
@@ -307,14 +325,13 @@ public class StatsFragment extends Fragment {
             selected.setTextColor(Color.WHITE);
         }
 
-        // Установка фона и цвета текста для невыбранных кнопок
         for (TextView button : unselected) {
             if (isDarkTheme) {
                 button.setBackgroundResource(R.drawable.day_month_selector_white);
                 button.setTextColor(Color.WHITE);
             } else {
                 button.setBackgroundResource(R.drawable.day_month_selector);
-                button.setTextColor(Color.BLACK); // Установите цвет текста для невыбранных кнопок
+                button.setTextColor(Color.BLACK);
             }
         }
     }
@@ -332,22 +349,17 @@ public class StatsFragment extends Fragment {
         pieChart.setRotationEnabled(true);
         pieChart.setHighlightPerTapEnabled(true);
 
-        // Устанавливаем цвет текста в зависимости от темы
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
-        // Цвет текста для центра
         pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        pieChart.setEntryLabelColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        pieChart.setEntryLabelTextSize(12f);
 
-        // Настраиваем цвет меток (названий категорий)
-        pieChart.setEntryLabelColor(isDarkTheme ? Color.WHITE : Color.BLACK);  // Цвет названий категорий
-        pieChart.setEntryLabelTextSize(12f);  // Можно настроить размер текста
-
-        // Настройка легенды (метки под диаграммой)
         Legend legend = pieChart.getLegend();
-        legend.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);  // Цвет текста легенды
-        legend.setTextSize(12f);  // Размер текста легенды
-        legend.setForm(Legend.LegendForm.CIRCLE);  // Форма значков легенды (можно использовать другие: LINE, SQUARE)
+        legend.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        legend.setTextSize(12f);
+        legend.setForm(Legend.LegendForm.CIRCLE);
 
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
@@ -362,12 +374,9 @@ public class StatsFragment extends Fragment {
 
             @Override
             public void onNothingSelected() {
-                // Действия при отсутствии выбора
             }
         });
     }
-
-
 
     private void setupHorizontalBarChart() {
         horizontalBarChart.getDescription().setEnabled(false);
@@ -378,7 +387,7 @@ public class StatsFragment extends Fragment {
 
     private void selectDayButton() {
         setSelectedButton(binding.dayBtn, binding.monthlyBtn);
-        calendar = Calendar.getInstance(); // Сброс на текущую дату
+        calendar = Calendar.getInstance();
         updateDateText();
     }
 
@@ -392,18 +401,16 @@ public class StatsFragment extends Fragment {
 
     private void loadStatsData() {
         if (selectedTab == 0) {
-            loadDailyTransactions(); // Загрузка транзакций за день
+            loadDailyTransactions();
         } else if (selectedTab == 1) {
-            loadMonthlyTransactions(); // Загрузка транзакций за месяц
-        } else if(selectedTab == 2)
-        {
+            loadMonthlyTransactions();
+        } else if (selectedTab == 2) {
             loadMonthlysTransactions();
         }
     }
 
     private void loadMonthlyTransactions() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Log.e("StatsFragment", "Пользователь не аутентифицирован");
             return;
         }
 
@@ -414,55 +421,33 @@ public class StatsFragment extends Fragment {
         endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), startCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
         endCalendar.set(Calendar.MILLISECOND, 999);
 
-        Log.d("StatsFragment", "Start Date: " + startCalendar.getTime());
-        Log.d("StatsFragment", "End Date: " + endCalendar.getTime());
-
         transactionRepository.getAllTransaction()
                 .thenAccept(transactions -> {
-                    Log.d("StatsFragment", "Полученные транзакции: " + transactions.size());
                     Map<String, Float> categorySums = new HashMap<>();
-
                     for (Transaction transaction : transactions) {
-                        Log.d("StatsFragment", "Обработка транзакции: " + transaction.toString());
-                        Log.d("StatsFragment", "Тип транзакции: " + transaction.type);
-                        Log.d("StatsFragment", "Дата транзакции: " + transaction.date);
-                        Log.d("StatsFragment", "Сумма транзакции: " + transaction.amount);
-
-                        // Проверка состояния кнопок
                         boolean isIncomeActive = binding.incomeBtn.isSelected();
                         boolean isExpenseActive = binding.expenseBtn.isSelected();
-                        Log.d("StatsFragment", "Кнопка DOHOD активна: " + isIncomeActive);
-                        Log.d("StatsFragment", "Кнопка RACHOD активна: " + isExpenseActive);
 
-                        // Проверка диапазона дат
                         if (!transaction.date.before(startCalendar.getTime()) && !transaction.date.after(endCalendar.getTime())) {
-                            Log.d("StatsFragment", "Транзакция в диапазоне дат");
                             String category = transaction.category;
                             float amount = (float) Math.abs(transaction.amount);
 
-                            // Фильтрация по типу транзакции
                             if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
                                     (transaction.type.equals("RACHOD") && isExpenseActive)) {
                                 categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount);
                             }
-                        } else {
-                            Log.d("StatsFragment", "Транзакция вне диапазона дат");
                         }
                     }
-
-                    Log.d("StatsFragment", "Суммы по категориям после обработки: " + categorySums);
                     updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums); // Обновление HorizontalBarChart
+                    updateHorizontalBarChart(categorySums);
                 })
                 .exceptionally(e -> {
-                    Log.e("StatsFragment", "Ошибка при получении транзакций: " + e.getMessage());
                     return null;
                 });
     }
 
     private void loadDailyTransactions() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Log.e("StatsFragment", "Пользователь не аутентифицирован");
             return;
         }
 
@@ -473,216 +458,157 @@ public class StatsFragment extends Fragment {
         endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 23, 59, 59);
         endCalendar.set(Calendar.MILLISECOND, 999);
 
-        Log.d("StatsFragment", "Start Date: " + startCalendar.getTime());
-        Log.d("StatsFragment", "End Date: " + endCalendar.getTime());
-
         transactionRepository.getAllTransaction()
                 .thenAccept(transactions -> {
-                    Log.d("StatsFragment", "Полученные транзакции: " + transactions.size());
                     Map<String, Float> categorySums = new HashMap<>();
-
                     for (Transaction transaction : transactions) {
-                        Log.d("StatsFragment", "Обработка транзакции: " + transaction.toString());
-                        Log.d("StatsFragment", "Тип транзакции: " + transaction.type);
-                        Log.d("StatsFragment", "Дата транзакции: " + transaction.date);
-                        Log.d("StatsFragment", "Сумма транзакции: " + transaction.amount);
-
-                        // Проверка состояния кнопок
                         boolean isIncomeActive = binding.incomeBtn.isSelected();
                         boolean isExpenseActive = binding.expenseBtn.isSelected();
-                        Log.d("StatsFragment", "Кнопка DOHOD активна: " + isIncomeActive);
-                        Log.d("StatsFragment", "Кнопка RACHOD активна: " + isExpenseActive);
 
-                        // Проверка диапазона дат
                         if (!transaction.date.before(startCalendar.getTime()) && !transaction.date.after(endCalendar.getTime())) {
-                            Log.d("StatsFragment", "Транзакция в диапазоне дат");
                             String category = transaction.category;
                             float amount = (float) Math.abs(transaction.amount);
 
-                            // Фильтрация по типу транзакции
                             if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
                                     (transaction.type.equals("RACHOD") && isExpenseActive)) {
                                 categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount);
                             }
-                        } else {
-                            Log.d("StatsFragment", "Транзакция вне диапазона дат");
                         }
                     }
-
-                    Log.d("StatsFragment", "Суммы по категориям после обработки: " + categorySums);
                     updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums); // Обновление HorizontalBarChart
+                    updateHorizontalBarChart(categorySums);
                 })
                 .exceptionally(e -> {
-                    Log.e("StatsFragment", "Ошибка при получении транзакций: " + e.getMessage());
                     return null;
                 });
     }
 
     private void loadMonthlysTransactions() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            Log.e("StatsFragment", "Пользователь не аутентифицирован");
             return;
         }
 
         Calendar endCalendar = Calendar.getInstance();
         Calendar startCalendar = Calendar.getInstance();
-        startCalendar.add(Calendar.MONTH, -2); // Начальная дата - 2 месяца назад
+        startCalendar.add(Calendar.MONTH, -2);
 
         transactionRepository.getAllTransaction()
                 .thenAccept(transactions -> {
-                    Log.d("StatsFragment", "Полученные транзакции: " + transactions.size());
                     Map<String, Float[]> categorySums = new HashMap<>();
-
-                    // Проверяем состояние кнопок
                     boolean isIncomeActive = binding.incomeBtn.isSelected();
                     boolean isExpenseActive = binding.expenseBtn.isSelected();
-                    Log.d("StatsFragment", "Кнопка DOHOD активна: " + isIncomeActive);
-                    Log.d("StatsFragment", "Кнопка RACHOD активна: " + isExpenseActive);
 
-                    // Инициализируем массив для трех месяцев
                     for (Transaction transaction : transactions) {
                         Calendar transactionCalendar = Calendar.getInstance();
                         transactionCalendar.setTime(transaction.date);
 
-                        // Проверяем, попадает ли транзакция в диапазон последних 3 месяцев
                         if (transactionCalendar.after(startCalendar) && transactionCalendar.before(endCalendar)) {
                             String category = transaction.category;
-                            float amount = (float) Math.abs(transaction.amount); // Берем абсолютное значение суммы
+                            float amount = (float) Math.abs(transaction.amount);
 
-                            // Фильтрация по типу транзакции
                             if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
                                     (transaction.type.equals("RACHOD") && isExpenseActive)) {
 
                                 int monthIndex = 2 - (endCalendar.get(Calendar.MONTH) - transactionCalendar.get(Calendar.MONTH));
-                                if (monthIndex < 0) monthIndex += 12; // Обработка перехода через год
+                                if (monthIndex < 0) monthIndex += 12;
 
-                                // Инициализация массива для категории, если он еще не создан
                                 categorySums.putIfAbsent(category, new Float[3]);
                                 Float[] sums = categorySums.get(category);
 
-                                // Увеличиваем сумму за соответствующий месяц
                                 if (sums[monthIndex] == null) sums[monthIndex] = 0f;
                                 sums[monthIndex] += amount;
                             }
                         }
                     }
-
-                    Log.d("StatsFragment", "Суммы по категориям за последние три месяца: " + categorySums);
-                    updateRadarChart(categorySums); // Обновляем RadarChart
+                    updateRadarChart(categorySums);
                 })
                 .exceptionally(e -> {
-                    Log.e("StatsFragment", "Ошибка при получении транзакций: " + e.getMessage());
                     return null;
                 });
     }
 
     private void updateRadarChart(Map<String, Float[]> categorySums) {
-        // Получаем ссылку на TextView для отображения сообщения через View Binding
-        FragmentStatsBinding binding = FragmentStatsBinding.bind(getView()); // Получаем биндинг для текущего представления
-        TextView noDataTextView = binding.noDataTextView; // Используем биндинг для доступа к TextView
+        FragmentStatsBinding binding = FragmentStatsBinding.bind(getView());
+        ImageView noDataImageView = binding.noDataImageView;
+        TextView emptyStateTextView = binding.emptyStateTextView;
 
-        // Проверяем, есть ли данные для отображения
         if (categorySums.isEmpty()) {
-            radarChart.setVisibility(View.GONE); // Скрываем график
-            noDataTextView.setVisibility(View.VISIBLE); // Показываем сообщение о отсутствии данных
-            return; // Прекращаем выполнение метода
+            radarChart.setVisibility(View.GONE);
+            noDataImageView.setVisibility(View.VISIBLE);
+            emptyStateTextView.setVisibility(View.VISIBLE);
+            Glide.with(this).load(R.drawable.no_data).into(noDataImageView);
+            return;
         } else {
-            radarChart.setVisibility(View.VISIBLE); // Показываем график, если есть данные
-            noDataTextView.setVisibility(View.GONE); // Скрываем сообщение, если есть данные
+            radarChart.setVisibility(View.VISIBLE);
+            noDataImageView.setVisibility(View.GONE);
+            emptyStateTextView.setVisibility(View.GONE);
         }
 
-        // Создаем объект RadarData
         RadarData radarData = new RadarData();
-
-        // Определяем цвета для трех месяцев
         List<Integer> monthColors = Arrays.asList(
-                ColorTemplate.COLORFUL_COLORS[0], // Цвет для первого месяца
-                ColorTemplate.COLORFUL_COLORS[1], // Цвет для второго месяца
-                ColorTemplate.COLORFUL_COLORS[2]  // Цвет для третьего месяца
+                ColorTemplate.COLORFUL_COLORS[0],
+                ColorTemplate.COLORFUL_COLORS[1],
+                ColorTemplate.COLORFUL_COLORS[2]
         );
 
-        // Получаем текущую дату для определения названий месяцев
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MONTH, -2); // Устанавливаем календарь на два месяца назад
-
-        // Определяем, темная ли тема
+        calendar.add(Calendar.MONTH, -2);
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
-        // Создаем список для хранения RadarDataSet для каждого месяца
         for (int month = 0; month < 3; month++) {
             List<RadarEntry> entries = new ArrayList<>();
-
-            // Проходим по категориям и создаем RadarEntry для каждого месяца
             for (Map.Entry<String, Float[]> entry : categorySums.entrySet()) {
-                String category = entry.getKey();
                 Float[] sums = entry.getValue();
-
-                // Если сумма за месяц не null, добавляем RadarEntry
                 float value = (sums[month] != null) ? sums[month] : 0;
                 entries.add(new RadarEntry(value));
             }
 
-            // Форматируем название месяца
             String monthName = new SimpleDateFormat("MMMM", Locale.getDefault()).format(calendar.getTime());
-
-            // Создаем новый набор данных для текущего месяца
             RadarDataSet dataSet = new RadarDataSet(entries, monthName);
-            dataSet.setColor(monthColors.get(month)); // Устанавливаем цвет для месяца
+            dataSet.setColor(monthColors.get(month));
             dataSet.setDrawFilled(true);
             dataSet.setFillColor(monthColors.get(month));
-            dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста значений
+            dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
             dataSet.setValueTextSize(16f);
-
-            // Добавляем набор данных в RadarData
             radarData.addDataSet(dataSet);
-
-            // Переходим к следующему месяцу
             calendar.add(Calendar.MONTH, 1);
         }
 
-        // Устанавливаем данные в RadarChart
         radarChart.setData(radarData);
-
-        // Установка меток категорий на осях
         List<String> categoryLabels = new ArrayList<>(categorySums.keySet());
         radarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(categoryLabels));
-
-        // Убираем описание и числа на осях
-        radarChart.getDescription().setEnabled(false); // Отключаем описание графика
-        radarChart.getYAxis().setDrawLabels(false); // Убираем метки на оси Y
-
-        // Устанавливаем цвет меток категорий в зависимости от темы
-        radarChart.getXAxis().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста меток
-
-        // Установка цвета текста в легенде в зависимости от темы
-        radarChart.getLegend().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста в легенде
-
-        // Настройка анимации
-        radarChart.animateXY(1000, 1000); // Анимация появления графика
-
-        radarChart.invalidate(); // Обновление графика
+        radarChart.getDescription().setEnabled(false);
+        radarChart.getYAxis().setDrawLabels(false);
+        radarChart.getXAxis().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        radarChart.getLegend().setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        radarChart.animateXY(1000, 1000);
+        radarChart.invalidate();
     }
 
-
-
     private void updatePieChart(Map<String, Float> categorySums) {
+        FragmentStatsBinding binding = FragmentStatsBinding.bind(getView());
+        ImageView noDataImageView = binding.noDataImageView;
+        TextView emptyStateTextView = binding.emptyStateTextView;
         List<PieEntry> entries = new ArrayList<>();
-
         for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
-            if (entry.getValue() > 0) { // Добавляем только ненулевые значения
+            if (entry.getValue() > 0) {
                 entries.add(new PieEntry(entry.getValue(), entry.getKey()));
             }
         }
 
         if (entries.isEmpty()) {
-            Toast.makeText(getContext(), "Нет данных для отображения", Toast.LENGTH_SHORT).show();
-            pieChart.clear(); // Очистка графика
+            pieChart.setVisibility(View.GONE);
+            noDataImageView.setVisibility(View.VISIBLE);
+            emptyStateTextView.setVisibility(View.VISIBLE);
+            Glide.with(this).load(R.drawable.no_data).into(noDataImageView);
             return;
+        } else {
+            pieChart.setVisibility(View.VISIBLE);
+            noDataImageView.setVisibility(View.GONE);
+            emptyStateTextView.setVisibility(View.GONE);
         }
 
-        // Устанавливаем настройки для PieChart
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.TRANSPARENT);
         pieChart.setTransparentCircleColor(Color.WHITE);
@@ -691,38 +617,29 @@ public class StatsFragment extends Fragment {
         pieChart.setTransparentCircleRadius(61f);
         pieChart.setDrawCenterText(true);
 
-        // Проверка темы
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
 
-        // Устанавливаем цвет текста для центра (пояснительная надпись)
-        pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста центра
-
-        // Создаем PieDataSet
-        PieDataSet dataSet = new PieDataSet(entries, "");  // Пустая строка вместо заголовка
-
-        // Устанавливаем цвет текста значений
-        dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Цвет текста значений
-        dataSet.setValueTextSize(16f); // Размер текста значений
-
-        // Устанавливаем цвета для секторов
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+        dataSet.setValueTextSize(16f);
         dataSet.setColors(getPieChartColors(entries));
 
         PieData pieData = new PieData(dataSet);
         pieChart.setData(pieData);
-        pieChart.invalidate(); // Обновление графика
-
-        // Добавляем анимацию
-        pieChart.animateY(1000, Easing.EaseInOutQuad); // Анимация по оси Y за 1000 мс
+        pieChart.invalidate();
+        pieChart.animateY(1000, Easing.EaseInOutQuad);
     }
 
-
     private void updateHorizontalBarChart(Map<String, Float> categorySums) {
+        FragmentStatsBinding binding = FragmentStatsBinding.bind(getView());
+        ImageView noDataImageView = binding.noDataImageView;
+        TextView emptyStateTextView = binding.emptyStateTextView;
         List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
 
         int index = 0;
-
         for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
             if (entry.getValue() > 0) {
                 entries.add(new BarEntry(index++, entry.getValue()));
@@ -731,38 +648,40 @@ public class StatsFragment extends Fragment {
         }
 
         if (entries.isEmpty()) {
-            Toast.makeText(getContext(), "Нет данных для отображения", Toast.LENGTH_SHORT).show();
-            horizontalBarChart.clear(); // Очистка графика
+            horizontalBarChart.setVisibility(View.GONE);
+            noDataImageView.setVisibility(View.VISIBLE);
+            emptyStateTextView.setVisibility(View.VISIBLE);
+            Glide.with(this).load(R.drawable.no_data).into(noDataImageView);
             return;
+        } else {
+            horizontalBarChart.setVisibility(View.VISIBLE);
+            noDataImageView.setVisibility(View.GONE);
+            emptyStateTextView.setVisibility(View.GONE);
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "");
         dataSet.setColors(getBarChartColors(entries));
 
-        // Цвет текста значений в зависимости от темы
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
         dataSet.setValueTextSize(12f);
         dataSet.setDrawValues(true);
 
-        float barWidth = 0.25f; // Ширина баров
+        float barWidth = 0.25f;
         BarData barData = new BarData(dataSet);
         barData.setBarWidth(barWidth);
-
         horizontalBarChart.setData(barData);
 
-        // Настройка осей
         XAxis xAxis = horizontalBarChart.getXAxis();
         xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
         xAxis.setGranularity(1f);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawAxisLine(false); // Отключаем осевую линию
-        xAxis.setDrawGridLines(false); // Отключаем сетку
-        xAxis.setTextColor(Color.TRANSPARENT); // Убираем цвет текста меток (делаем прозрачными)
-        xAxis.setLabelCount(0, true); // Отключаем метки
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+        xAxis.setTextColor(Color.TRANSPARENT);
+        xAxis.setLabelCount(0, true);
 
-        // Настройка оси Y
         YAxis yAxisLeft = horizontalBarChart.getAxisLeft();
         yAxisLeft.setEnabled(false);
         yAxisLeft.setGranularity(0.2f);
@@ -772,51 +691,34 @@ public class StatsFragment extends Fragment {
 
         YAxis yAxisRight = horizontalBarChart.getAxisRight();
         yAxisRight.setEnabled(false);
-
-        // Установка минимального значения для оси X
-        xAxis.setAxisMinimum(0f); // Установка минимального значения оси X
-
-        // Установка анимации
+        xAxis.setAxisMinimum(0f);
         horizontalBarChart.animateY(1000);
-
-        // Настройки оформления графика
         horizontalBarChart.getLegend().setEnabled(false);
         horizontalBarChart.setDescription(null);
         horizontalBarChart.setDrawGridBackground(false);
         horizontalBarChart.setDrawBarShadow(false);
-
-        // Обновляем график
         horizontalBarChart.invalidate();
     }
 
     private List<Integer> getPieChartColors(List<PieEntry> entries) {
         List<Integer> colors = new ArrayList<>();
-        int[] colorPalette = ColorTemplate.JOYFUL_COLORS; // Массив цветов
+        int[] colorPalette = ColorTemplate.JOYFUL_COLORS;
 
         for (int i = 0; i < entries.size(); i++) {
-            colors.add(colorPalette[i % colorPalette.length]); // Циклическое использование цветов
+            colors.add(colorPalette[i % colorPalette.length]);
         }
         return colors;
     }
 
     private List<Integer> getBarChartColors(List<BarEntry> entries) {
         List<Integer> colors = new ArrayList<>();
-        int[] colorPalette = ColorTemplate.JOYFUL_COLORS; // Массив цветов
+        int[] colorPalette = ColorTemplate.JOYFUL_COLORS;
 
         for (int i = 0; i < entries.size(); i++) {
-            colors.add(colorPalette[i % colorPalette.length]); // Циклическое использование цветов
+            colors.add(colorPalette[i % colorPalette.length]);
         }
         return colors;
     }
-
-    private void loadGoals() {
-        goalRepository.getAllGoal().thenAccept(goals -> {
-            goalList.clear();
-            goalList.addAll(goals);
-            goalAdapter.notifyDataSetChanged();
-        });
-    }
-
 
     private void setTransactionType(String type) {
         boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
@@ -826,16 +728,13 @@ public class StatsFragment extends Fragment {
             binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
             binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.parseColor("#00C853"));
             binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
-
             binding.incomeBtn.setSelected(true);
             binding.expenseBtn.setSelected(false);
         } else if (type.equals("RACHOD")) {
             binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
             binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_expence_selector);
-            // Устанавливаем цвет текста в зависимости от темы
-            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK); // Черный для дохода в светлой теме
-            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.RED); // Красный для расхода в светлой теме
-
+            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.RED);
             binding.incomeBtn.setSelected(false);
             binding.expenseBtn.setSelected(true);
         }

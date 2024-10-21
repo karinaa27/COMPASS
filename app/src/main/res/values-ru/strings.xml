@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <string name="app_name">да</string>
+    <string name="app_name">Digital Compass Finance</string>
     <string name="title_home">Главная</string>
     <string name="title_dashboard">Панель управления</string>
     <string name="title_notifications">Уведомления</string>

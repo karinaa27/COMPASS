@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">da</string>
+    <string name="app_name">Digital Compass Finance</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
@@ -324,5 +324,6 @@
     <string name="goals">Goals</string>
     <string name="pick_goal">Выберите цель</string>
     <string name="delete_transaction">Delete Transaction</string>
+    <string name="agg_tr_more">Для отображения статистики добавьте больше транзакций</string>
 
 </resources>

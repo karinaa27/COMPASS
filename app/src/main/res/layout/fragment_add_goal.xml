@@ -16,6 +16,11 @@
         android:layout_height="wrap_content"
         android:hint="Целевая сумма"
         android:inputType="numberDecimal" />
+    <Spinner
+        android:id="@+id/spinnerCurrency"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
 
     <EditText
         android:id="@+id/editTextDateEnd"

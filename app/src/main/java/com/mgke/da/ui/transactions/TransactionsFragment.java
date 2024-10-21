@@ -181,7 +181,8 @@
             } else {
                 currentDateText.setText(formatDateByMonth(calendar.getTime()));
             }
-            binding.dateText.setText(formatDateShort(calendar.getTime()));
+            // Всегда устанавливаем dateText на текущую дату (не зависит от кнопок)
+            binding.dateText.setText(formatDateShort(Calendar.getInstance().getTime()));
         }
 
         public static String formatDateShort(Date date) {

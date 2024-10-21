@@ -7,15 +7,26 @@
     android:background="@android:color/white"
     android:elevation="2dp"
     android:layout_marginBottom="8dp">
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
     <TextView
         android:id="@+id/textViewGoalName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Название цели"
         android:textSize="18sp"
+        android:layout_weight="2"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
+    <ImageView
+        android:id="@+id/deleteGoal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:src="@drawable/baseline_delete_24"/>
+</LinearLayout>
 
     <TextView
         android:id="@+id/textViewTargetAmount"
@@ -24,6 +35,13 @@
         android:text="Целевая сумма: 1000"
         android:textSize="16sp"
         android:layout_marginBottom="8dp"/>
+    <TextView
+        android:id="@+id/textViewCurrency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="Валюта"
+        android:layout_marginBottom="8dp" />
 
     <TextView
         android:id="@+id/textViewProgress"

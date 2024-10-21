@@ -31,6 +31,7 @@ public class GoalRepository {
         return goalCollection.document(goal.id).set(goal);
     }
 
+
     public CompletableFuture<List<Goal>> getAllGoal() {
         CompletableFuture<List<Goal>> future = new CompletableFuture<>();
         List<Goal> goals = new ArrayList<>();

@@ -106,7 +106,6 @@
                     android:text="@string/_3_months" />
             </LinearLayout>
 
-
             <LinearLayout
                 android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
@@ -190,10 +189,30 @@
                 android:layout_height="250dp"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center"
-
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout4" />
+            <ImageView
+                android:id="@+id/noDataImageView"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="40dp"
+                android:visibility="gone"
+                android:layout_gravity="center" />
+            <TextView
+                android:id="@+id/emptyStateTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginTop="-10dp"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/agg_tr_more"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
+
 
             <com.github.mikephil.charting.charts.HorizontalBarChart
                 android:id="@+id/horizontalBarChart"
@@ -203,7 +222,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/pieChart" />
-
             <com.github.mikephil.charting.charts.RadarChart
                 android:id="@+id/radarChart"
                 android:layout_width="match_parent"

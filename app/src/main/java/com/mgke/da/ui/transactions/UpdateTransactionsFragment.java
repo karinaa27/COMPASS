@@ -594,7 +594,6 @@ public class UpdateTransactionsFragment extends Fragment {
 
         // Получение выбранной цели
         final String goalIdToUse = selectedGoalId;  // Объявляем как final
-        final double finalAmount = amount;  // Создаем локальную копию
 
         transactionRepository.addTransaction(transaction)
                 .addOnSuccessListener(transactionId -> {
@@ -607,7 +606,6 @@ public class UpdateTransactionsFragment extends Fragment {
 
                     // Если выбрана цель, обновляем сумму цели
                     if (goalIdToUse != null) {
-                        updateGoalAmount(goalIdToUse, finalAmount);
                     }
 
                     // Уведомление об успешном сохранении транзакции
@@ -630,41 +628,7 @@ public class UpdateTransactionsFragment extends Fragment {
                 });
     }
 
-    private void updateGoalAmount(String goalId, double amount) {
-        GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
 
-        goalRepository.getGoalById(goalId).thenAccept(goal -> {
-            if (goal != null) {
-                // Обновляем текущую сумму цели
-                goal.progress += amount;  // Добавляем сумму к текущему прогрессу
-
-                // Обновляем процент выполнения
-                double percentage = (goal.progress / goal.targetAmount) * 100;
-
-                // Сохраняем обновлённую цель в базе данных
-                goalRepository.updateGoal(goal).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (isAdded()) {
-                            Toast.makeText(getContext(), "Цель обновлена: " + String.format("%.2f", percentage) + "% достигнуто", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        if (isAdded()) {
-                            Toast.makeText(getContext(), "Ошибка обновления цели: " + (task.getException() != null ? task.getException().getMessage() : "неизвестная ошибка"), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            } else {
-                if (isAdded()) {
-                    Toast.makeText(getContext(), "Цель не найдена", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }).exceptionally(e -> {
-            if (isAdded()) {
-                Toast.makeText(getContext(), "Ошибка получения цели: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-            return null;
-        });
-    }
     private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency) {
         int categoryImage = categoryAdapter.getSelectedCategoryImage();
         int categoryColor = categoryAdapter.getSelectedCategoryColor();

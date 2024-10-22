@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,22 +28,16 @@ public class ExpensesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        Log.d("ExpensesFragment", "onCreateView called");
         View view = inflater.inflate(R.layout.fragment_expenses, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerViewCategories);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
-
         categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
-
         if (currentUser != null) {
             userId = currentUser.getUid();
         } else {
-            Log.d("YourTag", "User is not logged in");
         }
-
         loadCategories();
-
         return view;
     }
 
@@ -52,18 +45,16 @@ public class ExpensesFragment extends Fragment {
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository, true, "ru"); // Передаем язык
+                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru"); // Передаем язык
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
-                Log.d("ExpensesFragment", "No expense categories found. Creating default categories.");
                 categoryRepository.createDefaultExpenseCategories(userId);
                 loadCategories();
             }
         }).exceptionally(e -> {
-            Log.e("ExpensesFragment", "Error loading expense categories", e);
             return null;
         });
     }

@@ -3,20 +3,33 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@android:color/white"
-    android:elevation="2dp"
+    android:padding="20dp"
+    style="@style/BackgroundSettings"
+    android:elevation="5dp"
     android:layout_marginBottom="8dp">
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <TextView
+        android:id="@+id/ppp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="   "
+        android:textSize="25sp"
+        android:layout_gravity="center"
+        android:layout_weight="2"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+    <TextView
         android:id="@+id/textViewGoalName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Название цели"
-        android:textSize="18sp"
+        android:text=""
+        android:textSize="30sp"
+        android:fontFamily="@font/montserrat"
+        style="@style/TextColor"
+        android:layout_gravity="center"
         android:layout_weight="2"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -27,53 +40,73 @@
         android:layout_gravity="right"
         android:src="@drawable/baseline_delete_24"/>
 </LinearLayout>
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
     <TextView
         android:id="@+id/textViewTargetAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Целевая сумма: 1000"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
+        style="@style/TextColor"
+
+        android:text=""
+        android:textSize="20sp"
+        />
     <TextView
         android:id="@+id/textViewCurrency"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:text="Валюта"
+        android:textSize="20sp"
+        android:layout_weight="1"
+        android:fontFamily="@font/montserrat"
+        android:textStyle="bold"
+        style="@style/TextColor"
+        android:text=""
         android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/textViewProgress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Прогресс: 500"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"/>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:max="1000"
-    android:progress="500"
-    style="?android:attr/progressBarStyleHorizontal"
-    android:layout_marginBottom="8dp"
-    android:indeterminate="false"/>
-
     <TextView
         android:id="@+id/textViewDateEnd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Дата завершения: 2024-12-31"
+        style="@style/TextColor"
+        android:fontFamily="@font/montserrat"
+        android:text=""
         android:textSize="14sp"
         android:layout_marginBottom="8dp"/>
+</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_marginBottom="8dp"
+        android:indeterminate="false"
+        android:progressTint="@color/colorAccent"
+        android:progressBackgroundTint="@android:color/darker_gray"
+        android:padding="4dp"/>
+        <TextView
+            android:id="@+id/textViewProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            style="@style/TextColor"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textViewNote"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Заметки: Заметка о цели"
+        android:text=""
+        android:textStyle="italic"
+        style="@style/TextColor"
         android:textSize="14sp"/>
 
 </LinearLayout>

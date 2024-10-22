@@ -1,6 +1,8 @@
 package com.mgke.da.models;
 
-public class Account {
+import java.io.Serializable;
+
+public class Account implements Serializable {
 
     public String id;
     public double accountAmount;
@@ -8,11 +10,11 @@ public class Account {
     public String userId;
     public String currency;
     public String background;
+    private boolean dataLoaded = false;
 
     public Account() {
     }
 
-    // Обновленный конструктор
     public Account(String id, double accountAmount, String accountName, String userId, String currency, String background) {
         this.id = id;
         this.accountAmount = accountAmount;
@@ -21,5 +23,10 @@ public class Account {
         this.currency = currency;
         this.background = background;
     }
-
+    public boolean isDataLoaded() {
+        return dataLoaded;
+    }
+    public void setDataLoaded(boolean loaded) {
+        this.dataLoaded = loaded;
+    }
 }

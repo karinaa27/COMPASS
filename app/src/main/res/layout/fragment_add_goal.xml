@@ -1,44 +1,97 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
-
+    style="@style/ScreenBackground"
+    android:padding="30dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:id="@+id/addGoalText"
+            android:layout_height="wrap_content"
+            style="@style/TextColor"
+            android:text="@string/add_new_goal"
+            android:fontFamily="@font/montserrat"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_weight="2"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_close_24"
+            style="@style/CalendarIcon"
+            android:id="@+id/close"
+            />
+    </LinearLayout>
     <EditText
         android:id="@+id/editTextGoalName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Название цели" />
+        android:hint="@string/name_goal"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"
+        android:maxLength="30"
+        android:singleLine="true"
+        android:inputType="text"
+        style="@style/EdittextTransactions"
+    />
 
     <EditText
         android:id="@+id/editTextTargetAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Целевая сумма"
-        android:inputType="numberDecimal" />
+        android:hint="@string/target_amount"
+        android:inputType="numberDecimal"
+        android:maxLength="10"
+        android:singleLine="true"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"
+        style="@style/EdittextTransactions"/>
+
     <Spinner
         android:id="@+id/spinnerCurrency"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"/>
 
     <EditText
         android:id="@+id/editTextDateEnd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Дата завершения (в формате YYYY-MM-DD)"
-        android:inputType="date" />
+        android:hint="@string/completion_date"
+        android:inputType="date"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"
+        style="@style/EdittextTransactions"/>
 
     <EditText
         android:id="@+id/editTextNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Заметка" />
+        android:maxLength="80"
+        android:singleLine="true"
+        android:inputType="text"
+        android:hint="@string/note"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/montserrat"
+        style="@style/EdittextTransactions"/>
 
     <Button
         android:id="@+id/buttonAddGoal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Добавить цель" />
+        android:text="@string/add_goal"
+        android:layout_marginTop="20dp"
+        style="@style/CustomButtonStyle"
+        app:cornerRadius="16dp"
+        app:backgroundTint="@null"
+        android:textStyle="bold"
+        android:layout_gravity="center"
+        android:fontFamily="@font/montserrat"/>
 
 </LinearLayout>

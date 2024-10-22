@@ -179,7 +179,7 @@ public class AddTransactionFragment extends Fragment {
                 onGoalSelected(selectedGoalName);
                 dialog.dismiss();
             } else {
-                Toast.makeText(getContext(), "Пожалуйста, выберите цель", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -228,7 +228,6 @@ public class AddTransactionFragment extends Fragment {
 
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
-
         buttonSelectAccount.setOnClickListener(v -> {
             int selectedId = radioGroup.getCheckedRadioButtonId();
             if (selectedId != -1) {
@@ -244,7 +243,7 @@ public class AddTransactionFragment extends Fragment {
     private void showSelectCurrencyDialog() {
         String[] currencies = {"BYN", "USD", "RUB", "UAH", "PLN", "EUR"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Выберите валюту")
+        builder.setTitle(getString(R.string.select_currency))
                 .setItems(currencies, (dialog, which) -> {
                     String selectedCurrency = currencies[which];
                     String amountStr = binding.sum.getText().toString();
@@ -287,7 +286,7 @@ public class AddTransactionFragment extends Fragment {
         if (!inputAmountStr.isEmpty()) {
             double inputAmount = Double.parseDouble(inputAmountStr);
             if (inputAmount <= 0) {
-                Toast.makeText(getContext(), "Введите положительное значение", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "", Toast.LENGTH_SHORT).show();
                 return;
             }
             String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
@@ -301,7 +300,7 @@ public class AddTransactionFragment extends Fragment {
                         String formattedAmount = df.format(convertedAmount);
                         binding.sum.setText(formattedAmount);
                     } else {
-                        binding.sum.setText("Ошибка конвертации");
+                        binding.sum.setText("");
                     }
                 }
 
@@ -397,6 +396,7 @@ public class AddTransactionFragment extends Fragment {
 
         double amount;
         try {
+            amountStr = amountStr.replace(',', '.');
             amount = Double.parseDouble(amountStr);
         } catch (NumberFormatException e) {
             Toast.makeText(getContext(), R.string.toast_invalid_amount, Toast.LENGTH_SHORT).show();
@@ -434,10 +434,6 @@ public class AddTransactionFragment extends Fragment {
     private void onGoalSelected(String goalName) {
         this.selectedGoalName = goalName;
         binding.nameGoal.setText(goalName);
-    }
-
-    private String getSelectedGoalId() {
-        return selectedGoalId;
     }
 
     private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency, String nameGoal) {
@@ -488,7 +484,6 @@ public class AddTransactionFragment extends Fragment {
             return null;
         }
     }
-
     private void clearFields() {
         binding.sum.setText("");
         binding.date.setText("");

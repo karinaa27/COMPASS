@@ -4,13 +4,11 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,7 +26,6 @@ public class IncomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        Log.d("IncomeFragment", "onCreateView called");
         View view = inflater.inflate(R.layout.fragment_income, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerViewCategories);
@@ -39,7 +36,6 @@ public class IncomeFragment extends Fragment {
         if (currentUser != null) {
             userId = currentUser.getUid();
         } else {
-            Log.d("YourTag", "User is not logged in");
         }
 
         loadCategories();
@@ -51,18 +47,16 @@ public class IncomeFragment extends Fragment {
         categoryRepository.getAllCategory(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(getContext(), categories, categoryRepository, true, "ru"); // Передаем язык
+                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru");  // Передаем язык
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
-                Log.d("IncomeFragment", "No categories found. Creating default categories.");
                 categoryRepository.createDefaultCategories(userId);
                 loadCategories();
             }
         }).exceptionally(e -> {
-            Log.e("IncomeFragment", "Error loading categories", e);
             return null;
         });
     }

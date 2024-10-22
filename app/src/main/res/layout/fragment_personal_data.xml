@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    style="@style/ScreenBackground"
     android:padding="16dp">
         <ScrollView
             android:layout_width="match_parent"
@@ -21,18 +22,18 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="PersonalData"
+                    android:text="@string/personaldata"
                     android:textStyle="bold"
                     android:textSize="28sp"
                     android:layout_marginLeft="15dp"
-                    android:textColor="@color/black"
+                   style="@style/TextColor"
                     android:fontFamily="@font/montserrat"
                     />
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_close_24"
-                    android:backgroundTint="@color/black"
+                  style="@style/CalendarIcon"
                     android:layout_marginTop="10dp"
                     android:id="@+id/close"
                     />
@@ -41,83 +42,76 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:id="@+id/etFirstName"
-        android:background="@drawable/custom_edittext"
+        style="@style/EdittextLogin"
         android:drawableLeft="@drawable/baseline_person_24"
         android:layout_marginTop="20dp"
         android:padding="8dp"
         android:fontFamily="@font/montserrat"
-        android:hint="First Name"
-        android:textColor="@color/black"/>
+        android:hint="@string/first_name" />
     <EditText
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:id="@+id/etLastName"
-        android:background="@drawable/custom_edittext"
+        style="@style/EdittextLogin"
         android:drawableLeft="@drawable/baseline_person_24"
         android:layout_marginTop="20dp"
         android:padding="8dp"
         android:fontFamily="@font/montserrat"
-        android:hint="Last Name"
-        android:textColor="@color/black"/>
+        android:hint="@string/last_name"
+     />
 
     <EditText
         android:id="@+id/etCountry"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/custom_edittext"
+        style="@style/EdittextLogin"
         android:padding="8dp"
-        android:hint="Country"
+        android:hint="@string/country"
         android:focusable="false"
         android:fontFamily="@font/montserrat"
         android:drawableLeft="@drawable/baseline_map_24"
         android:drawableTint="@color/purple_500"
-        android:textColor="@color/black"/>
-
-
+        />
     <EditText
         android:id="@+id/etProfession"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/custom_edittext"
+        style="@style/EdittextLogin"
         android:padding="8dp"
-        android:hint="Profession"
+        android:hint="@string/profession"
         android:focusable="false"
         android:fontFamily="@font/montserrat"
         android:drawableLeft="@drawable/baseline_support_agent_24"
-        android:drawableTint="@color/purple_500"
-        android:textColor="@color/black"/>
+        />
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         app:hintEnabled="true"
-
         app:hintAnimationEnabled="true"
         app:hintTextAppearance="@style/HintTextStyle">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            android:background="@drawable/custom_edittext"
+            style="@style/EdittextLogin"
             android:padding="8dp"
-            android:hint="Note"
+            android:hint="@string/note"
             android:fontFamily="@font/montserrat"
             android:drawableLeft="@drawable/baseline_edit_note_24"
-            android:drawableTint="@color/purple_500"
-            android:textColor="@color/black" />
+            />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Gender"
+        android:text="@string/gender_label"
         android:fontFamily="@font/montserrat"
         android:layout_marginTop="20dp"
         android:textSize="16sp"
-        android:textColor="@color/black"/>
+        style="@style/TextColor"/>
 
     <RadioGroup
         android:id="@+id/radioGroupGender"
@@ -130,17 +124,17 @@
             android:id="@+id/radioMale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Male"
+            android:text="@string/gender_male"
             android:fontFamily="@font/montserrat"
-            android:textColor="@color/black"/>
+           style="@style/TextColor"/>
 
         <RadioButton
             android:id="@+id/radioFemale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Female"
+            android:text="@string/gender_female"
             android:fontFamily="@font/montserrat"
-            android:textColor="@color/black"/>
+           style="@style/TextColor"/>
     </RadioGroup>
 
     <Button

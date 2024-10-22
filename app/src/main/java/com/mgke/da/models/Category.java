@@ -1,11 +1,9 @@
 package com.mgke.da.models;
 
-import java.util.Locale;
-
 public class Category {
     public String id;
-    public String categoryNameRu; // Название на русском
-    public String categoryNameEn; // Название на английском
+    public String categoryNameRu;
+    public String categoryNameEn;
     public int categoryImage;
     public int categoryColor;
     public String type;
@@ -28,15 +26,15 @@ public class Category {
         this.name = name;
     }
     public String getName() {
-        return name; // Просто возвращаем поле name
+        return name;
     }
     public String getNameLan(String language) {
         if (categoryNameRu != null && !categoryNameRu.isEmpty() && "ru".equals(language)) {
-            return categoryNameRu; // Возвращаем русское имя, если оно не null и выбран русский язык
+            return categoryNameRu;
         } else if (categoryNameEn != null && !categoryNameEn.isEmpty()) {
-            return categoryNameEn; // Возвращаем английское имя, если оно не null
+            return categoryNameEn;
         } else {
-            return name; // Возвращаем поле name, если оба поля null
+            return name;
         }
     }
 }

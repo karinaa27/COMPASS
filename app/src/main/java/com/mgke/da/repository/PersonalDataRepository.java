@@ -5,7 +5,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.mgke.da.models.PersonalData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -16,21 +15,18 @@ public class PersonalDataRepository {
     public PersonalDataRepository(FirebaseFirestore db) {
         personalDataCollection = db.collection("personalData");
     }
-
-    // Получение нового уникального ID
     public String getNewDocumentId() {
         return personalDataCollection.document().getId();
     }
 
-    // Добавление или обновление данных пользователя
     public CompletableFuture<Void> addOrUpdatePersonalData(PersonalData personalData) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         personalDataCollection.document(personalData.id).set(personalData)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        future.complete(null); // Успешно завершено
+                        future.complete(null);
                     } else {
-                        future.completeExceptionally(task.getException()); // Ошибка
+                        future.completeExceptionally(task.getException());
                     }
                 });
         return future;
@@ -42,9 +38,9 @@ public class PersonalDataRepository {
         personalDataCollection.document(userId).delete()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        future.complete(null); // Успешно завершено
+                        future.complete(null);
                     } else {
-                        future.completeExceptionally(task.getException()); // Ошибка
+                        future.completeExceptionally(task.getException());
                     }
                 });
         return future;
@@ -57,7 +53,7 @@ public class PersonalDataRepository {
                 PersonalData personalData = task.getResult().toObject(PersonalData.class);
                 future.complete(personalData);
             } else {
-                future.complete(null); // Если данные не найдены или ошибка
+                future.complete(null);
             }
         });
         return future;

@@ -1,4 +1,4 @@
-package com.mgke.da;
+package com.mgke.da.activity;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.mgke.da.R;
 import com.mgke.da.models.PersonalData;
 import com.mgke.da.repository.PersonalDataRepository;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -33,13 +34,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

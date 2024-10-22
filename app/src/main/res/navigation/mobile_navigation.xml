@@ -60,14 +60,18 @@
     </fragment>
     <fragment
         android:id="@+id/PersonalDataFragment"
-        android:name="com.mgke.da.PersonalDataFragment"
+        android:name="com.mgke.da.ui.personal_data.PersonalDataFragment"
         tools:layout="@layout/fragment_personal_data" />
     <fragment
         android:id="@+id/AddGoalFragment"
-        android:name="com.mgke.da.AddGoalFragment"
+        android:name="com.mgke.da.ui.goal.AddGoalFragment"
         tools:layout="@layout/fragment_add_goal"/>
     <fragment
         android:id="@+id/fragment_update_transactions"
         android:name="com.mgke.da.ui.transactions.UpdateTransactionsFragment"
         tools:layout="@layout/fragment_update_transactions"/>
+    <fragment
+        android:id="@+id/fragment_add_articles"
+        android:name="com.mgke.da.ui.articles.AddArticlesFragment"
+        tools:layout="@layout/fragment_add_articles"/>
 </navigation>

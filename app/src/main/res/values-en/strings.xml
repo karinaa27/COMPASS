@@ -35,26 +35,11 @@
     <string name="add">Add</string>
     <string name="add_transaction">Add Transaction</string>
     <string name="select_date">Select Date</string>
-    <string name="select_account">Select Account</string>
     <string name="Save">Save</string>
     <string name="income1">Income</string>
     <string name="expense1">Expense</string>
     <string name="accounts">Accounts</string>
     <string name="select">Select</string>
-
-
-
-        <string name="toast_select_account">Please select an account</string>
-        <string name="toast_select_category">Please select a category</string>
-        <string name="toast_select_date">Please select a date</string>
-        <string name="toast_enter_amount">Please enter an amount</string>
-        <string name="toast_invalid_amount">Please enter a valid amount</string>
-        <string name="toast_negative_value">Please enter a positive value</string>
-        <string name="toast_conversion_error">Conversion error</string>
-        <string name="toast_save_success">Transaction saved, ID: %1$s</string>
-        <string name="toast_save_failure">Error save: %1$s</string>
-        <string name="toast_invalid_date">Invalid date</string>
-
 
     <string name="DeleteUser">Delete account</string>
     <string name="exit">Exit</string>
@@ -318,4 +303,102 @@
     <string name="update_transaction">Update Transaction</string>
     <string name="pick_goal">Select goal</string>
     <string name="delete_transaction">Delete Transaction</string>
+
+    <string name="name_goal">Name goal</string>
+    <string name="target_amount">Target amount</string>
+    <string name="completion_date">Completion date</string>
+    <string name="note">Note</string>
+    <string name="add_goal">Add goal</string>
+
+    <string name="confirmation_title">Confirmation of deletion</string>
+    <string name="confirmation_message">Are you sure you want to delete category %1$s?</string>
+    <string name="confirm">Yes</string>
+
+    <string name="delete_goal_title">Delete Goal</string>
+    <string name="delete_goal_message">Are you sure you want to delete this goal?</string>
+    <string name="delete">Delete</string>
+
+    <string name="user_not_authenticated">User not authenticated</string>
+    <string name="fill_all_fields">Please fill in all fields</string>
+    <string name="invalid_date">Invalid date</string>
+    <string name="goal_added">Goal added</string>
+    <string name="goal_updated">Goal updated</string>
+    <string name="save_changes">Save changes</string>
+
+    <string name="data_saved_successfully">Data saved successfully</string>
+    <string name="data_save_error">Data save error: </string>
+
+    <string name="account_deleted">Account deleted</string>
+    <string name="error_deleting_account">Error deleting account: </string>
+    <string name="error_account_id_not_available">Error: Account ID not available</string>
+    <string name="error_empty_account_name">Account name cannot be empty</string>
+    <string name="error_select_background">Select a background for the account</string>
+    <string name="account_updated">Account updated</string>
+    <string name="error_updating_account">Error updating account: </string>
+    <string name="account_added">Account added</string>
+    <string name="error_adding_account">Error adding account: </string>
+
+    <string name="error_image_retrieval">Failed to retrieve image</string>
+    <string name="error_user_not_authenticated">User not authenticated</string>
+    <string name="error_url_retrieval">Error retrieving URL</string>
+    <string name="error_image_upload">Error uploading image</string>
+    <string name="avatar_updated">Avatar updated</string>
+    <string name="logout_title">Logout</string>
+    <string name="logout_message">Are you sure you want to log out?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="logged_out">You have logged out</string>
+    <string name="delete_account_title">Delete Account</string>
+    <string name="delete_account_message">Are you sure you want to delete your account?</string>
+    <string name="account_deleted2">Your account has been deleted</string>
+    <string name="error_account_deletion">Error deleting account</string>
+    <string name="currency_saved">Currency saved successfully</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="password_changed_successfully">Password changed successfully</string>
+    <string name="error_password_change">Error changing password</string>
+    <string name="new_password_saved">New password saved successfully</string>
+    <string name="change_photo_title">Change photo</string>
+    <string name="change_photo_message">Do you want to change your photo?</string>
+
+    <string name="russian">Russian</string>
+    <string name="english">English</string>
+    <string name="selected_category_message">Selected category: %1$s, amount: %2$.2f</string>
+    <string name="select_account">Select an account</string>
+    <string name="toast_select_account">Please select an account</string>
+    <string name="toast_select_category">Please select a category</string>
+    <string name="toast_select_date">Please select a date</string>
+    <string name="toast_enter_amount">Please enter an amount</string>
+    <string name="toast_invalid_amount">Invalid amount entered</string>
+    <string name="toast_invalid_date">Invalid date entered</string>
+    <string name="toast_save_success">Transaction saved successfully: %1$s</string>
+    <string name="toast_save_failure">Failed to save transaction: %1$s</string>
+    <string name="toast_currency_conversion_error">Currency conversion error</string>
+    <string name="currency_label_select">Select currency</string>
+    <string name="goal_label_select">Select goal</string>
+
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="repeat_new_password">Repeat new password</string>
+    <string name="create_an_account">Create an account</string>
+    <string name="enter_the_account_name">Enter the account name</string>
+    <string name="select_background">Select background</string>
+    <string name="amount_account">Account amount</string>
+    <string name="add_new_goal">Add a new goal</string>
+    <string name="personaldata">PersonalData</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="country">Country</string>
+    <string name="profession">Profession</string>
+    <string name="Currency">Currency</string>
+    <string name="there_is_no_data_available_to_display">There is no data available to display</string>
+    <string name="in_progress">In progress</string>
+    <string name="completed">Completed</string>
+    <string name="articles">Articles</string>
+    <string name="article_name_hint">Article Name</string>
+    <string name="article_description_hint">Article Description</string>
+    <string name="article_text_hint">Article Text</string>
+    <string name="article_image_hint">Image URL</string>
+    <string name="add_article">Add Article</string>
+    <string name="add_new_article">Add new article</string>
+    <string name="fill_in_all_the_fields">Fill in all the fields</string>
 </resources>

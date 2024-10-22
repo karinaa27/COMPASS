@@ -37,7 +37,9 @@
     </style>
 
     <style name="TextColor">
-        <item name="android:textColor">#000</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="tabTextColor">@color/black</item>
+        <item name="tabIndicatorColor">@color/black</item>
     </style>
 
     <style name="Balance">
@@ -90,7 +92,7 @@
     </style>
     <style name="EdittextLogin">
         <item name="android:background">@drawable/custom_edittext</item>
-        <item name="drawableTint">@color/purple_500</item>
+        <item name="drawableTint">#676BC2</item>
         <item name="android:textColorHint">@color/black</item>
     </style>
     <style name="TextColorLogin">
@@ -133,6 +135,25 @@
     <!-- StatsFragment -->
     <style name="BackgroundTopStats">
         <item name="android:background">@drawable/add_category_top</item>
+    </style>
+    <!--Add-->
+<style name="AddCategory">
+    <item name="tint">@color/black</item>
+    <item name="android:background">@drawable/category_background_add_new_button</item>
+    <item name="android:src">@drawable/ic_add</item>
+</style>
+    <style name="AddCGoal">
+        <item name="tint">@color/black</item>
+        <item name="android:src">@drawable/ic_add</item>
+        <item name="backgroundTint">#676BC2</item>
+    </style>
+<style name="Category_add_bg">
+    <item name="android:background">@drawable/category_bg</item>
+</style>
+    <style name="AddImageArticle">
+        <item name="android:src">@drawable/ic_add</item>
+        <item name="android:background">@drawable/balance_fon</item>
+        <item name="tint">@color/black</item>
     </style>
 
 </resources>

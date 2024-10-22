@@ -6,7 +6,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.mgke.da.models.Goal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class GoalRepository {
@@ -26,11 +28,21 @@ public class GoalRepository {
     public void deleteGoal(String id) {
         goalCollection.document(id).delete();
     }
+    public Task<Void> updateGoalProgress(String goalId, double progress) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("progress", progress);
+        return goalCollection.document(goalId).update(updates);
+    }
 
     public Task<Void> updateGoal(Goal goal) {
         return goalCollection.document(goal.id).set(goal);
     }
 
+    public Task<Void> updateGoalCompletionStatus(String goalId, boolean isCompleted) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("isCompleted", isCompleted);
+        return goalCollection.document(goalId).update(updates);
+    }
 
     public CompletableFuture<List<Goal>> getAllGoal() {
         CompletableFuture<List<Goal>> future = new CompletableFuture<>();

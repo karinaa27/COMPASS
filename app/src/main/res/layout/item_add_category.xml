@@ -6,17 +6,15 @@
     android:paddingTop="20dp">
 
     <ImageView
-        android:id="@+id/addCategoryIcon"
-        android:layout_width="52dp"
-
-        android:layout_height="52dp"
-        android:src="@drawable/ic_add"
-    android:background="@drawable/category_background_add_new_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-    android:padding="10dp"
-        android:tint="@color/white"
-    android:contentDescription="@string/button_add_category" />
+            android:id="@+id/addCategoryIcon"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            style="@style/AddCategory"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:padding="10dp"
+            android:contentDescription="@string/button_add_category"
+            />
 
     <TextView
         android:id="@+id/addCategoryText"
@@ -28,7 +26,7 @@
         android:fontFamily="sans-serif-medium"
         android:text="@string/button_add_category"
         android:textAlignment="center"
-        android:textColor="@android:color/black"
+        style="@style/TextColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/addCategoryIcon"
         app:layout_constraintStart_toStartOf="@+id/addCategoryIcon"

@@ -36,26 +36,10 @@
     <string name="accounts">Счета</string>
     <string name="add_transaction">Добавить транзакцию</string>
     <string name="select_date">Выберите дату</string>
-    <string name="select_account">Выберите счёт</string>
     <string name="Save">Сохранить</string>
     <string name="income1">Доход</string>
     <string name="expense1">Расход</string>
     <string name="select">Выбрать</string>
-
-
-
-
-        <string name="toast_select_account">Пожалуйста, выберите счет</string>
-        <string name="toast_select_category">Пожалуйста, выберите категорию</string>
-        <string name="toast_select_date">Пожалуйста, выберите дату</string>
-        <string name="toast_enter_amount">Пожалуйста, введите сумму</string>
-        <string name="toast_invalid_amount">Введите корректное значение суммы</string>
-        <string name="toast_negative_value">Введите положительное значение</string>
-        <string name="toast_conversion_error">Ошибка конвертации</string>
-        <string name="toast_save_success">Транзакция сохранена, ID: %1$s</string>
-        <string name="toast_save_failure">Ошибка сохранения: %1$s</string>
-        <string name="toast_invalid_date">Неверная дата</string>
-
 
     <string name="DeleteUser">Удалить аккаунт</string>
     <string name="exit">Выйти</string>
@@ -320,4 +304,101 @@
     <string name="update_transaction">Изменить Транзакцию</string>
     <string name="pick_goal">Выберите цель</string>
     <string name="delete_transaction">Удалить транзакцию</string>
+    <string name="name_goal">Название цели</string>
+    <string name="target_amount">Целевая сумма</string>
+    <string name="completion_date">Дата завершения</string>
+    <string name="note">Заметка</string>
+    <string name="add_goal">Добавить цель</string>
+
+    <string name="confirmation_title">Подтверждение удаления</string>
+    <string name="confirmation_message">Вы действительно хотите удалить категорию %1$s?</string>
+    <string name="confirm">Да</string>
+
+    <string name="delete_goal_title">Удалить цель</string>
+    <string name="delete_goal_message">Вы уверены, что хотите удалить эту цель?</string>
+    <string name="delete">Удалить</string>
+
+    <string name="user_not_authenticated">Пользователь не аутентифицирован</string>
+    <string name="fill_all_fields">Пожалуйста, заполните все поля</string>
+    <string name="invalid_date">Некорректная дата</string>
+    <string name="goal_added">Цель добавлена</string>
+    <string name="goal_updated">Цель обновлена</string>
+    <string name="save_changes">Сохранить изменения</string>
+
+    <string name="data_saved_successfully">Данные успешно сохранены</string>
+    <string name="data_save_error">Ошибка сохранения данных: </string>
+
+    <string name="account_deleted">Счёт удалён</string>
+    <string name="error_deleting_account">Ошибка при удалении счёта: </string>
+    <string name="error_account_id_not_available">Ошибка: ID аккаунта недоступен</string>
+    <string name="error_empty_account_name">Название счёта не должно быть пустым</string>
+    <string name="error_select_background">Выберите фон для счёта</string>
+    <string name="account_updated">Счёт обновлён</string>
+    <string name="error_updating_account">Ошибка при обновлении счёта: </string>
+    <string name="account_added">Счёт добавлен</string>
+    <string name="error_adding_account">Ошибка при добавлении счёта: </string>
+
+    <string name="error_image_retrieval">Не удалось получить изображение</string>
+    <string name="error_user_not_authenticated">Пользователь не аутентифицирован</string>
+    <string name="error_url_retrieval">Ошибка получения URL</string>
+    <string name="error_image_upload">Ошибка загрузки изображения</string>
+    <string name="avatar_updated">Аватарка обновлена</string>
+    <string name="logout_title">Выход</string>
+    <string name="logout_message">Вы уверены, что хотите выйти из аккаунта?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="logged_out">Вы вышли из аккаунта</string>
+    <string name="delete_account_title">Удаление аккаунта</string>
+    <string name="delete_account_message">Вы уверены, что хотите удалить свой аккаунт?</string>
+    <string name="account_deleted2">Ваш аккаунт был удален</string>
+    <string name="error_account_deletion">Ошибка при удалении аккаунта</string>
+    <string name="currency_saved">Валюта успешно сохранена</string>
+    <string name="passwords_do_not_match">Пароли не совпадают</string>
+    <string name="password_changed_successfully">Пароль успешно изменён</string>
+    <string name="error_password_change">Ошибка при изменении пароля</string>
+    <string name="new_password_saved">Новый пароль успешно сохранён</string>
+    <string name="change_photo_title">Изменить фотографию</string>
+    <string name="change_photo_message">Вы хотите изменить свою фотографию?</string>
+
+    <string name="russian">Русский</string>
+    <string name="english">Английский</string>
+    <string name="selected_category_message">Выбрана категория: %1$s, сумма: %2$.2f</string>
+    <string name="select_account">Выберите счет</string>
+    <string name="toast_select_account">Пожалуйста, выберите счет</string>
+    <string name="toast_select_category">Пожалуйста, выберите категорию</string>
+    <string name="toast_select_date">Пожалуйста, выберите дату</string>
+    <string name="toast_enter_amount">Пожалуйста, введите сумму</string>
+    <string name="toast_invalid_amount">Некорректно введенная сумма</string>
+    <string name="toast_invalid_date">Некорректно введенная дата</string>
+    <string name="toast_save_success">Транзакция успешно сохранена: %1$s</string>
+    <string name="toast_save_failure">Не удалось сохранить транзакцию: %1$s</string>
+    <string name="toast_currency_conversion_error">Ошибка конвертации валюты</string>
+    <string name="currency_label_select">Выберите валюту</string>
+    <string name="goal_label_select">Выберите цель</string>
+
+    <string name="current_password">Текущий пароль</string>
+    <string name="new_password">Новый пароль</string>
+    <string name="repeat_new_password">Повторите новый пароль</string>
+    <string name="create_an_account">Создать аккаунт</string>
+    <string name="enter_the_account_name">Введите имя аккаунта</string>
+    <string name="select_background">Выберите фон</string>
+    <string name="amount_account">Сумма аккаунта</string>
+    <string name="add_new_goal">Добавить новую цель</string>
+    <string name="personaldata">Персональные данные</string>
+    <string name="first_name">Имя</string>
+    <string name="last_name">Фамилия</string>
+    <string name="country">Страна</string>
+    <string name="profession">Профессия</string>
+    <string name="Currency">Валюта</string>
+    <string name="there_is_no_data_available_to_display">Нет данных, доступных для отображения</string>
+    <string name="in_progress">В процессе</string>
+    <string name="completed">Завершено</string>
+    <string name="articles">Статьи</string>
+    <string name="article_name_hint">Название статьи</string>
+    <string name="article_description_hint">Описание статьи</string>
+    <string name="article_text_hint">Текст статьи</string>
+    <string name="article_image_hint">URL изображения</string>
+    <string name="add_article">Добавить статью</string>
+    <string name="add_new_article">Добавьте новую статью</string>
+    <string name="fill_in_all_the_fields">Заполните все поля</string>
 </resources>

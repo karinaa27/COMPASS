@@ -12,20 +12,21 @@ import java.util.concurrent.CompletableFuture;
 
 public class TransactionRepository {
     private CollectionReference transactionCollection;
-    private FirebaseFirestore db; // Добавлено поле для хранения экземпляра Firestore
+    private FirebaseFirestore db;
 
     public TransactionRepository(FirebaseFirestore db) {
-        this.db = db; // Инициализация поля db
-        transactionCollection = db.collection("transactions"); // Убедитесь, что название коллекции корректно
+        this.db = db;
+        transactionCollection = db.collection("transactions");
     }
+
     public Task<String> addTransaction(Transaction transaction) {
-        DocumentReference documentReference = transactionCollection.document(); // Создаем новый документ с автогенерируемым ID
-        transaction.id = documentReference.getId(); // Устанавливаем ID в объект транзакции
+        DocumentReference documentReference = transactionCollection.document();
+        transaction.id = documentReference.getId();
         return documentReference.set(transaction).continueWith(task -> {
             if (task.isSuccessful()) {
-                return transaction.id; // Возвращаем ID документа
+                return transaction.id;
             } else {
-                throw task.getException(); // Обрабатываем ошибку
+                throw task.getException();
             }
         });
     }
@@ -50,11 +51,12 @@ public class TransactionRepository {
                 }
                 future.complete(transactions);
             } else {
-                future.completeExceptionally(task.getException()); // Обработка ошибки
+                future.completeExceptionally(task.getException());
             }
         });
         return future;
     }
+
     public CompletableFuture<List<Transaction>> getTransactionsForGoalName(String goalName) {
         CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
         List<Transaction> transactions = new ArrayList<>();
@@ -67,10 +69,26 @@ public class TransactionRepository {
                 }
                 future.complete(transactions);
             } else {
-                future.completeExceptionally(task.getException()); // Обработка ошибки
+                future.completeExceptionally(task.getException());
             }
         });
         return future;
     }
+    public CompletableFuture<List<Transaction>> getTransactionsForAccount(String accountName) {
+        CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
+        List<Transaction> transactions = new ArrayList<>();
 
+        transactionCollection.whereEqualTo("account", accountName).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Transaction transaction = document.toObject(Transaction.class);
+                    transactions.add(transaction);
+                }
+                future.complete(transactions);
+            } else {
+                future.completeExceptionally(task.getException());
+            }
+        });
+        return future;
+    }
 }

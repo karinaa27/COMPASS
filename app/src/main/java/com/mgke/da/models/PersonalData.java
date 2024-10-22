@@ -1,6 +1,5 @@
 package com.mgke.da.models;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 public class PersonalData {

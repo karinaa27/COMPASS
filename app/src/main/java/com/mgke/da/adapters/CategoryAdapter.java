@@ -1,15 +1,16 @@
 package com.mgke.da.adapters;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,9 +30,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private CategoryRepository categoryRepository;
     private boolean isSelectionEnabled;
     private String language;
+    private Fragment fragment;
 
-    public CategoryAdapter(Context context, List<Category> categories, CategoryRepository categoryRepository, boolean isSelectionEnabled, String language) {
-        this.context = context;
+    public CategoryAdapter(Fragment fragment, List<Category> categories, CategoryRepository categoryRepository, boolean isSelectionEnabled, String language) {
+        this.fragment = fragment;
         this.categories = categories;
         this.categoryRepository = categoryRepository;
         this.isSelectionEnabled = isSelectionEnabled;
@@ -87,8 +89,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             });
         } else if (holder instanceof AddCategoryViewHolder) {
             holder.itemView.setOnClickListener(v -> {
-                NavController navController = Navigation.findNavController((Activity) context, R.id.nav_host_fragment_activity_main);
-                navController.navigate(R.id.addCategoryFragment);
+                NavController navController = Navigation.findNavController(v);
+                Bundle bundle = new Bundle();
+                bundle.putString("category_type", "income");
+                navController.navigate(R.id.addCategoryFragment, bundle);
             });
         }
     }
@@ -98,20 +102,20 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         String currentLanguage = Locale.getDefault().getLanguage();
 
         new AlertDialog.Builder(context)
-                .setTitle("Подтверждение удаления")
-                .setMessage("Вы действительно хотите удалить категорию " + categoryName + "?")
-                .setPositiveButton("Да", (dialog, which) -> {
+                .setTitle(R.string.confirmation_title)
+                .setMessage(String.format(context.getString(R.string.confirmation_message), categoryName))
+                .setPositiveButton(R.string.confirm, (dialog, which) -> {
                     categoryRepository.removeCategory(category, currentLanguage);
                     categories.remove(position);
                     notifyItemRemoved(position);
                 })
-                .setNegativeButton("Нет", null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position == categories.size() ? VIEW_TYPE_ADD_BUTTON : VIEW_TYPE_CATEGORY;
+        return position < categories.size() ? VIEW_TYPE_CATEGORY : VIEW_TYPE_ADD_BUTTON;
     }
 
     @Override
@@ -143,21 +147,4 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.categories = newCategories;
         notifyDataSetChanged();
     }
-
-    public String getSelectedCategory() {
-        return selectedCategory;
-    }
-
-    public int getSelectedCategoryImage() {
-        return selectedCategoryImage;
-    }
-
-    public int getSelectedCategoryColor() {
-        return selectedCategoryColor;
-    }
-    public String getCategoryName(Category category) {
-        // Предположим, что у вас есть метод в классе Category для получения имени по языку
-        return category.getNameLan(Locale.getDefault().getLanguage());
-    }
-
 }

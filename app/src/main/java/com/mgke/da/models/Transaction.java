@@ -4,8 +4,7 @@
     import java.util.Date;
 
     public class Transaction implements Serializable {
-        private static final long serialVersionUID = 1L; // Уникальный идентификатор версии
-
+        private static final long serialVersionUID = 1L;
         public String id;
         public String type;
         public String category;
@@ -15,9 +14,9 @@
         public String userId;
         public String currency;
         public String nameGoal;
-        public int categoryImage; // Иконка категории
-        public int categoryColor; // Цвет категории
-        public String accountBackground; // Фон счета
+        public int categoryImage;
+        public int categoryColor;
+        public String accountBackground;
 
         public Transaction() {
         }
@@ -32,7 +31,7 @@
             this.userId = userId;
             this.currency = currency;
             this.nameGoal = nameGoal;
-            this.accountBackground = accountBackground; // Инициализация фона счета
+            this.accountBackground = accountBackground;
         }
 
         public double getAmount() {

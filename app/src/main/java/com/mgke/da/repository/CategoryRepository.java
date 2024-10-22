@@ -29,7 +29,7 @@
 
             String id = categoryCollection.document().getId();
             category.id = id;
-            category.name = categoryName; // Используем поле name
+            category.name = categoryName;
             category.type = type;
             category.categoryImage = categoryImage;
             category.categoryColor = categoryColor;
@@ -37,11 +37,9 @@
 
             categoryCollection.document(id).set(category)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d("CategoryRepository", "Категория добавлена: " + categoryName);
                         future.complete(null);
                     })
                     .addOnFailureListener(e -> {
-                        Log.e("CategoryRepository", "Ошибка при добавлении категории", e);
                         future.completeExceptionally(e);
                     });
 
@@ -55,14 +53,13 @@
         }
 
         public void removeCategory(Category category, String language) {
-            String categoryName = category.name; // Изменено на поле name
-
+            String categoryName = category.name;
             if (!category.isDefault) {
-                deleteCategory(category.id); // Удаляем, если это не базовая категория
-                Log.d("CategoryRepository", "Категория удалена: " + categoryName);
+                deleteCategory(category.id);
+
             } else {
-                Log.d("CategoryRepository", "Базовые категории не могут быть удалены, но удаляем для пользователя.");
-                deleteCategory(category.id); // Удаляем базовую категорию для пользователя
+
+                deleteCategory(category.id);
             }
         }
 
@@ -79,7 +76,7 @@
         }
 
         public String getCategoryName(Category category) {
-            return category.name; // Изменено для использования поля name
+            return category.name;
         }
 
         private CompletableFuture<List<Category>> getAllCategoriesByType(String userId, String type) {
@@ -87,7 +84,7 @@
             List<Category> categories = new ArrayList<>();
 
             categoryCollection.whereEqualTo("userId", userId)
-                    .whereEqualTo("type", type) // Фильтрация по типу категории
+                    .whereEqualTo("type", type)
                     .get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
@@ -107,14 +104,14 @@
         public CompletableFuture<Category> getCategoryByName(String categoryName) {
             CompletableFuture<Category> future = new CompletableFuture<>();
 
-            categoryCollection.whereEqualTo("name", categoryName).get() // Изменено на поле name
+            categoryCollection.whereEqualTo("name", categoryName).get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful() && !task.getResult().isEmpty()) {
                             DocumentSnapshot document = task.getResult().getDocuments().get(0);
                             Category category = document.toObject(Category.class);
-                            future.complete(category); // Возвращаем найденную категорию
+                            future.complete(category);
                         } else {
-                            future.complete(null); // Категория не найдена
+                            future.complete(null);
                         }
                     });
 
@@ -153,11 +150,9 @@
 
                         categoryCollection.document(id).set(category)
                                 .addOnSuccessListener(aVoid -> {
-                                    Log.d("CategoryRepository", "Default expense category added: " + category.categoryNameRu);
                                     completableFuture.complete(null);
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.e("CategoryRepository", "Error adding default expense category", e);
                                     completableFuture.completeExceptionally(e);
                                 });
 
@@ -167,8 +162,6 @@
 
             return future;
         }
-
-        // Получение категории по ID
         public CompletableFuture<Category> getCategoryById(String id) {
             CompletableFuture<Category> future = new CompletableFuture<>();
             categoryCollection.document(id).get()
@@ -177,13 +170,11 @@
                             Category category = task.getResult().toObject(Category.class);
                             future.complete(category);
                         } else {
-                            future.complete(null); // Если категория не найдена
+                            future.complete(null);
                         }
                     });
             return future;
         }
-
-        // Обновление категории по ID
         public CompletableFuture<Void> updateCategoryById(String id, Category updatedCategory) {
             CompletableFuture<Void> future = new CompletableFuture<>();
             categoryCollection.document(id).set(updatedCategory)
@@ -191,8 +182,6 @@
                     .addOnFailureListener(e -> future.completeExceptionally(e));
             return future;
         }
-
-        // Получение всех категорий для пользователя
         public CompletableFuture<List<Category>> getAllCategories(String userId) {
             CompletableFuture<List<Category>> future = new CompletableFuture<>();
             List<Category> categories = new ArrayList<>();
@@ -211,11 +200,9 @@
 
             return future;
         }
-
-        // Проверка существования категории
         public CompletableFuture<Boolean> doesCategoryExist(String categoryName, String userId) {
             CompletableFuture<Boolean> future = new CompletableFuture<>();
-            categoryCollection.whereEqualTo("name", categoryName) // Изменено на поле name
+            categoryCollection.whereEqualTo("name", categoryName)
                     .whereEqualTo("userId", userId).get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
@@ -233,11 +220,9 @@
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Category category = document.toObject(Category.class);
-                                // Здесь можно добавить логику для обновления названий, если это необходимо.
                                 updateCategory(category);
                             }
                         } else {
-                            Log.e("CategoryRepository", "Ошибка при получении категорий", task.getException());
                         }
                     });
         }

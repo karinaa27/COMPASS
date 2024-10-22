@@ -79,14 +79,14 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
         String currentLanguage = Locale.getDefault().getLanguage();
 
         new AlertDialog.Builder(context)
-                .setTitle("Подтверждение удаления")
-                .setMessage("Вы действительно хотите удалить категорию " + categoryName + "?")
-                .setPositiveButton("Да", (dialog, which) -> {
+                .setTitle(R.string.confirmation_title)
+                .setMessage(String.format(context.getString(R.string.confirmation_message), categoryName))
+                .setPositiveButton(R.string.confirm, (dialog, which) -> {
                     categoryRepository.removeCategory(category, currentLanguage);
                     categories.remove(position);
                     notifyItemRemoved(position);
                 })
-                .setNegativeButton("Нет", null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
@@ -123,9 +123,4 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
         return selectedCategoryColor;
     }
 
-    // Добавленный метод для установки выделенной категории
-    public void setSelectedCategory(String categoryName) {
-        this.selectedCategory = categoryName; // Устанавливаем выделенное имя категории
-        notifyDataSetChanged(); // Обновляем адаптер
-    }
 }

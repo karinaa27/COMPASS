@@ -1,4 +1,4 @@
-package com.mgke.da;
+package com.mgke.da.activity;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -24,10 +24,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.mgke.da.R;
 import com.mgke.da.models.PersonalData;
 import com.mgke.da.repository.PersonalDataRepository;
-
-import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 

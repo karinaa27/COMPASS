@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        tools:context=".SignUpActivity">
+        tools:context=".activity.SignUpActivity">
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"

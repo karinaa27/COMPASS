@@ -16,43 +16,38 @@ import com.mgke.da.R;
 import com.mgke.da.adapters.AccountsAdapter;
 import com.mgke.da.models.Account;
 import com.mgke.da.repository.AccountRepository;
+import com.mgke.da.repository.TransactionRepository;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountsFragment extends Fragment {
-
     private RecyclerView recyclerView;
     private AccountsAdapter accountsAdapter;
-    private List<Account> accountList; // Список для хранения аккаунтов
+    private List<Account> accountList;
     private AccountRepository accountRepository;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_accounts, container, false);
-
-        // Инициализация RecyclerView
         recyclerView = view.findViewById(R.id.recyclerViewAccounts);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        // Инициализация списка и адаптера с контекстом
         accountList = new ArrayList<>();
-        accountsAdapter = new AccountsAdapter(accountList, getContext()); // Передаем контекст
-        recyclerView.setAdapter(accountsAdapter);
-
-        // Инициализация репозитория
+        TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
         accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
-
-        // Загрузка счетов для текущего пользователя
+        accountsAdapter = new AccountsAdapter(accountList, getContext(), transactionRepository, accountRepository, account -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("selectedAccount", account);
+            bundle.putBoolean("isEditing", true);
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.navigation_add_account, bundle);
+        });
+        recyclerView.setAdapter(accountsAdapter);
         loadAccounts();
-
-        // Настройка кнопки добавления счета
         Button addAccountButton = view.findViewById(R.id.add_account_button);
         addAccountButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.navigation_add_account);
         });
-
         return view;
     }
 
@@ -60,26 +55,17 @@ public class AccountsFragment extends Fragment {
         String userId = getCurrentUserId();
         if (userId != null) {
             accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
-                accountList.clear(); // Очистка списка перед добавлением новых данных
+                accountList.clear();
                 accountList.addAll(accounts);
-                accountsAdapter.notifyDataSetChanged(); // Уведомляем адаптер об изменениях
+                accountsAdapter.notifyDataSetChanged();
             }).exceptionally(e -> {
-                e.printStackTrace(); // Логируем ошибку
                 return null;
             });
         }
     }
 
     private String getCurrentUserId() {
-        return FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
-                : null; // Возвращает ID пользователя или null, если не аутентифицирован
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        // Обнуляем ссылки на элементы, если они были использованы
-        recyclerView.setAdapter(null);
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        return auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
     }
 }

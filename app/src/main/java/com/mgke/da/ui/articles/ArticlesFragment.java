@@ -4,12 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-
+import androidx.navigation.Navigation;
+import com.mgke.da.R;
 import com.mgke.da.databinding.FragmentArticlesBinding;
 
 public class ArticlesFragment extends Fragment {
@@ -19,14 +17,13 @@ public class ArticlesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        ArticlesViewModel statsViewModel =
-                new ViewModelProvider(this).get(ArticlesViewModel.class);
 
         binding = FragmentArticlesBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        binding.addArticlesButton.setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.fragment_add_articles)
+        );
 
-        final TextView textView = binding.textArticles;
-        statsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 

@@ -96,7 +96,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/montserrat"
-                        android:text="@string/wed_01_nov"
+                        android:text=""
                         android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -108,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:fontFamily="@font/montserrat"
-                android:text="@string/pkr_88_500_00"
+                android:text=""
                 android:textSize="24sp" />
 
             <LinearLayout
@@ -139,7 +139,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat"
-                        android:text="@string/pkr_120_000_00"
+                        android:text=""
                         android:textSize="18sp" />
                 </LinearLayout>
 
@@ -166,7 +166,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat"
-                        android:text="@string/pkr_31_500_00"
+                        android:text=""
                         android:textSize="18sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -252,8 +252,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
-
-
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -275,7 +273,7 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/montserrat"
                 android:gravity="center"
-                android:text="@string/january_30_2024"
+                android:text=""
               style="@style/TextColor"
                 android:textStyle="bold"
                 android:textSize="16sp"

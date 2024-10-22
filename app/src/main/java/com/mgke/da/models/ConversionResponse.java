@@ -1,6 +1,4 @@
 package com.mgke.da.models;
-import java.util.Map;
-
 public class ConversionResponse {
     public String from;
     public String to;

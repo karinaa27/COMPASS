@@ -1,0 +1,106 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    style="@style/ScreenBackground"
+    tools:context=".ui.articles.AddArticlesFragment">
+
+    <LinearLayout
+        android:id="@+id/linearLayout6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/addGoalText"
+                style="@style/TextColor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/montserrat"
+                android:text="@string/add_new_article"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/close"
+                style="@style/CalendarIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_close_24" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/article_name"
+            style="@style/EdittextTransactions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:maxLength="35"
+            android:fontFamily="@font/montserrat"
+            android:hint="@string/article_name_hint"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/article_description"
+            style="@style/EdittextTransactions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:maxLength="80"
+            android:fontFamily="@font/montserrat"
+            android:hint="@string/article_description_hint"
+            android:inputType="text" />
+
+        <ImageView
+            android:id="@+id/articleImage"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_margin="16dp"
+            style="@style/AddImageArticle"
+            android:scaleType="center"
+            android:adjustViewBounds="true"
+            android:layout_gravity="center" />
+
+        <EditText
+            android:id="@+id/article_text"
+            style="@style/EdittextTransactions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:inputType="textMultiLine"
+            android:minLines="5"
+            android:fontFamily="@font/montserrat"
+            android:hint="@string/article_text_hint" />
+
+        <Button
+            android:id="@+id/add_article_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/add_article"
+            style="@style/CustomButtonStyle"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@null"
+            android:textStyle="bold"
+            android:fontFamily="@font/montserrat"
+            android:layout_gravity="center" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center" />
+
+    </LinearLayout>
+
+</ScrollView>

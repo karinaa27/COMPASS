@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ScreenBackground"
     tools:context=".ui.categories.CategoryFragment">
 
     <LinearLayout
         android:id="@+id/topContainer"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:background="@drawable/add_category_top_night"
+       style="@style/BackgroundTopStats"
         android:orientation="vertical"
         android:paddingBottom="8dp"
         android:gravity="center"
@@ -26,7 +27,7 @@
             android:textSize="24sp"
             android:fontFamily="@font/montserrat"
             android:textStyle="bold"
-            android:textColor="@android:color/white"
+            style="@style/TextColor"
             android:layout_marginTop="10dp"
             android:gravity="center" />
 
@@ -35,11 +36,10 @@
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            app:tabTextColor="@color/white"
+            style="@style/TextColor"
             android:background="@android:color/transparent"
             android:layout_width="350dp"
             android:layout_height="wrap_content"
-            app:tabIndicatorColor="@color/white"
             app:tabIndicatorHeight="2dp"
             app:tabBackground="@android:color/transparent" />
     </LinearLayout>

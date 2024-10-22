@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/ScreenBackground"
     tools:context=".ui.accounts.AddAccountFragment">
 
     <LinearLayout
         android:id="@+id/topContainer"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@drawable/add_category_top_night"
+        style="@style/BackgroundTopStats"
         android:orientation="horizontal"
         android:paddingBottom="8dp"
         android:gravity="center"
@@ -23,15 +24,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:src="@drawable/ic_chevron"
-            app:tint="@color/white" />
+            style="@style/Arrow" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/white"
-            android:text="Создание счёта"
+            android:id="@+id/x"
+            style="@style/TextColor"
+            android:text="@string/create_an_account"
             android:textSize="18sp"
             android:fontFamily="@font/montserrat"
             android:gravity="center" />
@@ -42,8 +43,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat"
-        android:hint="Введите название счёта"
+        android:hint="@string/enter_the_account_name"
         android:maxLines="1"
+        android:maxLength="15"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
         android:singleLine="true"
@@ -53,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@+id/topContainer" />
 
     <Spinner
-        android:id="@+id/currencySpinner"
+            android:id="@+id/currencySpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -67,10 +69,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Выберите фон для иконки"
+        android:text="@string/select_background"
         android:textSize="16sp"
         android:layout_marginLeft="10dp"
-        android:textColor="@color/black"
+        style="@style/TextColor"
         android:fontFamily="@font/montserrat"
         app:layout_constraintTop_toBottomOf="@id/currencySpinner"
         app:layout_constraintStart_toStartOf="parent" />
@@ -142,15 +144,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:hint="Сумма счёта"
+        android:hint="@string/amount_account"
         android:padding="10dp"
+        android:maxLength="10"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:maxLines="1"
         android:layout_marginTop="10dp"
         android:inputType="numberDecimal"
         android:singleLine="true"
-        android:textColor="@color/black"
+        style="@style/EdittextTransactions"
         android:fontFamily="@font/montserrat"
         app:layout_constraintTop_toBottomOf="@id/scrollView"
         app:layout_constraintStart_toStartOf="parent"
@@ -159,17 +162,37 @@
     <Button
         android:id="@+id/saveAccountButton"
         android:layout_margin="16dp"
-        android:textColor="@color/white"
         android:layout_width="250dp"
         android:layout_height="40dp"
-        android:layout_gravity="center"
         android:layout_marginTop="32dp"
-        android:background="@drawable/category_add_button"
         android:backgroundTint="@null"
+        android:text="@string/Save"
+        style="@style/CustomButtonStyle"
+        app:cornerRadius="16dp"
+        app:backgroundTint="@null"
+        android:textStyle="bold"
         android:fontFamily="@font/montserrat"
-        android:text="Сохранить счёт"
         app:layout_constraintTop_toBottomOf="@id/accountAmountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewDeleteTransaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawableEnd="@drawable/baseline_delete_24"
+        android:fontFamily="@font/montserrat"
+        android:text="@string/delete_transaction"
+        android:textColor="#F44336"
+        android:textSize="18sp"
+        android:visibility="gone"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/saveAccountButton"
+        app:layout_constraintVertical_bias="0.126" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

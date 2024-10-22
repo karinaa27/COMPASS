@@ -1,4 +1,4 @@
-package com.mgke.da;
+package com.mgke.da.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -19,6 +19,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.mgke.da.R;
 import com.mgke.da.databinding.ActivityMainBinding;
 import java.util.Locale;
 

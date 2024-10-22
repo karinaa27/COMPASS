@@ -9,7 +9,7 @@
         android:id="@+id/categoryIcon"
         android:layout_width="62dp"
         android:layout_height="62dp"
-        android:background="@drawable/category_bg"
+        style="@style/Category_add_bg"
         android:padding="14dp"
         android:paddingTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"

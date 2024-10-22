@@ -80,7 +80,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     @Override
     public void onGoalClick(Goal goal) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable("goal", goal); // Убедитесь, что Goal реализует Serializable
         NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment, bundle);
     }
     
@@ -109,7 +108,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         setupPieChart();
         setupHorizontalBarChart();
 
-        // Устанавливаем начальное состояние кнопок
         setSelectedButtonGoal(processBtn, completedBtn);
 
         tabLayout = binding.tabLayout;
@@ -154,7 +152,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         loadStatsData();
         updateDateText();
 
-        // Обработчики кнопок для статистики
         binding.dayBtn.setOnClickListener(v -> {
             setSelectedButton(binding.dayBtn, binding.monthlyBtn, binding.monthsBtn);
             selectedTab = 0;
@@ -210,7 +207,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         return root;
     }
 
-
+    private boolean isDarkTheme() {
+        return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+    }
 
     private void setupGoalsButtonListeners() {
 
@@ -226,10 +225,10 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     }
 
     private void setSelectedButtonGoal(TextView selected, TextView unselected) {
-        selected.setBackgroundResource(R.drawable.transaction_add_income_selector);
-        selected.setTextColor(Color.WHITE);
+        selected.setBackgroundResource(R.drawable.selector_goal);
+        selected.setTextColor(isDarkTheme() ? Color.WHITE : Color.BLACK);
         unselected.setBackgroundResource(R.drawable.transaction_add_default_selector);
-        unselected.setTextColor(Color.BLACK);
+        unselected.setTextColor(isDarkTheme() ? Color.WHITE : Color.BLACK);
     }
     private void loadGoals(boolean showCompleted) {
         goalRepository.getAllGoal().thenAccept(goals -> {
@@ -242,16 +241,29 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                     goalList.add(goal);
                 }
             }
+
             goalAdapter.notifyDataSetChanged();
+
+            if (goalList.isEmpty()) {
+                binding.emptyStateImageView.setVisibility(View.VISIBLE);
+                binding.emptyStateTextView2.setVisibility(View.VISIBLE);
+                int gifResource = isDarkTheme() ? R.drawable.document_search_night : R.drawable.document_search;
+                Glide.with(this)
+                        .asGif()
+                        .load(gifResource)
+                        .into(binding.emptyStateImageView);
+            } else {
+                binding.emptyStateImageView.setVisibility(View.GONE);
+                binding.emptyStateTextView2.setVisibility(View.GONE);
+            }
         });
     }
     private void checkGoalCompletion(Goal goal) {
         if (goal.progress >= goal.targetAmount) {
             goal.isCompleted = true;
-            goalRepository.updateGoal(goal); // Обновляем цель в Firebase
+            goalRepository.updateGoal(goal);
         }
     }
-
 
     private void setupButtonListeners() {
         binding.dayBtn.setOnClickListener(v -> {
@@ -362,13 +374,13 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         legend.setForm(Legend.LegendForm.CIRCLE);
 
         pieChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
             public void onValueSelected(Entry e, Highlight h) {
                 if (e instanceof PieEntry) {
                     PieEntry pieEntry = (PieEntry) e;
                     String category = pieEntry.getLabel();
                     float value = pieEntry.getValue();
-                    Toast.makeText(getContext(), "Выбрана категория: " + category + ", сумма: " + value, Toast.LENGTH_SHORT).show();
+                    String message = getString(R.string.selected_category_message, category, value);
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -414,6 +426,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             return;
         }
 
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         Calendar startCalendar = Calendar.getInstance();
         Calendar endCalendar = Calendar.getInstance();
         startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1, 0, 0, 0);
@@ -427,8 +440,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                     for (Transaction transaction : transactions) {
                         boolean isIncomeActive = binding.incomeBtn.isSelected();
                         boolean isExpenseActive = binding.expenseBtn.isSelected();
-
-                        if (!transaction.date.before(startCalendar.getTime()) && !transaction.date.after(endCalendar.getTime())) {
+                        if (transaction.userId.equals(currentUserId) &&
+                                !transaction.date.before(startCalendar.getTime()) &&
+                                !transaction.date.after(endCalendar.getTime())) {
                             String category = transaction.category;
                             float amount = (float) Math.abs(transaction.amount);
 
@@ -451,6 +465,8 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             return;
         }
 
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         Calendar startCalendar = Calendar.getInstance();
         Calendar endCalendar = Calendar.getInstance();
         startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
@@ -465,7 +481,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                         boolean isIncomeActive = binding.incomeBtn.isSelected();
                         boolean isExpenseActive = binding.expenseBtn.isSelected();
 
-                        if (!transaction.date.before(startCalendar.getTime()) && !transaction.date.after(endCalendar.getTime())) {
+                        if (transaction.userId.equals(currentUserId) &&
+                                !transaction.date.before(startCalendar.getTime()) &&
+                                !transaction.date.after(endCalendar.getTime())) {
                             String category = transaction.category;
                             float amount = (float) Math.abs(transaction.amount);
 
@@ -487,6 +505,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             return;
         }
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         Calendar endCalendar = Calendar.getInstance();
         Calendar startCalendar = Calendar.getInstance();
@@ -502,7 +521,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                         Calendar transactionCalendar = Calendar.getInstance();
                         transactionCalendar.setTime(transaction.date);
 
-                        if (transactionCalendar.after(startCalendar) && transactionCalendar.before(endCalendar)) {
+                        if (transaction.userId.equals(currentUserId) &&
+                                transactionCalendar.after(startCalendar) &&
+                                transactionCalendar.before(endCalendar)) {
                             String category = transaction.category;
                             float amount = (float) Math.abs(transaction.amount);
 

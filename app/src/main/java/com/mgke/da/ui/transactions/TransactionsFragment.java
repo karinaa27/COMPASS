@@ -11,13 +11,11 @@
     import android.widget.Button;
     import android.widget.ImageView;
     import android.widget.TextView;
-
     import androidx.annotation.NonNull;
     import androidx.fragment.app.Fragment;
     import androidx.navigation.NavController;
     import androidx.navigation.Navigation;
     import androidx.recyclerview.widget.LinearLayoutManager;
-
     import com.bumptech.glide.Glide;
     import com.google.firebase.auth.FirebaseAuth;
     import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,7 +29,6 @@
     import com.mgke.da.models.Transaction;
     import com.mgke.da.repository.AccountRepository;
     import com.mgke.da.repository.PersonalDataRepository;
-
     import java.text.SimpleDateFormat;
     import java.util.ArrayList;
     import java.util.Calendar;
@@ -70,8 +67,6 @@
             calendar = Calendar.getInstance();
             setLocaleFromPreferences();
             updateDateText();
-
-            // Обработчик нажатия на текущее поле даты
             TextView currentDateText = binding.currentDate;
             currentDateText.setOnClickListener(v -> showDatePicker());
 
@@ -91,8 +86,8 @@
 
         private void setLocaleFromPreferences() {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
-            String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en"); // Значение по умолчанию
-            setLocale(selectedLanguage); // Устанавливаем локаль напрямую
+            String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
+            setLocale(selectedLanguage);
         }
 
         private void setLocale(String languageCode) {
@@ -102,7 +97,6 @@
             config.setLocale(locale);
             Context context = getActivity().createConfigurationContext(config);
             getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-            Log.d("Locale", "Locale set to: " + locale.getDisplayLanguage());
         }
 
         private void selectDayButton() {
@@ -155,18 +149,15 @@
         }
 
         private void setSelectedButton(TextView selected, TextView unselected) {
-            // Проверка, какая тема активна
             boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
                     Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
 
             if (isDarkTheme) {
-                // Для темной темы
                 selected.setBackgroundResource(R.drawable.day_month_selector_night);
                 selected.setTextColor(getResources().getColor(android.R.color.white));
                 unselected.setBackgroundResource(R.drawable.day_month_selector_white);
                 unselected.setTextColor(getResources().getColor(android.R.color.white));
             } else {
-                // Для светлой темы
                 selected.setBackgroundResource(R.drawable.day_month_selector_active);
                 selected.setTextColor(getResources().getColor(android.R.color.white));
                 unselected.setBackgroundResource(R.drawable.day_month_selector);
@@ -181,7 +172,6 @@
             } else {
                 currentDateText.setText(formatDateByMonth(calendar.getTime()));
             }
-            // Всегда устанавливаем dateText на текущую дату (не зависит от кнопок)
             binding.dateText.setText(formatDateShort(Calendar.getInstance().getTime()));
         }
 
@@ -202,31 +192,24 @@
 
         private void loadUserData() {
             if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                Log.e("Transactions", "Пользователь не аутентифицирован");
                 return;
             }
 
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            Log.d("Transactions", "ID пользователя: " + userId);
-
             personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
                 if (personalData != null) {
                     this.personalData = personalData;
-                    Log.d("Transactions", "Данные пользователя успешно загружены: " + personalData.toString());
                     loadTransactions();
                     loadAllTransactions();
                 } else {
-                    Log.e("Transactions", "Личные данные пустые");
                 }
             }).exceptionally(e -> {
-                Log.e("Transactions", "Ошибка при загрузке данных пользователя: " + e.getMessage());
                 return null;
             });
         }
 
         private void loadTransactions() {
             if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                Log.e("Transactions", "Пользователь не аутентифицирован");
                 return;
             }
 
@@ -267,7 +250,6 @@
                     .orderBy("date", Query.Direction.ASCENDING) // Сортируем по дате
                     .addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.e("Transactions", "Ошибка при получении документов: " + error.getMessage());
                             return;
                         }
 
@@ -282,8 +264,6 @@
                         if (adapter != null) {
                             adapter.updateTransactions(newTransactions);
                         }
-
-                        // Обработка состояния пустого списка
                         handleEmptyState(newTransactions);
                     });
         }
@@ -291,8 +271,6 @@
             if (transactions.isEmpty()) {
                 emptyStateImageView.setVisibility(View.VISIBLE);
                 emptyStateTextView.setVisibility(View.VISIBLE);
-
-                // Проверка текущей темы
                 boolean isDarkTheme = (getActivity() != null && (getActivity().getResources().getConfiguration().uiMode &
                         Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES);
 
@@ -312,7 +290,6 @@
 
         private void loadAllTransactions() {
             if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                Log.e("Transactions", "Пользователь не аутентифицирован");
                 return;
             }
 
@@ -323,7 +300,6 @@
                     .whereEqualTo("userId", userId)
                     .addSnapshotListener((value, error) -> {
                         if (error != null) {
-                            Log.e("Transactions", "Ошибка при получении документов: " + error.getMessage());
                             return;
                         }
 
@@ -334,31 +310,24 @@
                                 allTransactions.add(transaction);
                             }
                         }
-
                         updateAmounts(allTransactions);
                     });
         }
         private void showDatePicker() {
-            // Получаем текущую дату
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-            // Создаем диалог выбора даты
             new android.app.DatePickerDialog(getActivity(), (view, selectedYear, selectedMonth, selectedDay) -> {
-                // Устанавливаем выбранную дату в календарь
                 calendar.set(selectedYear, selectedMonth, selectedDay);
                 updateDateText();
-                loadTransactions(); // Загружаем транзакции для выбранной даты
+                loadTransactions();
             }, year, month, day).show();
         }
 
         private void updateAmounts(List<Transaction> transactions) {
             if (binding == null) {
-                Log.e("Transactions", "Binding is null");
                 return;
             }
-
             double totalBalance = 0;
             double totalIncome = 0;
             double totalExpense = 0;
@@ -377,14 +346,12 @@
             binding.incomeAmount.setText(String.format("%s %.2f", currency, totalIncome));
             binding.expenseAmount.setText(String.format("%s %.2f", currency, totalExpense));
         }
-
         @Override
         public void onResume() {
             super.onResume();
-            setLocaleFromPreferences(); // Обновляем локаль каждый раз при возврате к фрагменту
-            updateDateText(); // Обновляем текст даты
+            setLocaleFromPreferences();
+            updateDateText();
         }
-
         @Override
         public void onDestroyView() {
             super.onDestroyView();

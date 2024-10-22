@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,18 +29,15 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import com.bumptech.glide.Glide;
-import com.google.firebase.appcheck.FirebaseAppCheck;
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.mgke.da.LoginActivity;
+import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.R;
 import com.mgke.da.databinding.FragmentSettingsBinding;
 import com.mgke.da.models.PersonalData;
-import com.mgke.da.repository.CategoryRepository;
 import com.mgke.da.repository.PersonalDataRepository;
 import java.util.Arrays;
 import java.util.Locale;
@@ -61,8 +57,6 @@ public class SettingsFragment extends Fragment {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
         auth = FirebaseAuth.getInstance();
-
-        // Установка App Check
         setupLanguageSpinner();
         setupNightModeSwitch();
         setupCategoriesSettingsClick();
@@ -71,8 +65,8 @@ public class SettingsFragment extends Fragment {
         setupAvatarClick();
         setupPersonalDataClick();
         loadUserEmail();
-        setupImagePickerLauncher(); // Регистрация лончера выбора изображения
-        setupCurrencySpinner(); // Настройка спиннера валюты
+        setupImagePickerLauncher();
+        setupCurrencySpinner();
         setupPasswordSettingsClick();
         return view;
     }
@@ -92,7 +86,7 @@ public class SettingsFragment extends Fragment {
                             Glide.with(this).load(imageUri).into(binding.photoUser);
                             uploadImageToFirebase(imageUri);
                         } else {
-                            Toast.makeText(getContext(), "Не удалось получить изображение", Toast.LENGTH_SHORT).show();
+                            showToast(R.string.error_image_retrieval);
                         }
                     }
                 });
@@ -111,10 +105,10 @@ public class SettingsFragment extends Fragment {
 
     private void showChangePhotoDialog() {
         new AlertDialog.Builder(getContext())
-                .setTitle("Изменить фотографию")
-                .setMessage("Вы хотите изменить свою фотографию?")
-                .setPositiveButton("Да", (dialog, which) -> openGallery())
-                .setNegativeButton("Нет", null)
+                .setTitle(R.string.change_photo_title)
+                .setMessage(R.string.change_photo_message)
+                .setPositiveButton(R.string.yes, (dialog, which) -> openGallery())
+                .setNegativeButton(R.string.no, null)
                 .show();
     }
 
@@ -133,13 +127,11 @@ public class SettingsFragment extends Fragment {
     private void uploadImageToFirebase(Uri imageUri) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
-            Toast.makeText(getContext(), "Пользователь не аутентифицирован", Toast.LENGTH_SHORT).show();
+            showToast(getString(R.string.error_user_not_authenticated));
             return;
         }
-
         String userId = currentUser.getUid();
         StorageReference storageReference = FirebaseStorage.getInstance().getReference("avatars/" + userId + ".jpg");
-
         storageReference.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     storageReference.getDownloadUrl()
@@ -148,37 +140,32 @@ public class SettingsFragment extends Fragment {
                                 saveImageUrlToFirestore(imageUrl);
                             })
                             .addOnFailureListener(e -> {
-                                Log.e("UploadError", "Ошибка получения URL: " + e.getMessage());
-                                Toast.makeText(getContext(), "Ошибка получения URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                showToast(getString(R.string.error_url_retrieval) + ": " + e.getMessage());
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("UploadError", "Ошибка загрузки изображения: " + e.getMessage());
-                    Toast.makeText(getContext(), "Ошибка загрузки изображения: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    showToast(getString(R.string.error_image_upload) + ": " + e.getMessage());
                 });
     }
-
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
     private void saveImageUrlToFirestore(String imageUrl) {
         String userId = auth.getCurrentUser().getUid();
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
 
         personalDataRepository.getPersonalDataById(userId).whenComplete((personalData, throwable) -> {
             if (throwable != null) {
-                Log.e("FirestoreError", "Ошибка при получении данных пользователя: " + throwable.getMessage());
                 return;
             }
 
             if (personalData != null) {
                 personalData.avatarUrl = imageUrl;
                 personalDataRepository.addOrUpdatePersonalData(personalData).whenComplete((aVoid, updateThrowable) -> {
-                    if (updateThrowable != null) {
-                        Log.e("FirestoreError", "Ошибка при обновлении данных: " + updateThrowable.getMessage());
-                    } else {
-                        Toast.makeText(getContext(), "Аватарка обновлена", Toast.LENGTH_SHORT).show();
+                    if (updateThrowable == null) {
+                        showToast(R.string.avatar_updated);
                     }
                 });
-            } else {
-                Log.e("FirestoreError", "Не удалось найти данные пользователя для обновления");
             }
         });
     }
@@ -186,14 +173,14 @@ public class SettingsFragment extends Fragment {
     private void setupExitButtonClick() {
         binding.exit.setOnClickListener(v -> {
             new AlertDialog.Builder(getContext())
-                    .setTitle("Выход")
-                    .setMessage("Вы уверены, что хотите выйти из аккаунта?")
-                    .setPositiveButton("Да", (dialog, which) -> {
+                    .setTitle(R.string.logout_title)
+                    .setMessage(R.string.logout_message)
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
                         auth.signOut();
-                        Toast.makeText(getContext(), "Вы вышли из аккаунта", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.logged_out);
                         navigateToLoginActivity();
                     })
-                    .setNegativeButton("Нет", null)
+                    .setNegativeButton(R.string.no, null)
                     .show();
         });
     }
@@ -201,9 +188,9 @@ public class SettingsFragment extends Fragment {
     private void setupDeleteAccountButtonClick() {
         binding.DeleteUser.setOnClickListener(v -> {
             new AlertDialog.Builder(getContext())
-                    .setTitle("Удаление аккаунта")
-                    .setMessage("Вы уверены, что хотите удалить свой аккаунт?")
-                    .setPositiveButton("Да", (dialog, which) -> {
+                    .setTitle(R.string.delete_account_title)
+                    .setMessage(R.string.delete_account_message)
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
                         FirebaseUser currentUser = auth.getCurrentUser();
                         if (currentUser != null) {
                             currentUser.delete().addOnCompleteListener(task -> {
@@ -211,15 +198,15 @@ public class SettingsFragment extends Fragment {
                                     String userId = currentUser.getUid();
                                     PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
                                     personalDataRepository.deletePersonalData(userId);
-                                    Toast.makeText(getContext(), "Ваш аккаунт был удален", Toast.LENGTH_SHORT).show();
+                                    showToast(R.string.account_deleted2);
                                     navigateToLoginActivity();
                                 } else {
-                                    Toast.makeText(getContext(), "Ошибка при удалении аккаунта", Toast.LENGTH_SHORT).show();
+                                    showToast(R.string.error_account_deletion);
                                 }
                             });
                         }
                     })
-                    .setNegativeButton("Нет", null)
+                    .setNegativeButton(R.string.no, null)
                     .show();
         });
     }
@@ -240,28 +227,22 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupLanguageSpinner() {
-        String[] languages = {"Русский", "English"};
+        String[] languages = {getString(R.string.russian), getString(R.string.english)};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, languages);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.languageSpinner.setAdapter(adapter);
-
-        // Загрузка сохраненного языка
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
         String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
         binding.languageSpinner.setSelection(spinnerPosition);
-
         binding.languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String languageCode = position == 0 ? "ru" : "en";
                 setLocale(languageCode);
-
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("selectedLanguage", languageCode);
                 editor.apply();
-
-                // Обновляем UI
                 updateUI();
             }
 
@@ -291,8 +272,6 @@ public class SettingsFragment extends Fragment {
         Configuration config = getResources().getConfiguration();
         config.setLocale(locale);
         getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-
-        Log.d("Locale", "Current Locale: " + Locale.getDefault().getDisplayLanguage());
     }
 
     private void updateUI() {
@@ -300,22 +279,17 @@ public class SettingsFragment extends Fragment {
         binding.textLanguage.setText(getString(R.string.language));
         binding.textCategories.setText(getString(R.string.categories_string_settings));
 
+
         String selectedLanguage = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE)
                 .getString("selectedLanguage", "en");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
         binding.languageSpinner.setSelection(spinnerPosition);
     }
 
-    private String getCurrentLanguage() {
-        return getResources().getConfiguration().getLocales().get(0).getLanguage();
-    }
-
     private void loadUserEmail() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
-            Log.d("SettingsFragment", "Current user ID: " + userId);
-
             PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
             personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
                 if (personalData != null) {
@@ -326,15 +300,11 @@ public class SettingsFragment extends Fragment {
                     if (personalData.avatarUrl != null) {
                         Glide.with(this).load(personalData.avatarUrl).into(binding.photoUser);
                     }
-                    // Загрузка валюты
                     loadUserCurrency(personalData);
                 }
             }).exceptionally(e -> {
-                Log.e("SettingsFragment", "Failed to load user data: " + e.getMessage());
                 return null;
             });
-        } else {
-            Log.e("SettingsFragment", "Пользователь не найден");
         }
     }
 
@@ -343,17 +313,14 @@ public class SettingsFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.currencySpinner.setAdapter(adapter);
 
-        // Установка слушателя выбора для спиннера валюты
         binding.currencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Сохраняем валюту при выборе
                 saveCurrency();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Не нужно ничего делать, если ничего не выбрано
             }
         });
     }
@@ -361,7 +328,7 @@ public class SettingsFragment extends Fragment {
     private void loadUserCurrency(PersonalData personalData) {
         String userCurrency = personalData.currency;
         int position = Arrays.asList(currencies).indexOf(userCurrency);
-        binding.currencySpinner.setSelection(position >= 0 ? position : 1); // USD по умолчанию
+        binding.currencySpinner.setSelection(position >= 0 ? position : 1);
     }
 
     private void saveCurrency() {
@@ -369,13 +336,12 @@ public class SettingsFragment extends Fragment {
         if (currentUser != null) {
             String userId = currentUser.getUid();
             String selectedCurrency = binding.currencySpinner.getSelectedItem().toString();
-
             PersonalDataRepository repository = new PersonalDataRepository(FirebaseFirestore.getInstance());
             repository.getPersonalDataById(userId).thenAccept(personalData -> {
                 if (personalData != null) {
-                    personalData.currency = selectedCurrency; // Установите выбранную валюту
+                    personalData.currency = selectedCurrency;
                     repository.addOrUpdatePersonalData(personalData).thenRun(() -> {
-                        Toast.makeText(getContext(), "Валюта успешно сохранена", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.currency_saved);
                     });
                 }
             });
@@ -387,18 +353,15 @@ public class SettingsFragment extends Fragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_change_password, null);
         builder.setView(dialogView);
-
         EditText currentPasswordInput = dialogView.findViewById(R.id.currentPassword);
         EditText newPasswordInput = dialogView.findViewById(R.id.newPassword);
         EditText confirmNewPasswordInput = dialogView.findViewById(R.id.confirmNewPassword);
         Button saveButton = dialogView.findViewById(R.id.saveButton);
 
         FirebaseUser currentUser = auth.getCurrentUser();
-        final String userId; // Объявляем как final
-
+        final String userId;
         if (currentUser != null) {
-            userId = currentUser.getUid(); // Получаем userId
-
+            userId = currentUser.getUid();
             PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
             personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
                 if (personalData != null && personalData.password != null && !personalData.password.isEmpty()) {
@@ -408,43 +371,35 @@ public class SettingsFragment extends Fragment {
                 }
             });
         } else {
-            return; // Если userId не найден, выходим из метода
+            return;
         }
-
         AlertDialog dialog = builder.create();
-
         saveButton.setOnClickListener(v -> {
             String newPassword = newPasswordInput.getText().toString().trim();
             String confirmNewPassword = confirmNewPasswordInput.getText().toString().trim();
-
             if (!newPassword.equals(confirmNewPassword)) {
-                Toast.makeText(getContext(), "Пароли не совпадают", Toast.LENGTH_SHORT).show();
+                showToast(R.string.passwords_do_not_match);
                 return;
             }
-
             if (currentUser != null && currentPasswordInput.getVisibility() == View.VISIBLE) {
                 String currentPassword = currentPasswordInput.getText().toString().trim();
-                // Проверка текущего пароля перед обновлением
-                // Ваша логика для проверки текущего пароля (например, с использованием Firebase Auth)
                 currentUser.updatePassword(newPassword).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Сохранение нового пароля в Firestore
                         saveNewPasswordToFirestore(userId, newPassword);
-                        Toast.makeText(getContext(), "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.password_changed_successfully);
                         dialog.dismiss();
                     } else {
-                        Toast.makeText(getContext(), "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.error_password_change);
                     }
                 });
             } else {
                 currentUser.updatePassword(newPassword).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Сохранение нового пароля в Firestore
                         saveNewPasswordToFirestore(userId, newPassword);
-                        Toast.makeText(getContext(), "Пароль успешно изменён", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.password_changed_successfully);
                         dialog.dismiss();
                     } else {
-                        Toast.makeText(getContext(), "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
+                        showToast(R.string.error_password_change);
                     }
                 });
             }
@@ -455,18 +410,20 @@ public class SettingsFragment extends Fragment {
 
     private void saveNewPasswordToFirestore(String userId, String newPassword) {
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-
         personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
             if (personalData != null) {
-                personalData.password = newPassword; // Устанавливаем новый пароль
+                personalData.password = newPassword;
                 personalDataRepository.addOrUpdatePersonalData(personalData).thenRun(() -> {
-                    Toast.makeText(getContext(), "Новый пароль успешно сохранён", Toast.LENGTH_SHORT).show();
+                    showToast(R.string.new_password_saved);
                 }).exceptionally(e -> {
-                    Log.e("FirestoreError", "Ошибка при сохранении нового пароля: " + e.getMessage());
                     return null;
                 });
             }
         });
+    }
+
+    private void showToast(int messageId) {
+        Toast.makeText(getContext(), messageId, Toast.LENGTH_SHORT).show();
     }
 
     @Override

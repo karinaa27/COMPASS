@@ -44,7 +44,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     @Override
     public int getItemCount() {
-        return transactions != null ? transactions.size() : 0; // Избегаем NPE
+        return transactions != null ? transactions.size() : 0;
     }
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
@@ -53,13 +53,10 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         public TransactionViewHolder(RowTransactionBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
-
-            // Установка обработчика клика
             itemView.setOnClickListener(v -> {
                 Transaction transaction = transactions.get(getAdapterPosition());
-                // Передаем данные транзакции в новый фрагмент
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("transaction", transaction); // Предполагается, что Transaction реализует Serializable
+                bundle.putSerializable("transaction", transaction);
                 Navigation.findNavController(v).navigate(R.id.fragment_update_transactions, bundle);
             });
         }
@@ -67,54 +64,37 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         public void bind(Transaction transaction) {
             if (transaction != null) {
                 binding.setTransaction(transaction);
-                Log.d("TransactionBinding", "Binding transaction: " + transaction.account);
-
-                // Установить иконку категории
-                binding.categoryicon.setImageResource(transaction.categoryImage); // Установка иконки
-
-                // Установить цвет фона для иконки
+                binding.categoryicon.setImageResource(transaction.categoryImage);
                 ShapeDrawable shapeDrawable = new ShapeDrawable(new OvalShape());
-                shapeDrawable.getPaint().setColor(transaction.categoryColor); // Установите цвет фона
+                shapeDrawable.getPaint().setColor(transaction.categoryColor);
                 shapeDrawable.setBounds(0, 0, binding.categoryicon.getWidth(), binding.categoryicon.getHeight());
                 binding.categoryicon.setBackground(shapeDrawable);
-
-                // Получаем фон счета по имени
                 accountRepository.getAccountByName(transaction.account).thenAccept(account -> {
                     if (account != null) {
-                        // Устанавливаем фон из найденного счета
                         int backgroundResource = getBackgroundResource(account.background);
                         binding.accountLbl.setBackgroundResource(backgroundResource);
                     } else {
-                        // Установите фон по умолчанию, если счет не найден
                         binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     }
                 }).exceptionally(e -> {
-                    Log.e("TransactionBinding", "Error fetching account", e);
-                    binding.accountLbl.setBackgroundResource(R.drawable.account_fon1); // Установите фон по умолчанию
+                    binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     return null;
                 });
-
-                // Установка текста суммы и валюты
-                binding.transactionAmount.setText(String.valueOf(transaction.amount)); // Прямой доступ к полю
-                binding.currencyLbl.setText(transaction.currency); // Прямой доступ к полю
-
-                // Установка цвета текста для суммы и валюты
+                binding.transactionAmount.setText(String.valueOf(transaction.amount));
+                binding.currencyLbl.setText(transaction.currency);
                 if (transaction.amount < 0) {
-                    binding.transactionAmount.setTextColor(Color.RED); // Красный для отрицательной суммы
-                    binding.currencyLbl.setTextColor(Color.RED); // Красный для валюты
+                    binding.transactionAmount.setTextColor(Color.RED);
+                    binding.currencyLbl.setTextColor(Color.RED);
                 } else {
-                    binding.transactionAmount.setTextColor(Color.parseColor("#006400")); // Темно-зеленый для положительной суммы
-                    binding.currencyLbl.setTextColor(Color.parseColor("#006400")); // Темно-зеленый для валюты
+                    binding.transactionAmount.setTextColor(Color.GREEN);
+                    binding.currencyLbl.setTextColor(Color.GREEN);
                 }
-
                 binding.executePendingBindings();
             } else {
-                Log.e("TransactionBinding", "Transaction is null");
-                binding.accountLbl.setBackgroundResource(R.drawable.account_fon1); // Установите фон по умолчанию
+                binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
             }
         }
 
-        // Метод для получения ресурса фона
         private int getBackgroundResource(String backgroundName) {
             switch (backgroundName) {
                 case "account_fon1":
@@ -128,18 +108,17 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 case "account_fon5":
                     return R.drawable.account_fon5;
                 default:
-                    return R.drawable.balance_fon; // Фон по умолчанию
+                    return R.drawable.balance_fon;
             }
         }
     }
 
     public void updateTransactions(List<Transaction> newTransactions) {
         if (newTransactions != null) {
-            this.transactions.clear(); // Сначала очищаем старый список
-            this.transactions.addAll(newTransactions); // Добавляем новые транзакции
+            this.transactions.clear();
+            this.transactions.addAll(newTransactions);
             notifyDataSetChanged();
         } else {
-            Log.e("TransactionAdapter", "New transactions list is null");
         }
     }
 }

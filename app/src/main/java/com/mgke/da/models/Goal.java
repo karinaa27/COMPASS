@@ -5,7 +5,6 @@ import java.util.Date;
 
 
 public class Goal implements Serializable {
-    // Ваши поля
     public String id;
     public String goalName;
     public double targetAmount;
@@ -28,6 +27,6 @@ public class Goal implements Serializable {
         this.dateEnd = dateEnd;
         this.isCompleted = isCompleted;
         this.note = note;
-        this.currency = currency; // Инициализация поля для валюты
+        this.currency = currency;
     }
 }

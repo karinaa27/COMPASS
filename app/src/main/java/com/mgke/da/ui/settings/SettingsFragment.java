@@ -278,7 +278,17 @@ public class SettingsFragment extends Fragment {
         binding.textNightMode.setText(getString(R.string.night_mode));
         binding.textLanguage.setText(getString(R.string.language));
         binding.textCategories.setText(getString(R.string.categories_string_settings));
+        binding.textCurrency.setText(getString(R.string.Currency));
+        binding.textPersonalData.setText(getString(R.string.personaldata));
 
+        binding.textPassword.setText(getString(R.string.password));
+        binding.textSettings.setText(getString(R.string.settings));
+        binding.textExit.setText(getString(R.string.exit));
+        binding.textDeleteUser.setText(getString(R.string.DeleteUser));
+        String[] languages = {getString(R.string.russian), getString(R.string.english)};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, languages);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.languageSpinner.setAdapter(adapter);
 
         String selectedLanguage = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE)
                 .getString("selectedLanguage", "en");

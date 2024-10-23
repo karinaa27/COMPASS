@@ -401,4 +401,5 @@
     <string name="add_article">Add Article</string>
     <string name="add_new_article">Add new article</string>
     <string name="fill_in_all_the_fields">Fill in all the fields</string>
+    <string name="delete_account">Delete Account</string>
 </resources>

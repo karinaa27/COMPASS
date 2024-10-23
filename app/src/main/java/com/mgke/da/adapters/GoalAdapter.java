@@ -29,6 +29,11 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
     private OnGoalClickListener listener;
     private String currentCurrency;
 
+    public void setOnGoalClickListener(OnGoalClickListener listener) {
+        this.listener = listener;
+    }
+
+
     public interface OnGoalClickListener {
         void onGoalClick(Goal goal);
     }
@@ -101,9 +106,10 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         holder.textViewCurrency.setText(goal.currency != null ? goal.currency : "N/A");
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onGoalClick(goal);
+                listener.onGoalClick(goal);  // Передаем цель через интерфейс
             }
         });
+
 
         holder.deleteGoal.setOnClickListener(v -> {
             new AlertDialog.Builder(context)

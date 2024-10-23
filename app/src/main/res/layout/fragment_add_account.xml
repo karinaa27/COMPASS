@@ -183,7 +183,7 @@
         android:layout_gravity="center"
         android:drawableEnd="@drawable/baseline_delete_24"
         android:fontFamily="@font/montserrat"
-        android:text="@string/delete_transaction"
+        android:text="@string/delete_account"
         android:textColor="#F44336"
         android:textSize="18sp"
         android:visibility="gone"

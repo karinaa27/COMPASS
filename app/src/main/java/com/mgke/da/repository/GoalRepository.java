@@ -71,4 +71,20 @@ public class GoalRepository {
         });
         return future;
     }
+    public CompletableFuture<List<Goal>> getUserGoals(String userId) {
+        CompletableFuture<List<Goal>> future = new CompletableFuture<>();
+        List<Goal> goals = new ArrayList<>();
+
+        goalCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Goal goal = document.toObject(Goal.class);
+                    goals.add(goal);
+                }
+                future.complete(goals);
+            }
+        });
+        return future;
+    }
+
 }

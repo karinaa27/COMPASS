@@ -74,4 +74,8 @@
         android:id="@+id/fragment_add_articles"
         android:name="com.mgke.da.ui.articles.AddArticlesFragment"
         tools:layout="@layout/fragment_add_articles"/>
+    <fragment
+        android:id="@+id/fragment_article"
+        android:name="com.mgke.da.ui.articles.ArticleFragment"
+        tools:layout="@layout/fragment_article"/>
 </navigation>

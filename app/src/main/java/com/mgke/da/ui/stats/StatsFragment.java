@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.YAxis;
+import com.google.firebase.auth.FirebaseUser;
 import com.mgke.da.models.Goal;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,9 +81,11 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     @Override
     public void onGoalClick(Goal goal) {
         Bundle bundle = new Bundle();
+        bundle.putSerializable("goal", goal); // Передаем объект Goal
         NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment, bundle);
     }
-    
+
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentStatsBinding.inflate(inflater, container, false);
@@ -231,7 +234,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         unselected.setTextColor(isDarkTheme() ? Color.WHITE : Color.BLACK);
     }
     private void loadGoals(boolean showCompleted) {
-        goalRepository.getAllGoal().thenAccept(goals -> {
+        String currentUserId = getCurrentUserId(); // Метод для получения текущего userId
+
+        goalRepository.getUserGoals(currentUserId).thenAccept(goals -> {
             goalList.clear();
             for (Goal goal : goals) {
                 checkGoalCompletion(goal);
@@ -258,6 +263,14 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             }
         });
     }
+
+    // Пример метода для получения текущего идентификатора пользователя
+    private String getCurrentUserId() {
+        // Предположим, что используете Firebase Auth для получения текущего пользователя
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        return currentUser != null ? currentUser.getUid() : null;
+    }
+
     private void checkGoalCompletion(Goal goal) {
         if (goal.progress >= goal.targetAmount) {
             goal.isCompleted = true;
@@ -509,7 +522,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
 
         Calendar endCalendar = Calendar.getInstance();
         Calendar startCalendar = Calendar.getInstance();
-        startCalendar.add(Calendar.MONTH, -2);
+        startCalendar.add(Calendar.MONTH, -3);
 
         transactionRepository.getAllTransaction()
                 .thenAccept(transactions -> {

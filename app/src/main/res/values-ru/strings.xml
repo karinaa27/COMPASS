@@ -401,4 +401,5 @@
     <string name="add_article">Добавить статью</string>
     <string name="add_new_article">Добавьте новую статью</string>
     <string name="fill_in_all_the_fields">Заполните все поля</string>
+    <string name="delete_account">Удалить счёт</string>
 </resources>

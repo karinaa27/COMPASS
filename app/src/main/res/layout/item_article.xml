@@ -23,10 +23,11 @@
 
     <TextView
         android:id="@+id/articleTitle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:text=""
         android:layout_marginTop="8dp"
         style="@style/TextColor"
         android:fontFamily="@font/montserrat"
@@ -36,10 +37,11 @@
 
     <TextView
         android:id="@+id/articleDescription"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
         style="@style/TextColor"
+        android:text=""
         android:fontFamily="@font/montserrat"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"

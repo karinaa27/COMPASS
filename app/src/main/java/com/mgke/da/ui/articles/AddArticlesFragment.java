@@ -2,10 +2,11 @@ package com.mgke.da.ui.articles;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog; // Импортируем ProgressDialog
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -16,16 +17,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -33,7 +32,6 @@ import com.google.firebase.storage.UploadTask;
 import com.mgke.da.R;
 import com.mgke.da.models.Article;
 import com.mgke.da.repository.ArticleRepository;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -43,8 +41,8 @@ public class AddArticlesFragment extends Fragment {
     private ImageView articleImage;
     private Uri imageUri;
     private ArticleRepository articleRepository;
-    private String imageUrl; // Для хранения URL загруженного изображения
-    private ProgressDialog progressDialog; // Создаем объект ProgressDialog
+    private String imageUrl;
+    private ProgressDialog progressDialog;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -52,9 +50,6 @@ public class AddArticlesFragment extends Fragment {
                     Intent data = result.getData();
                     if (data != null && data.getData() != null) {
                         imageUri = data.getData();
-                        Log.d("AddArticlesFragment", "Selected image URI: " + imageUri.toString()); // Логирование
-
-                        // Загрузка изображения в Firebase
                         uploadImageToFirebase();
                     }
                 }
@@ -75,7 +70,6 @@ public class AddArticlesFragment extends Fragment {
         articleImage = view.findViewById(R.id.articleImage);
         Button addButton = view.findViewById(R.id.add_article_button);
         ImageView closeButton = view.findViewById(R.id.close);
-
         EditText nameEditText = view.findViewById(R.id.article_name);
         EditText descriptionEditText = view.findViewById(R.id.article_description);
         EditText textEditText = view.findViewById(R.id.article_text);
@@ -83,13 +77,17 @@ public class AddArticlesFragment extends Fragment {
         closeButton.setOnClickListener(v -> closeFragment());
 
         articleImage.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
-            } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 openGallery();
+            } else {
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+                } else {
+                    openGallery();
+                }
             }
         });
 
@@ -103,7 +101,6 @@ public class AddArticlesFragment extends Fragment {
                 Toast.makeText(getActivity(), getText(R.string.fill_in_all_the_fields), Toast.LENGTH_SHORT).show();
             }
         });
-
         return view;
     }
 
@@ -114,30 +111,37 @@ public class AddArticlesFragment extends Fragment {
 
     private void uploadImageToFirebase() {
         if (imageUri != null) {
-            progressDialog = new ProgressDialog(getActivity()); // Инициализация ProgressDialog
-            progressDialog.setMessage("Загрузка изображения..."); // Сообщение
-            progressDialog.setCancelable(false); // Запретить отмену
-            progressDialog.show(); // Показать диалог
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage("Загрузка изображения...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
 
             String id = UUID.randomUUID().toString();
             StorageReference fileReference = FirebaseStorage.getInstance()
-                    .getReference("articles_images") // Папка для изображений статей
-                    .child(id + ".jpg"); // Имя файла
-
-            // Загрузка изображения в Storage
+                    .getReference("articles_images")
+                    .child(id + ".jpg");
             UploadTask uploadTask = fileReference.putFile(imageUri);
             uploadTask.addOnSuccessListener(taskSnapshot -> {
-                // Получаем URL после успешной загрузки
-                fileReference.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                    imageUrl = downloadUrl.toString(); // Сохраняем URL
-                    progressDialog.dismiss(); // Закрываем диалог
 
-                    // Теперь загружаем изображение в ImageView с помощью URL
-                    Glide.with(this).load(imageUrl).into(articleImage); // Используем URL, а не imageUri
+                fileReference.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
+                    imageUrl = downloadUrl.toString();
+                    Log.d("ImageURL", "URL изображения: " + imageUrl);
+                    progressDialog.dismiss();
+
+                    Glide.with(getActivity())
+                            .load(imageUrl)
+                            .timeout(60000)
+                            .placeholder(R.drawable.account_fon1)
+                            .error(R.drawable.account_fon2)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .into(articleImage);
+
                 }).addOnFailureListener(e -> {
-                    progressDialog.dismiss(); // Закрываем диалог
+                    progressDialog.dismiss();
                     Toast.makeText(getActivity(), "Ошибка получения URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+
             }).addOnFailureListener(e -> {
                 progressDialog.dismiss(); // Закрываем диалог
                 Toast.makeText(getActivity(), "Ошибка загрузки изображения: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -148,18 +152,15 @@ public class AddArticlesFragment extends Fragment {
     }
 
     private void saveArticleToDb(String name, String description, String text) {
-        // Проверка, что imageUrl не равен null перед сохранением статьи
         if (imageUrl == null) {
             Toast.makeText(getActivity(), "Ошибка: изображение не загружено", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Создание объекта статьи
         String id = UUID.randomUUID().toString();
         Date timestamp = new Date();
         Article article = new Article(id, name, description, text, imageUrl, timestamp);
 
-        // Сохранение статьи в БД
         articleRepository.addArticle(article).thenAccept(savedArticle -> {
             Toast.makeText(getActivity(), "Статья успешно добавлена", Toast.LENGTH_SHORT).show();
             closeFragment();

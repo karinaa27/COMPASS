@@ -247,18 +247,25 @@ public class UpdateTransactionsFragment extends Fragment {
         View dialogView = inflater.inflate(R.layout.dialog_select_goal, null);
         RadioGroup radioGroupGoals = dialogView.findViewById(R.id.radioGroupGoals);
         Button buttonSelectGoal = dialogView.findViewById(R.id.buttonSelectGoal);
+
         GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+
+        // Замените currentUserId на идентификатор текущего пользователя
+        String currentUserId = getCurrentUserId(); // Предположим, что у вас есть метод для получения текущего пользователя
+
         goalRepository.getAllGoal().thenAccept(goals -> {
             radioGroupGoals.removeAllViews();
             for (Goal goal : goals) {
-                RadioButton radioButton = new RadioButton(getContext());
-                radioButton.setText(goal.goalName);
-                radioButton.setId(View.generateViewId());
-                radioGroupGoals.addView(radioButton);
+                if (goal.userId.equals(currentUserId)) { // Фильтруем цели по текущему пользователю
+                    RadioButton radioButton = new RadioButton(getContext());
+                    radioButton.setText(goal.goalName);
+                    radioButton.setId(View.generateViewId());
+                    radioGroupGoals.addView(radioButton);
 
-                radioButton.setOnClickListener(v -> {
-                    selectedGoalId = goal.id;
-                });
+                    radioButton.setOnClickListener(v -> {
+                        selectedGoalId = goal.id;
+                    });
+                }
             }
         }).exceptionally(e -> {
             return null;
@@ -281,6 +288,13 @@ public class UpdateTransactionsFragment extends Fragment {
 
         dialog.show();
     }
+
+    // Предположим, что у вас есть метод для получения идентификатора текущего пользователя
+    private String getCurrentUserId() {
+        // Логика для получения идентификатора текущего пользователя
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
 
     private void showDatePickerDialog() {
         final Calendar calendar = Calendar.getInstance();

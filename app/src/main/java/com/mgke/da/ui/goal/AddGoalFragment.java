@@ -16,14 +16,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
+import com.mgke.da.adapters.GoalAdapter;
 import com.mgke.da.models.Goal;
 import com.mgke.da.models.PersonalData;
 import com.mgke.da.repository.GoalRepository;
 import com.mgke.da.repository.PersonalDataRepository;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -32,7 +37,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-public class AddGoalFragment extends Fragment {
+public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClickListener {
     private EditText editTextGoalName;
     private EditText editTextTargetAmount;
     private EditText editTextDateEnd;
@@ -44,23 +49,31 @@ public class AddGoalFragment extends Fragment {
     private Goal goal;
     private ImageView closeIcon;
     private String[] currencies = {"BYN", "USD", "RUB", "UAH", "PLN", "EUR"};
+    private RecyclerView recyclerView;
+    private GoalAdapter adapter;
 
     public AddGoalFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_add_goal, container, false);
+
+        // Инициализация полей ввода и элементов интерфейса
         editTextGoalName = root.findViewById(R.id.editTextGoalName);
         editTextTargetAmount = root.findViewById(R.id.editTextTargetAmount);
         editTextDateEnd = root.findViewById(R.id.editTextDateEnd);
         editTextNote = root.findViewById(R.id.editTextNote);
         buttonAddGoal = root.findViewById(R.id.buttonAddGoal);
         spinnerCurrency = root.findViewById(R.id.spinnerCurrency);
-        closeIcon = root.findViewById(R.id.close);
+        closeIcon = root.findViewById(R.id.close); // Предположим, что у вас есть RecyclerView в разметке
+
         goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+
+        // Ограничение на количество знаков после запятой в поле суммы
         editTextTargetAmount.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String value = s.toString();
@@ -72,12 +85,17 @@ public class AddGoalFragment extends Fragment {
                     }
                 }
             }
+
             @Override
             public void afterTextChanged(Editable s) {}
         });
+
+        // Настройка адаптера для выбора валюты
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, currencies);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCurrency.setAdapter(adapter);
+
+        // Получение текущего пользователя
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             userId = currentUser.getUid();
@@ -85,29 +103,51 @@ public class AddGoalFragment extends Fragment {
         } else {
             Toast.makeText(getContext(), R.string.user_not_authenticated, Toast.LENGTH_SHORT).show();
         }
+
+        // Проверка аргументов и загрузка данных цели, если она была передана
         if (getArguments() != null) {
             goal = (Goal) getArguments().getSerializable("goal");
             if (goal != null) {
+                // Заполнение полей данными цели
                 editTextGoalName.setText(goal.goalName);
                 editTextTargetAmount.setText(String.valueOf(goal.targetAmount));
-                editTextDateEnd.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(goal.dateEnd));
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                editTextDateEnd.setText(sdf.format(goal.dateEnd));
                 editTextNote.setText(goal.note);
-                buttonAddGoal.setText(R.string.save_changes);
+                buttonAddGoal.setText(R.string.save_changes); // Меняем текст кнопки на "Сохранить изменения"
+
+                // Установка валюты цели
                 int currencyPosition = Arrays.asList(currencies).indexOf(goal.currency);
-                spinnerCurrency.setSelection(currencyPosition);
+                if (currencyPosition >= 0) {
+                    spinnerCurrency.setSelection(currencyPosition);
+                }
+                buttonAddGoal.setOnClickListener(v -> {
+
+                    // Вызов метода обновления после заполнения полей
+                    updateGoal(); // Вызываем метод обновления
+                });
             }
         }
+
+        // Настройка выбора даты
         setupDatePicker();
+
+        // Обработчик нажатия на кнопку добавления/сохранения цели
         buttonAddGoal.setOnClickListener(v -> {
             if (goal == null) {
-                addGoal();
+                addGoal(); // Добавление новой цели
             } else {
-                updateGoal();
+                updateGoal(); // Обновление существующей цели
             }
         });
+
+        // Обработчик закрытия фрагмента
         closeIcon.setOnClickListener(v -> closeFragment());
+
         return root;
     }
+
+
 
     private void loadUserCurrency() {
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
@@ -125,6 +165,12 @@ public class AddGoalFragment extends Fragment {
         } else {
             spinnerCurrency.setSelection(1);
         }
+    }
+
+    @Override
+    public void onGoalClick(Goal goal) {
+        this.goal = goal; // Устанавливаем выбранную цель
+        updateGoal();     // Вызываем метод обновления
     }
 
     private void addGoal() {

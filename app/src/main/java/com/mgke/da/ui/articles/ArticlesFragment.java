@@ -7,29 +7,61 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
-import com.mgke.da.databinding.FragmentArticlesBinding;
+import com.mgke.da.adapters.ArticleAdapter;
+import com.mgke.da.models.Article;
+import com.mgke.da.repository.ArticleRepository;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArticlesFragment extends Fragment {
 
-    private FragmentArticlesBinding binding;
+    private RecyclerView recyclerView;
+    private ArticleAdapter adapter;
+    private List<Article> articles = new ArrayList<>();
+    private ArticleRepository articleRepository;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_articles, container, false);
 
-        binding = FragmentArticlesBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-        binding.addArticlesButton.setOnClickListener(v ->
+        recyclerView = root.findViewById(R.id.recyclerViewArticles);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new ArticleAdapter(getContext(), articles);
+        recyclerView.setAdapter(adapter);
+
+        // Инициализация репозитория
+        articleRepository = new ArticleRepository(FirebaseFirestore.getInstance());
+
+        // Загрузка статей
+        loadArticles();
+
+        // Обработчик нажатия кнопки для добавления новой статьи
+        root.findViewById(R.id.add_articles_button).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.fragment_add_articles)
         );
 
         return root;
     }
 
+    private void loadArticles() {
+        articleRepository.getAllArticles().thenAccept(articles -> {
+            this.articles.clear();
+            this.articles.addAll(articles);
+            adapter.notifyDataSetChanged();
+        }).exceptionally(e -> {
+            // Обработка ошибок
+            return null;
+        });
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        // Очистка ссылок
+        recyclerView.setAdapter(null);
     }
 }

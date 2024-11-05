@@ -1,10 +1,14 @@
 package com.mgke.da.repository;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.mgke.da.models.PersonalData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -15,6 +19,7 @@ public class PersonalDataRepository {
     public PersonalDataRepository(FirebaseFirestore db) {
         personalDataCollection = db.collection("personalData");
     }
+
     public String getNewDocumentId() {
         return personalDataCollection.document().getId();
     }
@@ -29,6 +34,22 @@ public class PersonalDataRepository {
                         future.completeExceptionally(task.getException());
                     }
                 });
+        return future;
+    }
+
+    // Проверка уникальности имени пользователя
+    public CompletableFuture<Boolean> isUsernameUnique(String username) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        personalDataCollection.whereEqualTo("username", username).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Если результат пустой, имя пользователя уникально
+                future.complete(task.getResult().isEmpty());
+            } else {
+                future.completeExceptionally(task.getException());
+            }
+        });
+
         return future;
     }
 
@@ -76,6 +97,7 @@ public class PersonalDataRepository {
         });
         return future;
     }
+
     public CompletableFuture<PersonalData> getUserByEmail(String email) {
         CompletableFuture<PersonalData> future = new CompletableFuture<>();
 
@@ -90,5 +112,24 @@ public class PersonalDataRepository {
         });
 
         return future;
+    }
+
+    public void addUserDataChangeListener(String userId, UserDataChangeListener listener) {
+        DocumentReference userRef = personalDataCollection.document(userId);
+        userRef.addSnapshotListener((snapshot, e) -> {
+            if (e != null) {
+                Log.e("PersonalDataRepository", "Listen failed.", e);
+                return;
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                PersonalData updatedData = snapshot.toObject(PersonalData.class);
+                listener.onUserDataChanged(updatedData);
+            }
+        });
+    }
+
+    public interface UserDataChangeListener {
+        void onUserDataChanged(PersonalData updatedData);
     }
 }

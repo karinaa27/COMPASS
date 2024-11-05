@@ -1,5 +1,8 @@
 package com.mgke.da.ui.personal_data;
 
+import android.app.DatePickerDialog;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,6 +12,7 @@ import androidx.navigation.Navigation;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,15 +25,25 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.mgke.da.R;
 import com.mgke.da.models.PersonalData;
+import com.mgke.da.repository.PersonalDataRepository;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class PersonalDataFragment extends Fragment {
-    private EditText etFirstName, etLastName, etCountry, etProfession, etNote;
+    private EditText etFirstName, etLastName, etProfession, etNote, etBirthday;
     private RadioGroup radioGroupGender;
     private Button buttonSave;
     private ImageView closeButton;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
+    private PersonalDataRepository personalDataRepository;
     private ListenerRegistration registration;
+    private AutoCompleteTextView etCountry;
+    private EditText etUsername; // Поле для имени пользователя
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -39,75 +53,191 @@ public class PersonalDataFragment extends Fragment {
         etCountry = view.findViewById(R.id.etCountry);
         etProfession = view.findViewById(R.id.etProfession);
         etNote = view.findViewById(R.id.etNote);
+        etBirthday = view.findViewById(R.id.etBirthday);
         radioGroupGender = view.findViewById(R.id.radioGroupGender);
         buttonSave = view.findViewById(R.id.buttonSave);
         closeButton = view.findViewById(R.id.close);
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
+        etUsername = view.findViewById(R.id.etUsername);
         loadPersonalData();
+
+        // Ограничение только на выбор из выпадающего списка
+        etCountry.setKeyListener(null); // Блокируем ввод текста с клавиатуры
+        etCountry.setOnClickListener(v -> showCountrySelectionDialog()); // Открываем диалог при нажатии
+
+        // Установка слушателя для выбора даты рождения
+        etBirthday.setOnClickListener(v -> showDatePicker());
+
         closeButton.setOnClickListener(v -> navigateToSettings());
         buttonSave.setOnClickListener(v -> {
             savePersonalData();
             navigateToSettings();
         });
+
         return view;
+    }
+
+    private void showCountrySelectionDialog() {
+        String[] countries = getResources().getStringArray(R.array.countries_array);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.select_country);
+        builder.setItems(countries, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                etCountry.setText(countries[which]); // Устанавливаем выбранную страну
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss(); // Закрываем диалог
+            }
+        });
+
+        builder.show(); // Отображаем диалог
+    }
+
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
+                    etBirthday.setText(selectedDate);
+                }, year, month, day);
+        datePickerDialog.show();
     }
 
     private void loadPersonalData() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
-            DocumentReference docRef = db.collection("personalData").document(currentUser.getUid());
-            registration = docRef.addSnapshotListener((documentSnapshot, e) -> {
-                if (e != null) return;
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    PersonalData data = documentSnapshot.toObject(PersonalData.class);
-                    if (data != null) {
-                        etFirstName.setText(data.firstName);
-                        etLastName.setText(data.lastName);
-                        etCountry.setText(data.country);
-                        etProfession.setText(data.profession);
-                        etNote.setText(data.notes);
-                        if ("Male".equals(data.gender)) {
-                            radioGroupGender.check(R.id.radioMale);
-                        } else if ("Female".equals(data.gender)) {
-                            radioGroupGender.check(R.id.radioFemale);
+            String userId = currentUser.getUid();
+            registration = db.collection("personalData").document(userId)
+                    .addSnapshotListener((snapshot, e) -> {
+                        if (snapshot != null && snapshot.exists()) {
+                            PersonalData data = snapshot.toObject(PersonalData.class);
+                            if (data != null) {
+                                etUsername.setText(data.username);
+                                etFirstName.setText(data.firstName);
+                                etLastName.setText(data.lastName);
+                                etCountry.setText(data.country);
+                                etProfession.setText(data.profession);
+                                etNote.setText(data.notes);
+
+                                // Преобразуем Date в строку для отображения
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                                if (data.birthDate != null) {
+                                    etBirthday.setText(sdf.format(data.birthDate));
+                                }
+
+                                // Установка выбранного пола
+                                if ("male".equals(data.gender)) {
+                                    radioGroupGender.check(R.id.radioMale);
+                                } else if ("female".equals(data.gender)) {
+                                    radioGroupGender.check(R.id.radioFemale);
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
         }
     }
 
     private void savePersonalData() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
+            String username = etUsername.getText().toString().trim(); // Получение имени пользователя
             String userId = currentUser.getUid();
             String firstName = etFirstName.getText().toString().trim();
             String lastName = etLastName.getText().toString().trim();
             String country = etCountry.getText().toString().trim();
             String profession = etProfession.getText().toString().trim();
             String notes = etNote.getText().toString().trim();
-            String gender = getSelectedGender();
-            PersonalData personalData = new PersonalData(userId, null, null, null, firstName, lastName, gender, null, country, profession, notes, null, null);
-            db.collection("personalData").document(userId).set(personalData).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(getContext(), R.string.data_saved_successfully, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), R.string.data_save_error + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            String selectedBirthday = etBirthday.getText().toString().trim();
+            String gender = radioGroupGender.getCheckedRadioButtonId() == R.id.radioMale ? "male" : "female";
+
+            // Проверка уникальности имени пользователя
+            personalDataRepository.isUsernameUnique(username).thenAccept(isUnique -> {
+                if (!isUnique) {
+                    etUsername.setError(getString(R.string.username_taken_error));
+                    return; // Прерываем выполнение, если имя пользователя уже занято
                 }
+
+                // Если имя пользователя уникально, продолжаем процесс сохранения
+                DocumentReference docRef = db.collection("personalData").document(userId);
+                docRef.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        PersonalData existingData = task.getResult().toObject(PersonalData.class);
+                        if (existingData != null) {
+                            boolean isChanged = false;
+
+                            // Проверка и обновление имени пользователя
+                            if (!username.equals(existingData.username)) {
+                                existingData.username = username; // Обновление имени пользователя
+                                isChanged = true;
+                            }
+                            if (!firstName.equals(existingData.firstName)) {
+                                existingData.firstName = firstName;
+                                isChanged = true;
+                            }
+                            if (!lastName.equals(existingData.lastName)) {
+                                existingData.lastName = lastName;
+                                isChanged = true;
+                            }
+
+                            // Преобразование строки в Date для сравнения
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                            try {
+                                Date newBirthday = sdf.parse(selectedBirthday);
+                                if (newBirthday != null && !newBirthday.equals(existingData.birthDate)) {
+                                    existingData.birthDate = newBirthday;
+                                    isChanged = true;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                                return;
+                            }
+
+                            if (!country.equals(existingData.country)) {
+                                existingData.country = country;
+                                isChanged = true;
+                            }
+                            if (!profession.equals(existingData.profession)) {
+                                existingData.profession = profession;
+                                isChanged = true;
+                            }
+                            if (!notes.equals(existingData.notes)) {
+                                existingData.notes = notes;
+                                isChanged = true;
+                            }
+                            if (!gender.equals(existingData.gender)) {
+                                existingData.gender = gender;
+                                isChanged = true;
+                            }
+                            if (isChanged) {
+                                docRef.set(existingData).addOnCompleteListener(updateTask -> {
+                                    if (updateTask.isSuccessful()) {
+                                        Toast.makeText(getContext(), R.string.data_saved_successfully, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getContext(), R.string.data_save_error + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            }).exceptionally(e -> {
+                Toast.makeText(getContext(), getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
+                return null;
             });
         }
     }
 
-    private String getSelectedGender() {
-        int selectedId = radioGroupGender.getCheckedRadioButtonId();
-        if (selectedId == R.id.radioMale) {
-            return getString(R.string.gender_male);
-        } else if (selectedId == R.id.radioFemale) {
-            return getString(R.string.gender_female);
-        }
-        return null;
-    }
+
 
     private void navigateToSettings() {
         NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);

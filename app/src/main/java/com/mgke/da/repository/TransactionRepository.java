@@ -74,6 +74,24 @@ public class TransactionRepository {
         });
         return future;
     }
+    public CompletableFuture<List<Transaction>> getTransactionsForUserId(String userId) {
+        CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
+        List<Transaction> transactions = new ArrayList<>();
+
+        transactionCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Transaction transaction = document.toObject(Transaction.class);
+                    transactions.add(transaction);
+                }
+                future.complete(transactions);
+            } else {
+                future.completeExceptionally(task.getException());
+            }
+        });
+        return future;
+    }
+
     public CompletableFuture<List<Transaction>> getTransactionsForAccount(String accountName) {
         CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
         List<Transaction> transactions = new ArrayList<>();

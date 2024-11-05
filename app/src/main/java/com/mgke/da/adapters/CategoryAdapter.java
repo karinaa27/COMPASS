@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mgke.da.R;
 import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,6 +44,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private static final int VIEW_TYPE_CATEGORY = 0;
     private static final int VIEW_TYPE_ADD_BUTTON = 1;
+
+    public CategoryAdapter(ArrayList<Object> objects) {
+    }
 
     @NonNull
     @Override

@@ -25,9 +25,10 @@ public class GoalRepository {
         return goal;
     }
 
-    public void deleteGoal(String id) {
-        goalCollection.document(id).delete();
+    public CompletableFuture<Void> deleteGoal(String id) {
+        return CompletableFuture.runAsync(() -> goalCollection.document(id).delete());
     }
+
     public Task<Void> updateGoalProgress(String goalId, double progress) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("progress", progress);

@@ -411,4 +411,14 @@
 
     <string name="fill_in_all_the_fields">Fill in all the fields</string>
     <string name="delete_account">Delete Account</string>
+    <string name="no_goal_selected">Сбросить выбор</string>
+    <string name="new_email">Новая почта</string>
+
+        <string name="email_empty_error">Email cannot be empty!</string>
+        <string name="email_changed_successfully">Email changed successfully!</string>
+        <string name="error_email_change">Error changing email.</string>
+    <string name="new_email_saved">New email saved</string>
+    <string name="error_updating_email">Error updating email. Please try again.</string>
+
+    <string name="error_fetching_data">Error fetching data. Please try again later.</string>
 </resources>

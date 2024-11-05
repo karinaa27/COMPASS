@@ -204,6 +204,44 @@
 
 
                 <RelativeLayout
+                    android:id="@+id/EmailSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <ImageView
+                        android:id="@+id/email"
+                        style="@style/BackgroundIconSettings"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="12dp"
+                        android:src="@drawable/baseline_email_24" />
+
+                    <TextView
+                        android:id="@+id/textEmail"
+                        style="@style/TextColor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_toEndOf="@id/email"
+                        android:fontFamily="@font/montserrat"
+                        android:text="@string/email"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/arrowEmail"
+                        style="@style/Arrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="10dp"
+                        android:rotation="180" />
+
+                </RelativeLayout>
+                <RelativeLayout
                     android:id="@+id/PasswordSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -241,7 +279,6 @@
                         android:rotation="180" />
 
                 </RelativeLayout>
-
             </LinearLayout>
 
             <LinearLayout
@@ -339,6 +376,7 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
+                    android:id="@+id/ExitUser"
                     android:layout_height="wrap_content">
 
                     <ImageView

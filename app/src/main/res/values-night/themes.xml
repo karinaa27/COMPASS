@@ -31,16 +31,24 @@
         <item name="android:textColorHint">@color/black</item>
     </style>
     <style name="ScreenBackgroundLogin">
-        <item name="android:background">@drawable/backgroundloginnight</item>
+        <item name="android:background">@drawable/gradient_background_night</item>
     </style>
     <style name="EdittextLogin">
-        <item name="android:background">@drawable/custom_edittext_night</item>
+        <item name="android:background">@drawable/custom_edittext_login_night</item>
         <item name="drawableTint">@color/white</item>
         <item name="android:textColorHint">@color/white</item>
     </style>
+    <style name="GlasLogin">
+        <item name="tint">@color/white</item>
+    </style>
+    <style name="CustomButtonStyleLogin" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/gradient_background_night</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:backgroundTint">@null</item>
+    </style>
     <style name="TextColorLogin">
-        <item name="android:textColor">@color/black</item>
-        <item name="android:buttonTint">@color/black</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:buttonTint">@color/white</item>
     </style>
     <style name="ButtonLogin">
         <item name="backgroundTint">#1D0141</item>

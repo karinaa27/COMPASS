@@ -57,6 +57,9 @@
         <action
             android:id="@+id/action_addTransactionFragment_to_addCategoryFragment"
             app:destination="@id/addCategoryFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_addAccountFragment"
+            app:destination="@id/navigation_add_account" />
     </fragment>
     <fragment
         android:id="@+id/PersonalDataFragment"

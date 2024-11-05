@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    style="@style/BackgroundSettings">
+
+    <!-- Сообщение для повторной аутентификации через Google -->
+    <TextView
+        android:id="@+id/googleAuthMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Чтобы подтвердить, что это вы, авторизуйтесь с помощью учетной записи Google"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"/>
+
+    <!-- Кнопка для повторного входа через Google -->
+    <Button
+        android:id="@+id/googleSignInButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Войдите через Google"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"/>
+
+    <!-- Поле для отображения текущей почты -->
+    <EditText
+        android:id="@+id/currentEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Текущая почта"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/baseline_email_24"
+        android:drawablePadding="8dp"
+        style="@style/EdittextLogin" />
+
+    <!-- Поле для ввода новой почты -->
+    <EditText
+        android:id="@+id/newEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Новая почта"
+        android:layout_marginTop="10dp"
+        android:padding="8dp"
+        android:drawableLeft="@drawable/baseline_email_24"
+        android:drawablePadding="8dp"
+        style="@style/EdittextLogin"
+        android:visibility="gone"/>
+
+    <!-- Кнопка для сохранения новой почты -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Сохранить"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"/>
+</LinearLayout>

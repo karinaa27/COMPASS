@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.Da" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#0040FF</item>
-        <item name="colorPrimaryVariant">#0040FF</item>
+        <item name="colorPrimary">#676BC2</item>
+        <item name="colorPrimaryVariant">#676BC2</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/purple_700</item>
@@ -88,20 +88,29 @@
 
     <!-- Login -->
     <style name="ScreenBackgroundLogin">
-        <item name="android:background">@drawable/backgroundlogin</item>
+        <item name="android:background">@drawable/gradient_background</item>
     </style>
+
     <style name="EdittextLogin">
-        <item name="android:background">@drawable/custom_edittext</item>
+        <item name="android:background">@drawable/custom_edittext_login</item>
         <item name="drawableTint">#676BC2</item>
         <item name="android:textColorHint">@color/black</item>
     </style>
+    <style name="GlasLogin">
+        <item name="tint">#676BC2</item>
+    </style>
+    <style name="CustomButtonStyleLogin" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/gradient_background</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:backgroundTint">@null</item>
+    </style>
     <style name="TextColorLogin">
-        <item name="android:textColor">@color/purple_500</item>
-        <item name="android:buttonTint">@color/purple_500</item>
+        <item name="android:textColor">#676BC2</item>
+        <item name="android:buttonTint">#676BC2</item>
     </style>
 
     <style name="CardViewLogin">
-        <item name="android:background">@drawable/custom_edittext</item>
+        <item name="android:background">@drawable/custom_edittext_login</item>
         <item name="drawableTint">@color/purple_500</item>
         <item name="android:textColorHint">@color/black</item>
     </style>

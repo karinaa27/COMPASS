@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,12 +40,12 @@ public class LoginActivity extends AppCompatActivity {
     public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
     private PersonalDataRepository personalDataRepository;
     private static final int RC_SIGN_IN = 9001;
-
+    private FirebaseFirestore firestore;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        Log.d("ActivityLifecycle", "LoginActivity onCreate called");
         initializeViews();
         initializeGoogleSignIn();
         checkLoginStatus();
@@ -67,7 +68,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initializeGoogleSignIn() {
-        personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+        // Инициализация Firestore
+        firestore = FirebaseFirestore.getInstance(); // Добавьте эту строку
+        personalDataRepository = new PersonalDataRepository(firestore);
         auth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -77,6 +80,7 @@ public class LoginActivity extends AppCompatActivity {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
+
 
     private void checkLoginStatus() {
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -125,9 +129,6 @@ public class LoginActivity extends AppCompatActivity {
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             loginEmail.setError(getString(R.string.email_invalid));
             return false;
-        } else if (password.isEmpty()) {
-            loginPassword.setError(getString(R.string.password_empty));
-            return false;
         }
         return true;
     }
@@ -150,51 +151,12 @@ public class LoginActivity extends AppCompatActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                checkUserPassword(account.getEmail(), account.getIdToken());
+                // Directly authenticate with Firebase
+                firebaseAuthWithGoogle(account.getIdToken());
             }
         } catch (ApiException e) {
             Toast.makeText(this, getString(R.string.login_error, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void checkUserPassword(String email, String idToken) {
-        personalDataRepository.getUserByEmail(email).thenAccept(personalData -> {
-            if (personalData != null && personalData.password != null) {
-                // Если пароль существует, заполняем поля и переводим фокус на пароль
-                loginEmail.setText(email);
-                loginPassword.requestFocus(); // Переводим фокус на поле пароля
-            } else {
-                // Если пароля нет, выполняем вход через Google
-                firebaseAuthWithGoogle(idToken);
-            }
-        }).exceptionally(e -> {
-            // В случае ошибки, выполняем вход через Google
-            firebaseAuthWithGoogle(idToken);
-            return null; // Возвращаем null, чтобы соответствовать типу
-        });
-    }
-
-    private void promptForPassword(String email, String idToken) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.enter_password));
-
-        final EditText input = new EditText(this);
-        builder.setView(input);
-
-        builder.setPositiveButton(getString(R.string.login), (dialog, which) -> {
-            String password = input.getText().toString();
-            auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            navigateToMain();
-                        } else {
-                            Toast.makeText(LoginActivity.this, getString(R.string.login_failed, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        });
-
-        builder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.cancel());
-        builder.show();
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -203,14 +165,53 @@ public class LoginActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 FirebaseUser user = auth.getCurrentUser();
                 if (user != null) {
-                    saveUserData(user);
-                    Toast.makeText(LoginActivity.this, getString(R.string.google_signin_success), Toast.LENGTH_SHORT).show();
-                    navigateToMain();
+                    String email = user.getEmail();
+                    if (email != null) {
+                        checkUserInFirestore(email).addOnCompleteListener(checkTask -> {
+                            if (checkTask.isSuccessful()) {
+                                PersonalData personalData = checkTask.getResult();
+
+                                    String id = user.getUid();
+                                    PersonalData newPersonalData = new PersonalData(
+                                            id,
+                                            user.getDisplayName() != null ? user.getDisplayName() : "",
+                                            "",  // Пароль не нужен
+                                            email,
+                                            null,  // First Name
+                                            null,  // Last Name
+                                            null,  // Gender
+                                            null,  // Birth Date
+                                            null,  // Country
+                                            null,  // Profession
+                                            null,  // Notes
+                                            null,
+                                            "USD"
+                                    );
+                                    personalDataRepository.addOrUpdatePersonalData(newPersonalData);
+
+                                    Toast.makeText(LoginActivity.this, getString(R.string.google_sign_in_success), Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                    finish();
+                                }
+
+                        });
+                    }
                 }
             } else {
-                Toast.makeText(this, getString(R.string.google_auth_error, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.auth_error, task.getException().getMessage()), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    private Task<PersonalData> checkUserInFirestore(String email) {
+        return firestore.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        return task.getResult().getDocuments().get(0).toObject(PersonalData.class);
+                    }
+                    return null;
+                });
     }
 
     private void saveUserData(FirebaseUser user) {

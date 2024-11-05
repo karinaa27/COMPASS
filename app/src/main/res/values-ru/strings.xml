@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <string name="app_name">Digital Compass Finance</string>
+    <string name="app_name">Цифровой компас финансов</string>
     <string name="title_home">Главная</string>
     <string name="title_dashboard">Панель управления</string>
     <string name="title_notifications">Уведомления</string>
@@ -402,4 +402,19 @@
     <string name="add_new_article">Добавьте новую статью</string>
     <string name="fill_in_all_the_fields">Заполните все поля</string>
     <string name="delete_account">Удалить счёт</string>
+    <string name="no_goal_selected">Сбросить выбор</string>
+
+    <string name="new_email">Новая почта</string>
+
+        <string name="email_empty_error">Электронная почта не может быть пустой!</string>
+        <string name="email_changed_successfully">Электронная почта успешно изменена!</string>
+        <string name="error_email_change">Ошибка изменения электронной почты.</string>
+
+    <string name="new_email_saved">Новая почта сохранена</string>
+
+    <string name="error_updating_email">Ошибка при обновлении почты. Пожалуйста, попробуйте еще раз.</string>
+
+    <string name="error_fetching_data">Ошибка при извлечении данных. Пожалуйста, попробуйте позже.</string>
+
+
 </resources>

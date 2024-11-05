@@ -9,6 +9,10 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -29,18 +34,48 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.R;
+import com.mgke.da.activity.SignUpActivity;
 import com.mgke.da.databinding.FragmentSettingsBinding;
+import com.mgke.da.models.Account;
+import com.mgke.da.models.Category;
+import com.mgke.da.models.Comment;
+import com.mgke.da.models.Goal;
 import com.mgke.da.models.PersonalData;
+import com.mgke.da.models.Transaction;
+import com.mgke.da.repository.AccountRepository;
+import com.mgke.da.repository.CategoryRepository;
+import com.mgke.da.repository.CommentRepository;
+import com.mgke.da.repository.GoalRepository;
+import com.mgke.da.repository.LikeRepository;
 import com.mgke.da.repository.PersonalDataRepository;
+import com.mgke.da.repository.TransactionRepository;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 public class SettingsFragment extends Fragment {
 
@@ -49,6 +84,20 @@ public class SettingsFragment extends Fragment {
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private static final int GALLERY_REQUEST_CODE = 1000;
     private final String[] currencies = {"BYN", "USD", "RUB", "UAH", "PLN", "EUR"};
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private static final int RC_GOOGLE_SIGN_IN = 9001;
+    private Button googleSignInButton;
+    private TextView googleAuthMessage;
+    private EditText newEmailInput;
+    private Button saveButton;
+    private GoogleSignInClient googleSignInClient;
+PersonalDataRepository personalDataRepository;
+GoalRepository goalRepository;
+CategoryRepository categoryRepository;
+AccountRepository accountRepository;
+TransactionRepository transactionRepository;
+LikeRepository likeRepository;
+CommentRepository commentRepository;
 
     @Nullable
     @Override
@@ -63,11 +112,20 @@ public class SettingsFragment extends Fragment {
         setupExitButtonClick();
         setupDeleteAccountButtonClick();
         setupAvatarClick();
+        setupEmailSettingsClick();
         setupPersonalDataClick();
         loadUserEmail();
         setupImagePickerLauncher();
         setupCurrencySpinner();
         setupPasswordSettingsClick();
+
+
+        // Инициализация GoogleSignInClient
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.client_id)) // Убедитесь, что у вас есть правильный ID клиента
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
         return view;
     }
 
@@ -110,6 +168,200 @@ public class SettingsFragment extends Fragment {
                 .setPositiveButton(R.string.yes, (dialog, which) -> openGallery())
                 .setNegativeButton(R.string.no, null)
                 .show();
+    }
+
+    private void setupEmailSettingsClick() {
+        RelativeLayout emailSettings = binding.EmailSettings;
+        emailSettings.setOnClickListener(v -> showChangeEmailDialog());
+    }
+
+    private void showChangeEmailDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_change_email, null);
+        builder.setView(dialogView);
+
+        // Инициализация элементов интерфейса
+        googleSignInButton = dialogView.findViewById(R.id.googleSignInButton);
+        googleAuthMessage = dialogView.findViewById(R.id.googleAuthMessage);
+        newEmailInput = dialogView.findViewById(R.id.newEmail);
+        saveButton = dialogView.findViewById(R.id.saveButton);
+
+        // Скрываем поля для новой почты и кнопку сохранения
+        newEmailInput.setVisibility(View.GONE);
+        saveButton.setVisibility(View.GONE);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        // Проверяем провайдера аутентификации
+        boolean isGoogleSignIn = false;
+        for (UserInfo info : currentUser.getProviderData()) {
+            if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
+                isGoogleSignIn = true;
+                break;
+            }
+        }
+        if (isGoogleSignIn) {
+            googleSignInButton.setVisibility(View.VISIBLE);
+            googleAuthMessage.setVisibility(View.VISIBLE);
+            googleSignInButton.setOnClickListener(v -> requestNewGoogleSignInToken());
+        } else {
+            newEmailInput.setVisibility(View.VISIBLE);
+            saveButton.setVisibility(View.VISIBLE);
+        }
+
+        AlertDialog dialog = builder.create();
+        saveButton.setOnClickListener(v -> {
+            String newEmail = newEmailInput.getText().toString().trim();
+            if (TextUtils.isEmpty(newEmail)) {
+                showToast("Введите новую почту");
+                return;
+            }
+            reauthenticateAndChangeEmail(newEmail);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void reauthenticateAndChangeEmail(String newEmail) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showToast("Пользователь не авторизован");
+            return;
+        }
+
+        boolean isGoogleSignIn = false;
+        for (UserInfo info : currentUser.getProviderData()) {
+            if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
+                isGoogleSignIn = true;
+                break;
+            }
+        }
+
+        if (isGoogleSignIn) {
+            // Повторная аутентификация через Google
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getContext());
+            if (account != null) {
+                AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+                reauthenticateWithCredential(credential, newEmail);
+            } else {
+                showToast("Ошибка: учетная запись Google недоступна.");
+            }
+        } else {
+            // Повторная аутентификация через email и пароль
+            fetchPasswordFromFirestoreAndReauthenticate(newEmail);
+        }
+    }
+    private void fetchPasswordFromFirestoreAndReauthenticate(String newEmail) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showToast("Пользователь не авторизован.");
+            return;
+        }
+
+        String userId = currentUser.getUid();
+        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+
+        personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
+            if (personalData != null && personalData.password != null) {
+                AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), personalData.password);
+                reauthenticateWithCredential(credential, newEmail);
+            } else {
+                showToast("Пароль не найден. Пожалуйста, войдите заново.");
+            }
+        }).exceptionally(e -> {
+            showToast("Ошибка доступа к данным пользователя.");
+            return null;
+        });
+    }
+    private void updateEmailInFirestore(String newEmail) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showToast("Пользователь не авторизован.");
+            return;
+        }
+
+        String userId = currentUser.getUid();
+        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+
+        personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
+            if (personalData != null) {
+                personalData.email = newEmail;
+                personalDataRepository.addOrUpdatePersonalData(personalData).thenRun(() -> {
+                    showToast("Почта обновлена в Firestore");
+                }).exceptionally(e -> {
+                    showToast("Ошибка при обновлении почты в Firestore: " + e.getMessage());
+                    return null;
+                });
+            }
+        });
+    }
+
+    private void reauthenticateWithCredential(AuthCredential credential, String newEmail) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        currentUser.reauthenticate(credential).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                updateEmail(newEmail);
+            } else {
+                showToast("Ошибка повторной аутентификации: " + task.getException().getMessage());
+            }
+        });
+    }
+
+    private void updateEmail(String newEmail) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                updateEmailInFirestore(newEmail);
+                showToast("На новую почту отправлено письмо для подтверждения.");
+            } else {
+                showToast("Ошибка при обновлении почты: " + task.getException().getMessage());
+            }
+        });
+    }
+
+    private void requestNewGoogleSignInToken() {
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_GOOGLE_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                if (account != null) {
+                    AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+                    reauthenticateWithCredential(credential, () -> {
+                        // Если повторная аутентификация успешна, показываем поля для изменения почты
+                        googleSignInButton.setVisibility(View.GONE);
+                        googleAuthMessage.setVisibility(View.GONE);
+                        newEmailInput.setVisibility(View.VISIBLE);
+                        saveButton.setVisibility(View.VISIBLE);
+                    });
+                }
+            } catch (ApiException e) {
+                showToast("Ошибка повторного входа через Google: " + e.getMessage());
+            }
+        }
+    }
+
+    private void reauthenticateWithCredential(AuthCredential credential, Runnable onSuccess) {
+        FirebaseAuth.getInstance().getCurrentUser().reauthenticate(credential)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        onSuccess.run();
+                    } else {
+                        showToast("Ошибка повторной аутентификации: " + task.getException().getMessage());
+                    }
+                });
     }
 
     private void openGallery() {
@@ -171,14 +423,14 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupExitButtonClick() {
-        binding.exit.setOnClickListener(v -> {
+        binding.ExitUser.setOnClickListener(v -> {
             new AlertDialog.Builder(getContext())
                     .setTitle(R.string.logout_title)
                     .setMessage(R.string.logout_message)
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
-                        auth.signOut();
-                        showToast(R.string.logged_out);
-                        navigateToLoginActivity();
+                        auth.signOut(); // Выход из аккаунта
+                        showToast(R.string.logged_out); // Сообщение об успешном выходе
+                        navigateToLoginActivity(); // Переход к LoginActivity
                     })
                     .setNegativeButton(R.string.no, null)
                     .show();
@@ -193,16 +445,70 @@ public class SettingsFragment extends Fragment {
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
                         FirebaseUser currentUser = auth.getCurrentUser();
                         if (currentUser != null) {
-                            currentUser.delete().addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    String userId = currentUser.getUid();
-                                    PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-                                    personalDataRepository.deletePersonalData(userId);
-                                    showToast(R.string.account_deleted2);
-                                    navigateToLoginActivity();
-                                } else {
-                                    showToast(R.string.error_account_deletion);
+                            String userId = currentUser.getUid();
+                            TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
+                            CategoryRepository categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
+                            GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+                            AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
+
+                            // Получаем все транзакции пользователя
+                            transactionRepository.getTransactionsForUserId(userId).thenAccept(transactions -> {
+                                // Удаляем каждую транзакцию с использованием Task
+                                List<Task<Void>> deleteTransactionTasks = new ArrayList<>();
+                                for (Transaction transaction : transactions) {
+                                    deleteTransactionTasks.add(transactionRepository.deleteTransaction(transaction.id));
                                 }
+
+                                // Ждем завершения всех операций удаления транзакций
+                                Tasks.whenAllSuccess(deleteTransactionTasks).addOnCompleteListener(task -> {
+                                    // Получаем все категории пользователя
+                                    categoryRepository.getAllCategories(userId).thenAccept(categories -> {
+                                        // Удаляем каждую категорию с использованием Task
+                                        List<Task<Void>> deleteCategoryTasks = new ArrayList<>();
+                                        for (Category category : categories) {
+                                            deleteCategoryTasks.add(categoryRepository.deleteCategory(category.id));
+                                        }
+
+                                        // Ждем завершения всех операций удаления категорий
+                                        Tasks.whenAllSuccess(deleteCategoryTasks).addOnCompleteListener(taskDeleteCategories -> {
+                                            // Удаляем все цели пользователя
+                                            goalRepository.getUserGoals(userId).thenAccept(goals -> {
+                                                // Удаляем каждую цель
+                                                List<CompletableFuture<Void>> deleteGoalFutures = new ArrayList<>();
+                                                for (Goal goal : goals) {
+                                                    deleteGoalFutures.add(goalRepository.deleteGoal(goal.id));
+                                                }
+
+                                                // Ждем завершения всех операций удаления целей
+                                                CompletableFuture.allOf(deleteGoalFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
+                                                    // Получаем все счета пользователя
+                                                    accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
+                                                        // Удаляем каждый счет
+                                                        List<CompletableFuture<Void>> deleteAccountFutures = new ArrayList<>();
+                                                        for (Account account : accounts) {
+                                                            deleteAccountFutures.add(accountRepository.deleteAccount(account.id));
+                                                        }
+
+                                                        // Ждем завершения всех операций удаления счетов
+                                                        CompletableFuture.allOf(deleteAccountFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
+                                                            // Теперь удаляем пользователя
+                                                            currentUser.delete().addOnCompleteListener(taskDelete -> {
+                                                                if (taskDelete.isSuccessful()) {
+                                                                    PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+                                                                    personalDataRepository.deletePersonalData(userId);
+                                                                    showToast(R.string.account_deleted2);
+                                                                    navigateToLoginActivity();
+                                                                } else {
+                                                                    showToast(R.string.error_account_deletion);
+                                                                }
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
                             });
                         }
                     })
@@ -211,11 +517,11 @@ public class SettingsFragment extends Fragment {
         });
     }
 
+
     private void navigateToLoginActivity() {
-        Intent intent = new Intent(getActivity(), LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent intent = new Intent(getActivity(), SignUpActivity.class);
         startActivity(intent);
-        requireActivity().finish();
+        requireActivity().finish(); // Закрываем текущую активность
     }
 
     private void setupCategoriesSettingsClick() {
@@ -351,7 +657,7 @@ public class SettingsFragment extends Fragment {
                 if (personalData != null) {
                     personalData.currency = selectedCurrency;
                     repository.addOrUpdatePersonalData(personalData).thenRun(() -> {
-                        showToast(R.string.currency_saved);
+
                     });
                 }
             });

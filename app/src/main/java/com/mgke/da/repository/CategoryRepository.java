@@ -46,11 +46,10 @@
             return future;
         }
 
-        public void deleteCategory(String id) {
-            categoryCollection.document(id).delete()
-                    .addOnSuccessListener(aVoid -> Log.d("CategoryRepository", "Category deleted: " + id))
-                    .addOnFailureListener(e -> Log.e("CategoryRepository", "Error deleting category", e));
+        public Task<Void> deleteCategory(String id) {
+            return categoryCollection.document(id).delete();
         }
+
 
         public void removeCategory(Category category, String language) {
             String categoryName = category.name;
@@ -101,22 +100,6 @@
             return future;
         }
 
-        public CompletableFuture<Category> getCategoryByName(String categoryName) {
-            CompletableFuture<Category> future = new CompletableFuture<>();
-
-            categoryCollection.whereEqualTo("name", categoryName).get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                            DocumentSnapshot document = task.getResult().getDocuments().get(0);
-                            Category category = document.toObject(Category.class);
-                            future.complete(category);
-                        } else {
-                            future.complete(null);
-                        }
-                    });
-
-            return future;
-        }
 
         public void createDefaultCategories(String userId) {
             List<Category> defaultCategories = new ArrayList<>();

@@ -7,11 +7,14 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -23,8 +26,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
+import com.mgke.da.adapters.CategoryAdapter;
 import com.mgke.da.adapters.SimpleCategoryAdapter;
 import com.mgke.da.models.Account;
+import com.mgke.da.models.Category;
 import com.mgke.da.models.ConversionResponse;
 import com.mgke.da.models.Goal;
 import com.mgke.da.models.Transaction;
@@ -37,11 +42,16 @@ import com.mgke.da.repository.GoalRepository;
 import com.mgke.da.repository.PersonalDataRepository;
 import com.mgke.da.repository.TransactionRepository;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -114,6 +124,8 @@ public class AddTransactionFragment extends Fragment {
         binding.textViewCurrencyLabel.setVisibility(View.GONE);
         setTransactionType(INCOME);
 
+        loadCategoriesWithDefaults();
+
         binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
         binding.textViewCurrencyLabel.setOnClickListener(v -> showSelectCurrencyDialog());
         binding.incomeBtn.setOnClickListener(v -> setTransactionType(INCOME));
@@ -146,18 +158,31 @@ public class AddTransactionFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_select_goal, null);
+
         RadioGroup radioGroupGoals = dialogView.findViewById(R.id.radioGroupGoals);
         Button buttonSelectGoal = dialogView.findViewById(R.id.buttonSelectGoal);
+        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal); // Кнопка для добавления новой цели
 
         GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
-
-        // Замените currentUserId на идентификатор текущего пользователя
-        String currentUserId = getCurrentUserId(); // Предположим, что у вас есть метод для получения текущего пользователя
+        String currentUserId = getCurrentUserId();
 
         goalRepository.getAllGoal().thenAccept(goals -> {
             radioGroupGoals.removeAllViews();
+
+            // Добавляем опцию "Сбросить выбор"
+            RadioButton resetSelectionButton = new RadioButton(getContext());
+            resetSelectionButton.setText(getString(R.string.no_goal_selected));
+            resetSelectionButton.setId(View.generateViewId());
+            radioGroupGoals.addView(resetSelectionButton);
+
+            resetSelectionButton.setOnClickListener(v -> {
+                selectedGoalId = null;
+                binding.nameGoal.setText("");
+            });
+
+            // Добавляем цели пользователя
             for (Goal goal : goals) {
-                if (goal.userId.equals(currentUserId)) { // Фильтруем цели по текущему пользователю
+                if (goal.userId.equals(currentUserId)) {
                     RadioButton radioButton = new RadioButton(getContext());
                     radioButton.setText(goal.goalName);
                     radioButton.setId(View.generateViewId());
@@ -180,19 +205,27 @@ public class AddTransactionFragment extends Fragment {
             if (selectedId != -1) {
                 RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
                 String selectedGoalName = selectedRadioButton.getText().toString();
-                binding.nameGoal.setText(selectedGoalName);
+
+                if (!selectedGoalName.equals(getString(R.string.no_goal_selected))) {
+                    binding.nameGoal.setText(selectedGoalName);
+                }
+
                 dialog.dismiss();
             } else {
                 Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
             }
         });
+        buttonAddGoal.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.AddGoalFragment);
+            dialog.dismiss();
+        });
 
         dialog.show();
     }
 
-    // Предположим, что у вас есть метод для получения идентификатора текущего пользователя
+
     private String getCurrentUserId() {
-        // Логика для получения идентификатора текущего пользователя
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
@@ -217,6 +250,7 @@ public class AddTransactionFragment extends Fragment {
 
         RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupAccounts);
         Button buttonSelectAccount = dialogView.findViewById(R.id.buttonSelectAccount);
+        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);  // добавляем обработку для кнопки "+"
 
         accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
             radioGroup.removeAllViews();
@@ -238,6 +272,7 @@ public class AddTransactionFragment extends Fragment {
 
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
+
         buttonSelectAccount.setOnClickListener(v -> {
             int selectedId = radioGroup.getCheckedRadioButtonId();
             if (selectedId != -1) {
@@ -247,7 +282,44 @@ public class AddTransactionFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+
+        addButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.action_navigation_home_to_addAccountFragment);
+            dialog.dismiss();
+        });
+
         dialog.show();
+    }
+
+
+    private void loadCategoriesWithDefaults() {
+        categoryRepository.getAllCategory(userId).whenComplete((categories, throwable) -> {
+            if (throwable != null) {
+                // Обработка ошибки при получении категорий
+                throwable.printStackTrace();
+                return;
+            }
+
+            if (categories == null || categories.isEmpty()) {
+                // Если категории пустые, создаем дефолтные категории
+                categoryRepository.createDefaultCategories(userId);
+                categoryRepository.createDefaultExpenseCategories(userId);
+                // Заново загружаем категории после создания дефолтных
+                loadCategoriesBasedOnTransactionType();
+            } else {
+                // Если категории уже существуют, просто загружаем их
+                loadCategoriesBasedOnTransactionType();
+            }
+        });
+    }
+
+    private void loadCategoriesBasedOnTransactionType() {
+        if (currentTransactionType.equals(INCOME)) {
+            loadIncomeCategories();
+        } else {
+            loadExpenseCategories();
+        }
     }
 
     private void showSelectCurrencyDialog() {
@@ -296,18 +368,22 @@ public class AddTransactionFragment extends Fragment {
         if (!inputAmountStr.isEmpty()) {
             double inputAmount = Double.parseDouble(inputAmountStr);
             if (inputAmount <= 0) {
-                Toast.makeText(getContext(), "", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Введите сумму больше нуля", Toast.LENGTH_SHORT).show();
                 return;
             }
             String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
             String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
+
             ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount).enqueue(new Callback<ConversionResponse>() {
                 @Override
                 public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         double convertedAmount = response.body().getResult();
-                        DecimalFormat df = new DecimalFormat("#.00");
-                        String formattedAmount = df.format(convertedAmount);
+                        // Используем NumberFormat для форматирования
+                        NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
+                        numberFormat.setMinimumFractionDigits(2);
+                        numberFormat.setMaximumFractionDigits(2);
+                        String formattedAmount = numberFormat.format(convertedAmount);
                         binding.sum.setText(formattedAmount);
                     } else {
                         binding.sum.setText("");
@@ -323,6 +399,7 @@ public class AddTransactionFragment extends Fragment {
             binding.sum.setText("");
         }
     }
+
 
     private void setTransactionType(String type) {
         currentTransactionType = type;
@@ -501,5 +578,26 @@ public class AddTransactionFragment extends Fragment {
         binding.editTextCurrency.setText("");
         binding.currencyTextView.setText(defaultCurrency);
         updateCurrencyVisibility(true);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        binding.recyclerViewCategories.setAdapter(categoryAdapter);
+        loadUserCurrencyFromDatabase();
+        loadCategoriesWithDefaults();
+    }
+
+    private void loadUserCurrencyFromDatabase() {
+        if (currentUser != null) {
+            PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+            personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
+                if (personalData != null) {
+                    loadUserCurrency(personalData);
+                }
+            }).exceptionally(e -> {
+                e.printStackTrace(); // Не забываем обрабатывать исключения
+                return null;
+            });
+        }
     }
 }

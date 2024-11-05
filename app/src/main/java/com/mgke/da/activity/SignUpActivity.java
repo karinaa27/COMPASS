@@ -7,10 +7,13 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,55 +54,61 @@ public class SignUpActivity extends AppCompatActivity {
     private PersonalDataRepository personalDataRepository;
     private FirebaseFirestore firestore;
 
+    private boolean isGoogleSignUp = false;
+
     public static final String PREFS_NAME = "UserPrefs";
     public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
 
-    private boolean isGoogleSignUp = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-
+        Log.d("ActivityLifecycle", "SignUpActivity onCreate called");
         auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance(); // Инициализация Firestore
-        personalDataRepository = new PersonalDataRepository(firestore); // Передача Firestore в репозиторий
+        firestore = FirebaseFirestore.getInstance();
+        personalDataRepository = new PersonalDataRepository(firestore);
 
-        FirebaseUser currentUser = auth.getCurrentUser();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.client_id))
-                .requestEmail()
-                .build();
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
-        if (currentUser != null) {
-            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-            finish();
-        }
-
-        // Инициализация полей ввода
         signupEmail = findViewById(R.id.signup_email);
         signupPassword = findViewById(R.id.signup_password);
         signupPassword2 = findViewById(R.id.signup_password2);
         signupUsername = findViewById(R.id.signup_username);
-        signupButton = findViewById(R.id.sign_up_button);
-        googleSignInButton = findViewById(R.id.googleSignInButton);
-        loginRedirectText = findViewById(R.id.loginRedirectText);
         signupFirstName = findViewById(R.id.signup_first_name);
         signupLastName = findViewById(R.id.signup_last_name);
         signupBirthDate = findViewById(R.id.signup_birth_date);
         signupCountry = findViewById(R.id.signup_country);
         signupCurrency = findViewById(R.id.signup_currency);
+        signupButton = findViewById(R.id.sign_up_button);
+        googleSignInButton = findViewById(R.id.googleSignInButton);
+        loginRedirectText = findViewById(R.id.loginRedirectText);
+
+        // Проверка на уже авторизованного пользователя
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+            finish();
+        }
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // Подсветка пустых обязательных полей при создании активности
+        highlightEmptyFields();
+
+        // Убираем подсветку, когда пользователь вводит данные
+        setupTextChangedListeners();
 
         signupBirthDate.setOnClickListener(view -> showDatePickerDialog());
         signupCountry.setOnClickListener(view -> showCountryPickerDialog());
 
-        // Установите фильтры для имени и фамилии
         InputFilter nameFilter = (source, start, end, dest, dstart, dend) -> {
             for (int i = start; i < end; i++) {
                 char character = source.charAt(i);
                 if (!Character.isLetter(character) && !Character.isWhitespace(character)) {
-                    return ""; // Запретить ввод небуквенных символов
+                    return "";
                 }
             }
             return null;
@@ -122,9 +131,62 @@ public class SignUpActivity extends AppCompatActivity {
             isGoogleSignUp = true;
             signInWithGoogle();
         });
+
         signupCurrency.setOnClickListener(view -> showCurrencyPickerDialog());
-        loginRedirectText.setOnClickListener(v -> startActivity(new Intent(SignUpActivity.this, LoginActivity.class)));
+        loginRedirectText.setOnClickListener(v -> {
+            startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
+            finish();
+        });
     }
+
+    // Метод для подсветки пустых обязательных полей
+    private void highlightEmptyFields() {
+        if (signupEmail.getText().toString().trim().isEmpty()) {
+            signupEmail.setError(getString(R.string.email_error));
+        }
+        if (signupPassword.getText().toString().trim().isEmpty()) {
+            signupPassword.setError(getString(R.string.password_error));
+        }
+        if (signupPassword2.getText().toString().trim().isEmpty()) {
+            signupPassword2.setError("Пароли не совпадают");
+        }
+        if (signupUsername.getText().toString().trim().isEmpty()) {
+            signupUsername.setError(getString(R.string.username_error));
+        }
+    }
+
+    // Метод для удаления подсветки ошибок, когда пользователь вводит данные
+    private void setupTextChangedListeners() {
+        TextWatcher fieldTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!signupEmail.getText().toString().trim().isEmpty()) {
+                    signupEmail.setError(null);
+                }
+                if (!signupPassword.getText().toString().trim().isEmpty()) {
+                    signupPassword.setError(null);
+                }
+                if (!signupPassword2.getText().toString().trim().isEmpty()) {
+                    signupPassword2.setError(null);
+                }
+                if (!signupUsername.getText().toString().trim().isEmpty()) {
+                    signupUsername.setError(null);
+                }
+            }
+        };
+
+        signupEmail.addTextChangedListener(fieldTextWatcher);
+        signupPassword.addTextChangedListener(fieldTextWatcher);
+        signupPassword2.addTextChangedListener(fieldTextWatcher);
+        signupUsername.addTextChangedListener(fieldTextWatcher);
+    }
+
 
     private void registerUser() {
         String user = signupEmail.getText().toString().trim();
@@ -137,14 +199,9 @@ public class SignUpActivity extends AppCompatActivity {
         String gender = getSelectedGender();
         String currency = signupCurrency.getText().toString().trim();
 
-        // Получение даты рождения
         Date birthDate = getBirthDateFromInput();
-        if (birthDate == null) {
-            Toast.makeText(this, "Введите корректную дату рождения", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-        // Проверка обязательных полей
+        // Валидация полей
         if (user.isEmpty() || !isValidEmail(user)) {
             signupEmail.setError(getString(R.string.email_error));
             return;
@@ -175,61 +232,61 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        isUsernameTaken(username).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                if (task.getResult()) {
-                    signupUsername.setError(getString(R.string.username_taken_error));
-                    return;
-                }
+        // Проверка уникальности имени пользователя
+        personalDataRepository.isUsernameUnique(username).thenAccept(isUnique -> {
+            if (!isUnique) {
+                signupUsername.setError(getString(R.string.username_taken_error));
+                return;
+            }
 
-                // Создание пользователя
-                auth.createUserWithEmailAndPassword(user, pass).addOnCompleteListener(innerTask -> {
-                    if (innerTask.isSuccessful()) {
-                        sendVerificationEmail(); // Отправка письма с подтверждением
-                        saveLoginState();
-
-                        String userId = auth.getCurrentUser().getUid();
+            // Если имя пользователя уникально, продолжаем регистрацию
+            auth.createUserWithEmailAndPassword(user, pass).addOnCompleteListener(innerTask -> {
+                if (innerTask.isSuccessful()) {
+                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                    if (firebaseUser != null) {
+                        sendVerificationEmail(); // Отправка письма для подтверждения
+                        String userId = firebaseUser.getUid();
                         PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency);
                         personalDataRepository.addOrUpdatePersonalData(personalData);
 
-                        Toast.makeText(SignUpActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                        // Уведомляем пользователя о том, что письмо отправлено
+                        Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_sent), Toast.LENGTH_SHORT).show();
 
-                        // Перенаправление на экран входа
+                        // Перенаправляем пользователя на LoginActivity
                         startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
-                        finish(); // Закрываем текущую активити
-                    } else {
-                        Toast.makeText(SignUpActivity.this, getString(R.string.registration_error, innerTask.getException().getMessage()), Toast.LENGTH_SHORT).show();
+                        finish(); // Завершаем текущую активность, чтобы предотвратить возврат к ней
                     }
-                });
-            } else {
-                Toast.makeText(SignUpActivity.this, getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
-            }
+                } else {
+                    Toast.makeText(SignUpActivity.this, getString(R.string.registration_error, innerTask.getException().getMessage()), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).exceptionally(e -> {
+            Toast.makeText(SignUpActivity.this, getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
+            return null;
         });
     }
+
+
+
     private Date getBirthDateFromInput() {
         String dateString = signupBirthDate.getText().toString().trim();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         try {
-            return sdf.parse(dateString); // Возвращаем Date
+            return sdf.parse(dateString);
         } catch (ParseException e) {
             e.printStackTrace();
-            // Обработка ошибки
-            return null; // Возвращаем null или обрабатываем иначе
+            return null;
         }
     }
     private boolean isFirstLetterUppercase(String name) {
         return name.length() > 0 && Character.isUpperCase(name.charAt(0));
     }
-
-    // Проверка уникальности имени пользователя
     private Task<Boolean> isUsernameTaken(String username) {
         return firestore.collection("users")
                 .whereEqualTo("username", username)
                 .get()
                 .continueWith(task -> !task.getResult().isEmpty());
     }
-
-    // Метод для получения выбранного пола
     private String getSelectedGender() {
         RadioGroup radioGroup = findViewById(R.id.radioGroupGender);
         int selectedId = radioGroup.getCheckedRadioButtonId();
@@ -238,14 +295,7 @@ public class SignUpActivity extends AppCompatActivity {
         } else if (selectedId == R.id.radioFemale) {
             return "Female";
         }
-        return null; // Если ничего не выбрано
-    }
-
-    private void saveLoginState() {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(KEY_IS_LOGGED_IN, true);
-        editor.apply();
+        return null;
     }
 
     private void setupInputFilters() {
@@ -261,29 +311,7 @@ public class SignUpActivity extends AppCompatActivity {
         setupTextChangedListeners();
     }
 
-    private void setupTextChangedListeners() {
-        TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().contains(" ")) {
-                    ((EditText) getCurrentFocus()).setText(s.toString().replace(" ", ""));
-                    ((EditText) getCurrentFocus()).setSelection(((EditText) getCurrentFocus()).getText().length());
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        };
-
-        signupEmail.addTextChangedListener(textWatcher);
-        signupPassword.addTextChangedListener(textWatcher);
-        signupPassword2.addTextChangedListener(textWatcher);
-    }
 
     private void signInWithGoogle() {
         if (googleSignInClient != null) {
@@ -323,9 +351,11 @@ public class SignUpActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
-                    String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear; // Формат: ДД/ММ/ГГГГ
+                    String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
                     signupBirthDate.setText(date);
                 }, year, month, day);
+        datePickerDialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+
         datePickerDialog.show();
     }
 
@@ -361,17 +391,14 @@ public class SignUpActivity extends AppCompatActivity {
                 if (user != null) {
                     String email = user.getEmail();
                     if (email != null) {
-                        // Проверяем, существует ли аккаунт с таким email в Firestore
                         checkUserInFirestore(email).addOnCompleteListener(checkTask -> {
                             if (checkTask.isSuccessful()) {
                                 PersonalData personalData = checkTask.getResult();
                                 if (personalData != null && personalData.getPassword() != null) {
-                                    // Если существует аккаунт с паролем, переходим на экран входа
                                     Toast.makeText(SignUpActivity.this, getString(R.string.account_exists_with_password), Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
                                     finish();
                                 } else {
-                                    // Новый пользователь, продолжаем регистрацию
                                     String id = user.getUid();
                                     PersonalData newPersonalData = new PersonalData(
                                             id,
@@ -410,32 +437,10 @@ public class SignUpActivity extends AppCompatActivity {
                 .get()
                 .continueWith(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        // Предполагается, что у вас только один пользователь с таким email
                         return task.getResult().getDocuments().get(0).toObject(PersonalData.class);
                     }
-                    return null; // Пользователь не найден
+                    return null;
                 });
-    }
-    private void checkUserPassword(String email, String idToken) {
-        // Получаем данные пользователя по электронной почте
-        personalDataRepository.getUserByEmail(email).thenAccept(personalData -> {
-            // Проверяем, существует ли пользователь и есть ли у него пароль
-            if (personalData != null && personalData.password != null) {
-                // Если пароль существует, переходим на экран логина
-                Toast.makeText(SignUpActivity.this, getString(R.string.account_exists_with_password), Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
-                finish(); // Закрываем текущую активити
-            } else {
-                // Если пароля нет, выполняем вход через Google
-                firebaseAuthWithGoogle(idToken);
-            }
-        }).exceptionally(e -> {
-            // В случае ошибки, выполняем вход через Google
-            // Можно добавить логирование ошибки здесь
-            System.err.println("Error fetching user data: " + e.getMessage());
-            firebaseAuthWithGoogle(idToken);
-            return null; // Возвращаем null, чтобы соответствовать типу
-        });
     }
     private void showCurrencyPickerDialog() {
         String[] currencies = {"USD", "EUR", "RUB", "UAH", "PLN"}; // Ваши валюты

@@ -1,6 +1,7 @@
 package com.mgke.da.adapters;
 
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,50 +47,58 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
         Account account = accounts.get(position);
         holder.accountNameTextView.setText(account.accountName);
-        holder.accountAmountTextView.setText(String.format("%s %.2f", account.currency, account.accountAmount));
 
-        holder.itemView.setOnClickListener(v -> onAccountClickListener.onAccountClick(account));
+        // Получаем данные по транзакциям
+        transactionRepository.getTransactionsForAccount(account.accountName)
+                .thenApply(transactions -> {
+                    double totalAmount = account.accountAmount;  // Начальная сумма из базы данных
+                    double incomeAmount = 0.0;
+                    double expensesAmount = 0.0;
 
-        if (!account.isDataLoaded()) {
-            transactionRepository.getTransactionsForAccount(account.accountName)
-                    .thenApply(transactions -> {
-                        double totalAmount = account.accountAmount;
-                        double incomeAmount = 0.0;
-                        double expensesAmount = 0.0;
-
-                        for (Transaction transaction : transactions) {
-                            double transactionAmount;
-                            if (transaction.currency.equals(account.currency)) {
-                                transactionAmount = transaction.amount;
-                            } else {
-                                transactionAmount = convertCurrency(transaction.amount, transaction.currency, account.currency);
-                            }
-
-                            if ("DOHOD".equals(transaction.type)) {
-                                incomeAmount += transactionAmount;
-                            } else if ("RACHOD".equals(transaction.type)) {
-                                expensesAmount += transactionAmount;
-                            }
-
-                            totalAmount += transactionAmount;
+                    for (Transaction transaction : transactions) {
+                        double transactionAmount;
+                        // Преобразуем валюту, если нужно
+                        if (transaction.currency.equals(account.currency)) {
+                            transactionAmount = transaction.amount;
+                        } else {
+                            transactionAmount = convertCurrency(transaction.amount, transaction.currency, account.currency);
                         }
 
-                        account.accountAmount = totalAmount;
-                        account.setDataLoaded(true);
+                        // Добавляем сумму в зависимости от типа транзакции
+                        if ("DOHOD".equals(transaction.type)) {
+                            incomeAmount += transactionAmount;
+                        } else if ("RACHOD".equals(transaction.type)) {
+                            expensesAmount += transactionAmount;
+                        }
 
-                        holder.accountAmountTextView.setText(String.format("%s %.2f", account.currency, totalAmount));
-                        holder.incomeAmount.setText(String.format("%s %.2f", account.currency, incomeAmount));
-                        holder.expensesAmount.setText(String.format("%s %.2f", account.currency, expensesAmount));
+                        totalAmount += transactionAmount;
+                    }
 
-                        return null;
-                    })
-                    .exceptionally(e -> {
-                        return null;
-                    });
-        } else {
-            holder.accountAmountTextView.setText(String.format("%s %.2f", account.currency, account.accountAmount));
-        }
+                    account.accountAmount = totalAmount;  // Обновляем итоговую сумму счета
+                    account.setDataLoaded(true);
 
+                    // Обновляем отображение данных
+                    holder.accountAmountTextView.setText(String.format("%s %.2f", account.currency, totalAmount));
+                    holder.incomeAmount.setText(String.format("%s %.2f", account.currency, incomeAmount));
+                    holder.expensesAmount.setText(String.format("%s %.2f", account.currency, expensesAmount));
+
+                    // Выделяем счет, если сумма отрицательная
+                    if (totalAmount < 0) {
+                        holder.accountAmountTextView.setTextColor(context.getResources().getColor(R.color.red)); // Красный цвет для отрицательной суммы
+                        holder.accountAmountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Увеличиваем размер шрифта для акцента
+                    } else {
+                        holder.accountAmountTextView.setTextColor(context.getResources().getColor(R.color.green)); // Зеленый цвет для положительного баланса
+                        holder.accountAmountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16); // Стандартный размер шрифта
+                    }
+
+                    return null;
+                })
+                .exceptionally(e -> {
+                    // Обработка ошибок
+                    return null;
+                });
+
+        // Задний фон для счета
         String backgroundName = account.background;
         if (backgroundName.equals("account_fon1")) {
             holder.itemView.setBackgroundResource(R.drawable.account_fon1);
@@ -104,6 +113,9 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
         } else {
             holder.itemView.setBackgroundResource(R.drawable.account_fon1);
         }
+
+        // Настроим остальные элементы, если нужно
+        holder.itemView.setOnClickListener(v -> onAccountClickListener.onAccountClick(account));
     }
 
     @Override

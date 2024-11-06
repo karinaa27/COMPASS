@@ -2,7 +2,6 @@ package com.mgke.da.adapters;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.mgke.da.R;
 import com.mgke.da.models.Article;
 import java.util.List;
+import java.util.Locale;
 
 public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleViewHolder> {
 
@@ -36,10 +36,20 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
     @Override
     public void onBindViewHolder(@NonNull ArticleViewHolder holder, int position) {
         Article article = articles.get(position);
-        holder.articleTitle.setText(article.name);
-        holder.articleDescription.setText(article.description);
 
-        // Загружаем изображение с использованием Glide
+        // Определяем текущий язык системы
+        String currentLanguage = Locale.getDefault().getLanguage();
+
+        // Устанавливаем название и описание в зависимости от языка
+        if ("ru".equals(currentLanguage)) {
+            holder.articleTitle.setText(article.nameRu);
+            holder.articleDescription.setText(article.descriptionRu);
+        } else {
+            holder.articleTitle.setText(article.nameEn);
+            holder.articleDescription.setText(article.descriptionEn);
+        }
+
+        // Загрузка изображения с использованием Glide
         Glide.with(context)
                 .load(article.image)
                 .placeholder(R.drawable.account_fon1)
@@ -48,16 +58,11 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
 
         // Обработчик клика для перехода к фрагменту с деталями статьи
         holder.itemView.setOnClickListener(v -> {
-            // Создание Bundle для передачи данных
             Bundle bundle = new Bundle();
             bundle.putString("articleId", article.id);
-
-            // Навигация к ArticleFragment с передачей данных
             Navigation.findNavController(v).navigate(R.id.fragment_article, bundle);
         });
     }
-
-
 
     @Override
     public int getItemCount() {

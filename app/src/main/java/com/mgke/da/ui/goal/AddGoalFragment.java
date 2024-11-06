@@ -147,8 +147,6 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
         return root;
     }
 
-
-
     private void loadUserCurrency() {
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
         personalDataRepository.getPersonalDataById(userId).thenAccept(this::setUserCurrency).exceptionally(e -> {

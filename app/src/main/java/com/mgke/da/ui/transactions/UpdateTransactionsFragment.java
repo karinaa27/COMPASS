@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -45,6 +46,7 @@ import com.mgke.da.repository.CategoryRepository;
 import com.mgke.da.repository.PersonalDataRepository;
 import com.mgke.da.repository.TransactionRepository;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -245,18 +247,31 @@ public class UpdateTransactionsFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_select_goal, null);
+
         RadioGroup radioGroupGoals = dialogView.findViewById(R.id.radioGroupGoals);
         Button buttonSelectGoal = dialogView.findViewById(R.id.buttonSelectGoal);
+        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal); // Кнопка для добавления новой цели
 
         GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
-
-        // Замените currentUserId на идентификатор текущего пользователя
-        String currentUserId = getCurrentUserId(); // Предположим, что у вас есть метод для получения текущего пользователя
+        String currentUserId = getCurrentUserId();
 
         goalRepository.getAllGoal().thenAccept(goals -> {
             radioGroupGoals.removeAllViews();
+
+            // Добавляем опцию "Сбросить выбор"
+            RadioButton resetSelectionButton = new RadioButton(getContext());
+            resetSelectionButton.setText(getString(R.string.no_goal_selected));
+            resetSelectionButton.setId(View.generateViewId());
+            radioGroupGoals.addView(resetSelectionButton);
+
+            resetSelectionButton.setOnClickListener(v -> {
+                selectedGoalId = null;
+                binding.nameGoal.setText("");
+            });
+
+            // Добавляем цели пользователя
             for (Goal goal : goals) {
-                if (goal.userId.equals(currentUserId)) { // Фильтруем цели по текущему пользователю
+                if (goal.userId.equals(currentUserId)) {
                     RadioButton radioButton = new RadioButton(getContext());
                     radioButton.setText(goal.goalName);
                     radioButton.setId(View.generateViewId());
@@ -279,11 +294,20 @@ public class UpdateTransactionsFragment extends Fragment {
             if (selectedId != -1) {
                 RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
                 String selectedGoalName = selectedRadioButton.getText().toString();
-                binding.nameGoal.setText(selectedGoalName);
+
+                if (!selectedGoalName.equals(getString(R.string.no_goal_selected))) {
+                    binding.nameGoal.setText(selectedGoalName);
+                }
+
                 dialog.dismiss();
             } else {
                 Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
             }
+        });
+        buttonAddGoal.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.AddGoalFragment);
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -314,8 +338,11 @@ public class UpdateTransactionsFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_select_account, null);
+
         RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupAccounts);
         Button buttonSelectAccount = dialogView.findViewById(R.id.buttonSelectAccount);
+        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);  // добавляем обработку для кнопки "+"
+
         accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
             radioGroup.removeAllViews();
             for (Account account : accounts) {
@@ -346,6 +373,13 @@ public class UpdateTransactionsFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+
+        addButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.action_navigation_update_to_addAccountFragment);
+            dialog.dismiss();
+        });
+
         dialog.show();
     }
 
@@ -392,37 +426,58 @@ public class UpdateTransactionsFragment extends Fragment {
 
     private void convertCurrencyToRUB() {
         String inputAmountStr = binding.editTextCurrency.getText().toString();
+
+        // Проверка на пустое поле или некорректный ввод
         if (!inputAmountStr.isEmpty()) {
-            double inputAmount = Double.parseDouble(inputAmountStr);
+            try {
+                double inputAmount = Double.parseDouble(inputAmountStr);
 
-            if (inputAmount <= 0) {
-                return;
+                // Проверка на валидность суммы (неотрицательное число)
+                if (inputAmount <= 0) {
+                    return; // Выход, если сумма меньше или равна нулю
+                }
+
+                // Получаем выбранную валюту (этот элемент должен быть видим)
+                String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
+
+                // Проверка, что валюта действительно выбрана
+                if (selectedCurrency.isEmpty()) {
+                    binding.sum.setText("Выберите валюту.");
+                    return;
+                }
+
+                String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
+
+                // Конвертация валюты через API
+                ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount)
+                        .enqueue(new Callback<ConversionResponse>() {
+                            @Override
+                            public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    double convertedAmount = response.body().getResult();
+                                    DecimalFormat df = new DecimalFormat("#.00");
+                                    String formattedAmount = df.format(convertedAmount);
+                                    binding.sum.setText(formattedAmount);
+                                } else {
+                                    binding.sum.setText("Ошибка при получении данных.");
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ConversionResponse> call, Throwable t) {
+                                binding.sum.setText("Ошибка: " + t.getMessage());
+                            }
+                        });
+            } catch (NumberFormatException e) {
+                // Если введенная строка не является числом
+                binding.sum.setText("Неверный формат суммы.");
             }
-
-            String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
-            String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
-
-            ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount).enqueue(new Callback<ConversionResponse>() {
-                @Override
-                public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        double convertedAmount = response.body().getResult();
-                        DecimalFormat df = new DecimalFormat("#.00");
-                        String formattedAmount = df.format(convertedAmount);
-                        binding.sum.setText(formattedAmount);
-                    } else {
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ConversionResponse> call, Throwable t) {
-                    binding.sum.setText("Ошибка: " + t.getMessage());
-                }
-            });
         } else {
-            binding.sum.setText("");
+            binding.sum.setText(""); // Если поле пустое
         }
     }
+
+
     private void setTransactionType(String type) {
         currentTransactionType = type;
 
@@ -477,141 +532,51 @@ public class UpdateTransactionsFragment extends Fragment {
             }
         });
     }
-
-    private void saveTransaction() {
-        if (!isAdded()) {
-            return;
-        }
-
-        String type = currentTransactionType;
-        String category = categoryAdapter.getSelectedCategory();
-        String account = binding.nameAccount.getText() != null ? binding.nameAccount.getText().toString().trim() : "";
-        String dateStr = binding.date.getText() != null ? binding.date.getText().toString() : "";
-        String amountStr = binding.sum.getText() != null ? binding.sum.getText().toString() : "";
-        String currency = binding.currencyTextView.getText() != null ? binding.currencyTextView.getText().toString() : "";
-
-        if (account.isEmpty() || account.equals(getString(R.string.select_account))) {
-            Toast.makeText(getContext(), R.string.toast_select_account, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (category == null || category.isEmpty()) {
-            Toast.makeText(getContext(), R.string.toast_select_category, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (dateStr.isEmpty()) {
-            Toast.makeText(getContext(), R.string.toast_select_date, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (amountStr.isEmpty()) {
-            Toast.makeText(getContext(), R.string.toast_enter_amount, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        double amount;
-        try {
-            amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), R.string.toast_invalid_amount, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        amount = type.equals(EXPENSE) ? -Math.abs(amount) : Math.abs(amount);
-
-        Date date = parseDate(dateStr);
-        if (date == null) {
-            Toast.makeText(getContext(), R.string.toast_invalid_date, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Transaction transaction = createTransaction(type, category, account, date, amount, currency);
-        TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
-
-        final String goalIdToUse = selectedGoalId;
-
-        transactionRepository.addTransaction(transaction)
-                .addOnSuccessListener(transactionId -> {
-                    if (!isAdded()) {
-                        return;
-                    }
-
-                    transaction.id = transactionId;
-
-                    if (goalIdToUse != null) {
-                    }
-
-                    Toast.makeText(getContext(), getString(R.string.toast_save_success, transactionId), Toast.LENGTH_SHORT).show();
-
-                    clearFields();
-
-                    NavController navController = Navigation.findNavController(getView());
-                    navController.popBackStack();
-                })
-                .addOnFailureListener(e -> {
-                    if (!isAdded()) {
-                        return;
-                    }
-                    Toast.makeText(getContext(), getString(R.string.toast_save_failure, e.getMessage()), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-
-    private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency) {
-        int categoryImage = categoryAdapter.getSelectedCategoryImage();
-        int categoryColor = categoryAdapter.getSelectedCategoryColor();
-        String accountBackground = getAccountBackground(account);
-
-        Transaction transaction = new Transaction();
-        transaction.type = type;
-        transaction.category = category;
-        transaction.account = account;
-        transaction.date = date;
-        transaction.amount = amount;
-        transaction.currency = currency;
-        transaction.userId = userId;
-        transaction.categoryImage = categoryImage;
-        transaction.categoryColor = categoryColor;
-        transaction.accountBackground = accountBackground;
-
-        return transaction;
-    }
-    private String getAccountBackground(String accountName) {
-        if (accountName == null) {
-            return "account_fon1";
-        }
-
-        switch (accountName) {
-            case "Счет 1":
-                return "account_fon1";
-            case "Счет 2":
-                return "account_fon2";
-            case "Счет 3":
-                return "account_fon3";
-            case "Счет 4":
-                return "account_fon4";
-            case "Счет 5":
-                return "account_fon5";
-            default:
-                return "account_fon1";
+    private void loadUserCurrencyFromDatabase() {
+        if (currentUser != null) {
+            PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+            personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
+                if (personalData != null) {
+                    loadUserCurrency(personalData);
+                }
+            }).exceptionally(e -> {
+                e.printStackTrace(); // Не забываем обрабатывать исключения
+                return null;
+            });
         }
     }
-    private Date parseDate(String dateStr) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        try {
-            return sdf.parse(dateStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
+    private void loadCategoriesWithDefaults() {
+        categoryRepository.getAllCategory(userId).whenComplete((categories, throwable) -> {
+            if (throwable != null) {
+                // Обработка ошибки при получении категорий
+                throwable.printStackTrace();
+                return;
+            }
+
+            if (categories == null || categories.isEmpty()) {
+                // Если категории пустые, создаем дефолтные категории
+                categoryRepository.createDefaultCategories(userId);
+                categoryRepository.createDefaultExpenseCategories(userId);
+                // Заново загружаем категории после создания дефолтных
+                loadCategoriesBasedOnTransactionType();
+            } else {
+                // Если категории уже существуют, просто загружаем их
+                loadCategoriesBasedOnTransactionType();
+            }
+        });
+    }
+    private void loadCategoriesBasedOnTransactionType() {
+        if (currentTransactionType.equals(INCOME)) {
+            loadIncomeCategories();
+        } else {
+            loadExpenseCategories();
         }
     }
-    private void clearFields() {
-        binding.sum.setText("");
-        binding.date.setText("");
-        binding.nameAccount.setText("");
-        binding.editTextCurrency.setText("");
-        binding.currencyTextView.setText(defaultCurrency);
-        updateCurrencyVisibility(true);
+    @Override
+    public void onResume() {
+        super.onResume();
+        binding.recyclerViewCategories.setAdapter(categoryAdapter);
+        loadUserCurrencyFromDatabase();
+        loadCategoriesWithDefaults();
     }
 }

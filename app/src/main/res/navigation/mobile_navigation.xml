@@ -72,7 +72,11 @@
     <fragment
         android:id="@+id/fragment_update_transactions"
         android:name="com.mgke.da.ui.transactions.UpdateTransactionsFragment"
-        tools:layout="@layout/fragment_update_transactions"/>
+        tools:layout="@layout/fragment_update_transactions">
+        <action
+            android:id="@+id/action_navigation_update_to_addAccountFragment"
+            app:destination="@id/navigation_add_account" />
+    </fragment>
     <fragment
         android:id="@+id/fragment_add_articles"
         android:name="com.mgke.da.ui.articles.AddArticlesFragment"
@@ -80,5 +84,9 @@
     <fragment
         android:id="@+id/fragment_article"
         android:name="com.mgke.da.ui.articles.ArticleFragment"
-        tools:layout="@layout/fragment_article"/>
+        tools:layout="@layout/fragment_article">
+        <action
+            android:id="@+id/action_articleFragment_to_addArticleFragment"
+            app:destination="@id/fragment_add_articles" />
+    </fragment>
 </navigation>

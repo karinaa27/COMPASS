@@ -17,11 +17,12 @@ public class PersonalData {
     public String notes;
     public String avatarUrl;
     public String currency;
+    public boolean isAdmin;
 
     public PersonalData() {
     }
 
-    public PersonalData(String id, String username, String password, String email, String firstname, String lastname, String gender, Date birthDate, String country, String profession, String notes, String avatarUrl, String currency) {
+    public PersonalData(String id, String username, String password, String email, String firstname, String lastname, String gender, Date birthDate, String country, String profession, String notes, String avatarUrl, String currency, boolean isAdmin) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -35,6 +36,7 @@ public class PersonalData {
         this.notes = notes;
         this.avatarUrl = avatarUrl;
         this.currency = currency;
+        this.isAdmin = isAdmin;
     }
     public String getPassword() {
         return password;

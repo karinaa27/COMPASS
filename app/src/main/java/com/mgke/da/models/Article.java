@@ -1,25 +1,33 @@
 package com.mgke.da.models;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class Article {
+public class Article implements Serializable {
     public String id;
-    public String name;
-    public String description;
-    public String text;
+    public String nameRu;
+    public String nameEn;
+    public String descriptionRu;
+    public String descriptionEn;
+    public String textRu;
+    public String textEn;
     public String image;
-    public Date timestamp;  // Используем тип Date
+    public Date timestamp;
 
     public Article() {
     }
 
-    public Article(String id, String name, String description, String text, String image, Date timestamp) {
+    public Article(String id, String nameRu, String nameEn, String descriptionRu, String descriptionEn,
+                   String textRu, String textEn, String image, Date timestamp) {
         this.id = id;
-        this.name = name;
-        this.description = description;
-        this.text = text;
+        this.nameRu = nameRu;
+        this.nameEn = nameEn;
+        this.descriptionRu = descriptionRu;
+        this.descriptionEn = descriptionEn;
+        this.textRu = textRu;
+        this.textEn = textEn;
         this.image = image;
         this.timestamp = timestamp;
     }

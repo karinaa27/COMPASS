@@ -1,14 +1,12 @@
 package com.mgke.da.repository;
 
 import android.util.Log;
-
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.mgke.da.models.PersonalData;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -37,13 +35,11 @@ public class PersonalDataRepository {
         return future;
     }
 
-    // Проверка уникальности имени пользователя
     public CompletableFuture<Boolean> isUsernameUnique(String username) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
 
         personalDataCollection.whereEqualTo("username", username).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                // Если результат пустой, имя пользователя уникально
                 future.complete(task.getResult().isEmpty());
             } else {
                 future.completeExceptionally(task.getException());
@@ -52,8 +48,6 @@ public class PersonalDataRepository {
 
         return future;
     }
-
-    // Удаление данных пользователя
     public CompletableFuture<Void> deletePersonalData(String userId) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         personalDataCollection.document(userId).delete()
@@ -66,7 +60,6 @@ public class PersonalDataRepository {
                 });
         return future;
     }
-
     public CompletableFuture<PersonalData> getPersonalDataById(String id) {
         CompletableFuture<PersonalData> future = new CompletableFuture<>();
         personalDataCollection.document(id).get().addOnCompleteListener(task -> {

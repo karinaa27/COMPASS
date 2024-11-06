@@ -246,7 +246,7 @@ public class SignUpActivity extends AppCompatActivity {
                     if (firebaseUser != null) {
                         sendVerificationEmail(); // Отправка письма для подтверждения
                         String userId = firebaseUser.getUid();
-                        PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency);
+                        PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency, false);
                         personalDataRepository.addOrUpdatePersonalData(personalData);
 
                         // Уведомляем пользователя о том, что письмо отправлено
@@ -413,7 +413,8 @@ public class SignUpActivity extends AppCompatActivity {
                                             null,  // Profession
                                             null,  // Notes
                                             null,
-                                            "USD"
+                                            "USD",
+                                            false
                                     );
                                     personalDataRepository.addOrUpdatePersonalData(newPersonalData);
 

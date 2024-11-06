@@ -19,6 +19,7 @@
     import com.bumptech.glide.Glide;
     import com.google.firebase.auth.FirebaseAuth;
     import com.google.firebase.firestore.FirebaseFirestore;
+    import com.google.firebase.firestore.ListenerRegistration;
     import com.google.firebase.firestore.Query;
     import com.google.firebase.firestore.QueryDocumentSnapshot;
     import com.mgke.da.Constants;
@@ -45,6 +46,7 @@
         private ImageView emptyStateImageView;
         private PersonalData personalData;
         private TextView emptyStateTextView;
+        private ListenerRegistration transactionsListener;
         private PersonalDataRepository personalDataRepository;
 
         @Override
@@ -296,7 +298,7 @@
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            db.collection("transactions")
+            transactionsListener = db.collection("transactions")
                     .whereEqualTo("userId", userId)
                     .addSnapshotListener((value, error) -> {
                         if (error != null) {
@@ -328,16 +330,22 @@
             if (binding == null) {
                 return;
             }
+
             double totalBalance = 0;
             double totalIncome = 0;
             double totalExpense = 0;
 
             for (Transaction transaction : transactions) {
-                totalBalance += transaction.getAmount();
+                double amount = transaction.getAmount();
+                if (personalData != null && !transaction.currency.equals(personalData.currency)) {
+                    amount = convertCurrency(amount, transaction.currency, personalData.currency);
+                }
+
+                totalBalance += amount;
                 if (transaction.getType().equals("DOHOD")) {
-                    totalIncome += transaction.getAmount();
+                    totalIncome += amount;
                 } else if (transaction.getType().equals("RACHOD")) {
-                    totalExpense += transaction.getAmount();
+                    totalExpense += amount;
                 }
             }
 
@@ -346,6 +354,91 @@
             binding.incomeAmount.setText(String.format("%s %.2f", currency, totalIncome));
             binding.expenseAmount.setText(String.format("%s %.2f", currency, totalExpense));
         }
+
+
+        private double convertCurrency(double amount, String fromCurrency, String toCurrency) {
+            if (fromCurrency == null || toCurrency == null || fromCurrency.equals(toCurrency)) {
+                return amount;
+            }
+
+            double rate = 1.0;
+
+            if (fromCurrency.equals("USD")) {
+                if (toCurrency.equals("EUR")) {
+                    rate = 0.85;
+                } else if (toCurrency.equals("RUB")) {
+                    rate = 70.0;
+                } else if (toCurrency.equals("BYN")) {
+                    rate = 2.6;
+                } else if (toCurrency.equals("UAH")) {
+                    rate = 27.0;
+                } else if (toCurrency.equals("PLN")) {
+                    rate = 3.7;
+                }
+            } else if (fromCurrency.equals("EUR")) {
+                if (toCurrency.equals("USD")) {
+                    rate = 1.18;
+                } else if (toCurrency.equals("RUB")) {
+                    rate = 82.0;
+                } else if (toCurrency.equals("BYN")) {
+                    rate = 3.1;
+                } else if (toCurrency.equals("UAH")) {
+                    rate = 31.0;
+                } else if (toCurrency.equals("PLN")) {
+                    rate = 4.3;
+                }
+            } else if (fromCurrency.equals("RUB")) {
+                if (toCurrency.equals("USD")) {
+                    rate = 0.014;
+                } else if (toCurrency.equals("EUR")) {
+                    rate = 0.012;
+                } else if (toCurrency.equals("BYN")) {
+                    rate = 0.032;
+                } else if (toCurrency.equals("UAH")) {
+                    rate = 0.36;
+                } else if (toCurrency.equals("PLN")) {
+                    rate = 0.05;
+                }
+            } else if (fromCurrency.equals("BYN")) {
+                if (toCurrency.equals("USD")) {
+                    rate = 0.38;
+                } else if (toCurrency.equals("EUR")) {
+                    rate = 0.32;
+                } else if (toCurrency.equals("RUB")) {
+                    rate = 31.0;
+                } else if (toCurrency.equals("UAH")) {
+                    rate = 11.0;
+                } else if (toCurrency.equals("PLN")) {
+                    rate = 1.4;
+                }
+            } else if (fromCurrency.equals("UAH")) {
+                if (toCurrency.equals("USD")) {
+                    rate = 0.037;
+                } else if (toCurrency.equals("EUR")) {
+                    rate = 0.032;
+                } else if (toCurrency.equals("RUB")) {
+                    rate = 2.8;
+                } else if (toCurrency.equals("BYN")) {
+                    rate = 0.091;
+                } else if (toCurrency.equals("PLN")) {
+                    rate = 0.12;
+                }
+            } else if (fromCurrency.equals("PLN")) {
+                if (toCurrency.equals("USD")) {
+                    rate = 0.27;
+                } else if (toCurrency.equals("EUR")) {
+                    rate = 0.23;
+                } else if (toCurrency.equals("RUB")) {
+                    rate = 20.0;
+                } else if (toCurrency.equals("BYN")) {
+                    rate = 0.71;
+                } else if (toCurrency.equals("UAH")) {
+                    rate = 8.4;
+                }
+            }
+            return amount * rate;
+        }
+
         @Override
         public void onResume() {
             super.onResume();
@@ -355,6 +448,9 @@
         @Override
         public void onDestroyView() {
             super.onDestroyView();
+            if (transactionsListener != null) {
+                transactionsListener.remove();
+            }
             binding = null;
         }
     }

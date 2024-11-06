@@ -365,40 +365,60 @@ public class AddTransactionFragment extends Fragment {
 
     private void convertCurrencyToRUB() {
         String inputAmountStr = binding.editTextCurrency.getText().toString();
+
         if (!inputAmountStr.isEmpty()) {
-            double inputAmount = Double.parseDouble(inputAmountStr);
-            if (inputAmount <= 0) {
-                Toast.makeText(getContext(), "Введите сумму больше нуля", Toast.LENGTH_SHORT).show();
-                return;
+            try {
+                double inputAmount = Double.parseDouble(inputAmountStr);
+
+                if (inputAmount <= 0) {
+                    return; // Возвращаемся, если сумма меньше или равна нулю
+                }
+
+                String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
+
+                // Проверяем, что валюта выбрана
+                if (selectedCurrency.isEmpty()) {
+                    binding.sum.setText("Выберите валюту.");
+                    return;
+                }
+
+                String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
+
+                // Конвертация валюты через API
+                ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount)
+                        .enqueue(new Callback<ConversionResponse>() {
+                            @Override
+                            public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    double convertedAmount = response.body().getResult();
+
+                                    // Форматирование результата с использованием NumberFormat
+                                    NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
+                                    numberFormat.setMaximumFractionDigits(2);  // Ограничиваем до 2 знаков после запятой
+                                    numberFormat.setMinimumFractionDigits(2);  // Минимум 2 знака после запятой
+
+                                    String formattedAmount = numberFormat.format(convertedAmount);
+
+                                    binding.sum.setText(formattedAmount);
+                                } else {
+                                    binding.sum.setText("Ошибка при получении данных.");
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ConversionResponse> call, Throwable t) {
+                                binding.sum.setText("Ошибка: " + t.getMessage());
+                            }
+                        });
+            } catch (NumberFormatException e) {
+                // Если введенная строка не является числом
+                binding.sum.setText("Неверный формат суммы.");
             }
-            String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
-            String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
-
-            ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount).enqueue(new Callback<ConversionResponse>() {
-                @Override
-                public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        double convertedAmount = response.body().getResult();
-                        // Используем NumberFormat для форматирования
-                        NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
-                        numberFormat.setMinimumFractionDigits(2);
-                        numberFormat.setMaximumFractionDigits(2);
-                        String formattedAmount = numberFormat.format(convertedAmount);
-                        binding.sum.setText(formattedAmount);
-                    } else {
-                        binding.sum.setText("");
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ConversionResponse> call, Throwable t) {
-                    binding.sum.setText("Ошибка: " + t.getMessage());
-                }
-            });
         } else {
-            binding.sum.setText("");
+            binding.sum.setText(""); // Если поле пустое
         }
     }
+
 
 
     private void setTransactionType(String type) {

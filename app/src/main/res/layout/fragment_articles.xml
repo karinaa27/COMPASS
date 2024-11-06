@@ -34,6 +34,7 @@
                 android:layout_marginRight="15dp"
                 android:id="@+id/add_articles_button"
                 android:textSize="15sp"
+                android:visibility="gone"
                 android:layout_marginTop="10dp"
                 style="@style/CustomButtonStyle"
                 app:cornerRadius="16dp"

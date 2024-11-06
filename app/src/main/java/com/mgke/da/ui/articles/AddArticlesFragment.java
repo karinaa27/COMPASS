@@ -19,12 +19,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -32,17 +29,18 @@ import com.google.firebase.storage.UploadTask;
 import com.mgke.da.R;
 import com.mgke.da.models.Article;
 import com.mgke.da.repository.ArticleRepository;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
 public class AddArticlesFragment extends Fragment {
 
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 2;
-    private ImageView articleImage;
     private Uri imageUri;
     private ArticleRepository articleRepository;
     private String imageUrl;
     private ProgressDialog progressDialog;
+    private Article currentArticle;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -55,28 +53,71 @@ public class AddArticlesFragment extends Fragment {
                 }
             });
 
+    public static AddArticlesFragment newInstance(Article article) {
+        AddArticlesFragment fragment = new AddArticlesFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("article", article);
+        fragment.setArguments(args);
+        return fragment;
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Инициализация Firestore и репозитория
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         articleRepository = new ArticleRepository(db);
+
+        // Проверяем, переданы ли аргументы и извлекаем объект article из Bundle
+        if (getArguments() != null) {
+            // Проверяем, что переданный объект действительно является экземпляром Article
+            Serializable article = getArguments().getSerializable("article");
+            if (article instanceof Article) {
+                currentArticle = (Article) article;
+            } else {
+                // Обрабатываем случай, если аргумент не был передан или он не является объектом Article
+                Log.e("AddArticlesFragment", "Неверный или отсутствующий аргумент article");
+                // Можно инициализировать currentArticle как новый объект
+                currentArticle = new Article();
+            }
+        } else {
+            // Если аргумент не передан, инициализируем currentArticle как новый объект
+            currentArticle = new Article();
+        }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_articles, container, false);
 
-        articleImage = view.findViewById(R.id.articleImage);
         Button addButton = view.findViewById(R.id.add_article_button);
         ImageView closeButton = view.findViewById(R.id.close);
-        EditText nameEditText = view.findViewById(R.id.article_name);
-        EditText descriptionEditText = view.findViewById(R.id.article_description);
-        EditText textEditText = view.findViewById(R.id.article_text);
+
+        EditText nameEditTextRu = view.findViewById(R.id.article_name_ru);
+        EditText nameEditTextEn = view.findViewById(R.id.article_name_en);
+        EditText descriptionEditTextRu = view.findViewById(R.id.article_description_ru);
+        EditText descriptionEditTextEn = view.findViewById(R.id.article_description_en);
+        EditText textEditTextRu = view.findViewById(R.id.article_text_ru);
+        EditText textEditTextEn = view.findViewById(R.id.article_text_en);
+        EditText imageUrlEditText = view.findViewById(R.id.article_image);
 
         closeButton.setOnClickListener(v -> closeFragment());
 
-        articleImage.setOnClickListener(v -> {
+        if (currentArticle != null) {
+            nameEditTextRu.setText(currentArticle.nameRu);
+            nameEditTextEn.setText(currentArticle.nameEn);
+            descriptionEditTextRu.setText(currentArticle.descriptionRu);
+            descriptionEditTextEn.setText(currentArticle.descriptionEn);
+            textEditTextRu.setText(currentArticle.textRu);
+            textEditTextEn.setText(currentArticle.textEn);
+            imageUrl = currentArticle.image;
+            imageUrlEditText.setText(imageUrl);
+            addButton.setText("Обновить статью");
+        }
+
+        imageUrlEditText.setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 openGallery();
             } else {
@@ -92,11 +133,15 @@ public class AddArticlesFragment extends Fragment {
         });
 
         addButton.setOnClickListener(v -> {
-            String name = nameEditText.getText().toString();
-            String description = descriptionEditText.getText().toString();
-            String text = textEditText.getText().toString();
-            if (validateInputs(name, description, text)) {
-                saveArticleToDb(name, description, text);
+            String nameRu = nameEditTextRu.getText().toString();
+            String nameEn = nameEditTextEn.getText().toString();
+            String descriptionRu = descriptionEditTextRu.getText().toString();
+            String descriptionEn = descriptionEditTextEn.getText().toString();
+            String textRu = textEditTextRu.getText().toString();
+            String textEn = textEditTextEn.getText().toString();
+
+            if (validateInputs(nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn)) {
+                saveArticleToDb(nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn);
             } else {
                 Toast.makeText(getActivity(), getText(R.string.fill_in_all_the_fields), Toast.LENGTH_SHORT).show();
             }
@@ -128,65 +173,54 @@ public class AddArticlesFragment extends Fragment {
                     Log.d("ImageURL", "URL изображения: " + imageUrl);
                     progressDialog.dismiss();
 
-                    Glide.with(getActivity())
-                            .load(imageUrl)
-                            .timeout(60000)
-                            .placeholder(R.drawable.account_fon1)
-                            .error(R.drawable.account_fon2)
-                            .skipMemoryCache(true)
-                            .diskCacheStrategy(DiskCacheStrategy.NONE)
-                            .into(articleImage);
+                    EditText imageUrlEditText = getView().findViewById(R.id.article_image);
+                    imageUrlEditText.setText(imageUrl);
 
                 }).addOnFailureListener(e -> {
+                    Log.e("Firebase", "Ошибка при получении URL изображения", e);
                     progressDialog.dismiss();
-                    Toast.makeText(getActivity(), "Ошибка получения URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
-
             }).addOnFailureListener(e -> {
-                progressDialog.dismiss(); // Закрываем диалог
-                Toast.makeText(getActivity(), "Ошибка загрузки изображения: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("Firebase", "Ошибка при загрузке изображения", e);
+                progressDialog.dismiss();
             });
-        } else {
-            Toast.makeText(getActivity(), "Изображение не выбрано", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void saveArticleToDb(String name, String description, String text) {
-        if (imageUrl == null) {
-            Toast.makeText(getActivity(), "Ошибка: изображение не загружено", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String id = UUID.randomUUID().toString();
-        Date timestamp = new Date();
-        Article article = new Article(id, name, description, text, imageUrl, timestamp);
-
-        articleRepository.addArticle(article).thenAccept(savedArticle -> {
-            Toast.makeText(getActivity(), "Статья успешно добавлена", Toast.LENGTH_SHORT).show();
-            closeFragment();
-        }).exceptionally(e -> {
-            Toast.makeText(getActivity(), "Ошибка при добавлении статьи: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            return null;
-        });
-    }
-
-    private boolean validateInputs(String name, String description, String text) {
-        return !name.isEmpty() && !description.isEmpty() && !text.isEmpty() && imageUrl != null;
     }
 
     private void closeFragment() {
-        getParentFragmentManager().popBackStack();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
-            } else {
-                Toast.makeText(getActivity(), "Разрешение на чтение хранилища отклонено", Toast.LENGTH_SHORT).show();
-            }
+    private void saveArticleToDb(String nameRu, String nameEn, String descriptionRu, String descriptionEn, String textRu, String textEn) {
+        Article article;
+        if (currentArticle != null) {
+            article = currentArticle;
+        } else {
+            article = new Article();
+            article.timestamp = new Date();
         }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        article.nameRu = nameRu;
+        article.nameEn = nameEn;
+        article.descriptionRu = descriptionRu;
+        article.descriptionEn = descriptionEn;
+        article.textRu = textRu;
+        article.textEn = textEn;
+        article.image = imageUrl;
+        articleRepository.addOrUpdateArticle(article)
+                .thenAccept(savedArticle -> {
+                    Toast.makeText(getActivity(), "Статья успешно сохранена", Toast.LENGTH_SHORT).show();
+                    closeFragment();
+                })
+                .exceptionally(e -> {
+                    Log.e("ArticleRepo", "Ошибка при сохранении статьи: " + e.toString());
+                    Toast.makeText(getActivity(), "Не удалось сохранить статью", Toast.LENGTH_SHORT).show();
+                    return null;
+                });
+    }
+
+    private boolean validateInputs(String nameRu, String nameEn, String descriptionRu, String descriptionEn, String textRu, String textEn) {
+        return !nameRu.isEmpty() && !nameEn.isEmpty() && !descriptionRu.isEmpty() &&
+                !descriptionEn.isEmpty() && !textRu.isEmpty() && !textEn.isEmpty();
     }
 }

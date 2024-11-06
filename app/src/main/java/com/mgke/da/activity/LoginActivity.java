@@ -171,29 +171,30 @@ public class LoginActivity extends AppCompatActivity {
                             if (checkTask.isSuccessful()) {
                                 PersonalData personalData = checkTask.getResult();
 
-                                    String id = user.getUid();
-                                    PersonalData newPersonalData = new PersonalData(
-                                            id,
-                                            user.getDisplayName() != null ? user.getDisplayName() : "",
-                                            "",  // Пароль не нужен
-                                            email,
-                                            null,  // First Name
-                                            null,  // Last Name
-                                            null,  // Gender
-                                            null,  // Birth Date
-                                            null,  // Country
-                                            null,  // Profession
-                                            null,  // Notes
-                                            null,
-                                            "USD"
-                                    );
-                                    personalDataRepository.addOrUpdatePersonalData(newPersonalData);
+                                boolean isAdmin = email.equals("markinakarina1122@gmail.com");  // Set isAdmin based on email
+                                String id = user.getUid();
+                                PersonalData newPersonalData = new PersonalData(
+                                        id,
+                                        user.getDisplayName() != null ? user.getDisplayName() : "",
+                                        "",  // No password needed for Google sign-in
+                                        email,
+                                        null,  // First Name
+                                        null,  // Last Name
+                                        null,  // Gender
+                                        null,  // Birth Date
+                                        null,  // Country
+                                        null,  // Profession
+                                        null,  // Notes
+                                        null,
+                                        "USD",
+                                        isAdmin
+                                );
 
-                                    Toast.makeText(LoginActivity.this, getString(R.string.google_sign_in_success), Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                    finish();
-                                }
-
+                                personalDataRepository.addOrUpdatePersonalData(newPersonalData);
+                                Toast.makeText(LoginActivity.this, getString(R.string.google_sign_in_success), Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                finish();
+                            }
                         });
                     }
                 }
@@ -216,11 +217,14 @@ public class LoginActivity extends AppCompatActivity {
 
     private void saveUserData(FirebaseUser user) {
         String id = user.getUid();
+        String email = user.getEmail() != null ? user.getEmail() : "";
+        boolean isAdmin = email.equals("markinakarina1122@gmail.com");  // Set isAdmin based on email
+
         PersonalData personalData = new PersonalData(
                 id,
                 user.getDisplayName() != null ? user.getDisplayName() : "",
                 "",
-                user.getEmail() != null ? user.getEmail() : "",
+                email,
                 null,
                 null,
                 null,
@@ -229,7 +233,8 @@ public class LoginActivity extends AppCompatActivity {
                 null,
                 null,
                 null,
-                "USD"
+                "USD",
+                isAdmin
         );
 
         personalDataRepository.addOrUpdatePersonalData(personalData);

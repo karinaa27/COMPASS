@@ -32,9 +32,14 @@ public class Article implements Serializable {
         this.timestamp = timestamp;
     }
 
-    // Метод для форматирования даты
     public String getFormattedTimestamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-        return sdf.format(timestamp);
+        if (timestamp != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            return sdf.format(timestamp);
+        } else {
+            // Вернуть значение по умолчанию или обработать случай с null
+            return "Нет доступной метки времени";
+        }
     }
+
 }

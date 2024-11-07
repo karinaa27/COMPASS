@@ -25,15 +25,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
+            android:fontFamily="@font/montserrat"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            style="@style/TextColor" />
 
         <TextView
             android:id="@+id/commentDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
+            android:fontFamily="@font/montserrat"
+          style="@style/TextColor"
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
@@ -41,7 +43,8 @@
         android:id="@+id/commentText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat"
         android:textSize="14sp"
-        android:textColor="@android:color/black" />
+       style="@style/TextColor" />
 
 </LinearLayout>

@@ -17,6 +17,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
+                android:layout_marginTop="10dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
@@ -31,11 +32,10 @@
                     android:fontFamily="@font/montserrat"
                     />
                     <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/baseline_close_24"
                         style="@style/CalendarIcon"
-                        android:layout_marginTop="10dp"
                         android:id="@+id/close"
                         android:layout_marginEnd="10dp"
                         />
@@ -177,15 +177,29 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Categories"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="2"
                     android:textSize="18sp"
                     android:fontFamily="@font/montserrat"
                     android:textStyle="bold"
                   style="@style/TextColor"
                     />
+                <ImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    style="@style/CalendarIcon"
+                    android:src="@drawable/ic_plus"
+                    android:id="@+id/add_category"/>
+                </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewCategories"
                     android:layout_width="match_parent"

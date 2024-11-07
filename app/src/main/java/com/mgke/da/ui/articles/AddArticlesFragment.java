@@ -17,11 +17,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -29,6 +33,7 @@ import com.google.firebase.storage.UploadTask;
 import com.mgke.da.R;
 import com.mgke.da.models.Article;
 import com.mgke.da.repository.ArticleRepository;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -41,6 +46,11 @@ public class AddArticlesFragment extends Fragment {
     private String imageUrl;
     private ProgressDialog progressDialog;
     private Article currentArticle;
+    private Button addButton;
+    private ImageView closeButton;
+
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -60,13 +70,15 @@ public class AddArticlesFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Инициализация Firestore и репозитория
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
         articleRepository = new ArticleRepository(db);
+        auth = FirebaseAuth.getInstance();
 
         // Проверяем, переданы ли аргументы и извлекаем объект article из Bundle
         if (getArguments() != null) {
@@ -77,23 +89,24 @@ public class AddArticlesFragment extends Fragment {
             } else {
                 // Обрабатываем случай, если аргумент не был передан или он не является объектом Article
                 Log.e("AddArticlesFragment", "Неверный или отсутствующий аргумент article");
-                // Можно инициализировать currentArticle как новый объект
                 currentArticle = new Article();
             }
         } else {
             // Если аргумент не передан, инициализируем currentArticle как новый объект
             currentArticle = new Article();
         }
-    }
 
+        // Получаем информацию о текущем пользователе
+        checkIfUserIsAdmin();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_articles, container, false);
 
-        Button addButton = view.findViewById(R.id.add_article_button);
-        ImageView closeButton = view.findViewById(R.id.close);
+        addButton = view.findViewById(R.id.add_article_button);
+        closeButton = view.findViewById(R.id.close);
 
         EditText nameEditTextRu = view.findViewById(R.id.article_name_ru);
         EditText nameEditTextEn = view.findViewById(R.id.article_name_en);
@@ -142,11 +155,30 @@ public class AddArticlesFragment extends Fragment {
 
             if (validateInputs(nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn)) {
                 saveArticleToDb(nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn);
-            } else {
-                Toast.makeText(getActivity(), getText(R.string.fill_in_all_the_fields), Toast.LENGTH_SHORT).show();
             }
         });
+
         return view;
+    }
+
+    private void checkIfUserIsAdmin() {
+        // Получаем текущего пользователя
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            db.collection("PersonalData").document(user.getUid())
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                            if (isAdmin != null && isAdmin) {
+                                addButton.setVisibility(View.VISIBLE); // Показываем кнопку, если пользователь администратор
+                            } else {
+                                addButton.setVisibility(View.GONE); // Скрываем кнопку, если пользователь не администратор
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("AddArticlesFragment", "Ошибка при получении данных пользователя", e));
+        }
     }
 
     private void openGallery() {
@@ -167,15 +199,12 @@ public class AddArticlesFragment extends Fragment {
                     .child(id + ".jpg");
             UploadTask uploadTask = fileReference.putFile(imageUri);
             uploadTask.addOnSuccessListener(taskSnapshot -> {
-
                 fileReference.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
                     imageUrl = downloadUrl.toString();
-                    Log.d("ImageURL", "URL изображения: " + imageUrl);
                     progressDialog.dismiss();
 
                     EditText imageUrlEditText = getView().findViewById(R.id.article_image);
                     imageUrlEditText.setText(imageUrl);
-
                 }).addOnFailureListener(e -> {
                     Log.e("Firebase", "Ошибка при получении URL изображения", e);
                     progressDialog.dismiss();
@@ -197,7 +226,7 @@ public class AddArticlesFragment extends Fragment {
             article = currentArticle;
         } else {
             article = new Article();
-            article.timestamp = new Date();
+            article.timestamp = new Date(); // Устанавливаем текущую дату и время
         }
 
         article.nameRu = nameRu;
@@ -207,6 +236,7 @@ public class AddArticlesFragment extends Fragment {
         article.textRu = textRu;
         article.textEn = textEn;
         article.image = imageUrl;
+
         articleRepository.addOrUpdateArticle(article)
                 .thenAccept(savedArticle -> {
                     Toast.makeText(getActivity(), "Статья успешно сохранена", Toast.LENGTH_SHORT).show();
@@ -220,7 +250,19 @@ public class AddArticlesFragment extends Fragment {
     }
 
     private boolean validateInputs(String nameRu, String nameEn, String descriptionRu, String descriptionEn, String textRu, String textEn) {
-        return !nameRu.isEmpty() && !nameEn.isEmpty() && !descriptionRu.isEmpty() &&
-                !descriptionEn.isEmpty() && !textRu.isEmpty() && !textEn.isEmpty();
+        // Список всех полей
+        String[] fields = {nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn};
+
+        // Проверка на пустые поля
+        for (String field : fields) {
+            if (field.isEmpty()) {
+                Toast.makeText(getActivity(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        return true;
     }
+
 }
+

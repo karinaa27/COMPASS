@@ -1,6 +1,7 @@
 package com.mgke.da.adapters;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,8 +53,8 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
         // Загрузка изображения с использованием Glide
         Glide.with(context)
                 .load(article.image)
-                .placeholder(R.drawable.account_fon1)
-                .error(R.drawable.account_fon2)
+                .placeholder(isDarkMode() ? R.drawable.balance_fon_night : R.drawable.balance_fon) // Используем изображение в зависимости от темы
+                .error(isDarkMode() ? R.drawable.balance_fon_night : R.drawable.balance_fon) // Используем изображение в зависимости от темы
                 .into(holder.articleImage);
 
         // Обработчик клика для перехода к фрагменту с деталями статьи
@@ -63,7 +64,10 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ArticleV
             Navigation.findNavController(v).navigate(R.id.fragment_article, bundle);
         });
     }
-
+    private boolean isDarkMode() {
+        int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    }
     @Override
     public int getItemCount() {
         return articles.size();

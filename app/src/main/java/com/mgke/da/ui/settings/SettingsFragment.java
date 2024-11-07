@@ -2,6 +2,7 @@ package com.mgke.da.ui.settings;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -52,6 +53,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.R;
 import com.mgke.da.activity.SignUpActivity;
@@ -79,6 +81,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class SettingsFragment extends Fragment {
 
+    private ProgressDialog loadingDialog;
     private FragmentSettingsBinding binding;
     private FirebaseAuth auth;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -88,7 +91,7 @@ public class SettingsFragment extends Fragment {
     private static final int RC_GOOGLE_SIGN_IN = 9001;
     private Button googleSignInButton;
     private TextView googleAuthMessage;
-    private EditText newEmailInput;
+    private EditText newEmailInput, currentEmail;
     private Button saveButton;
     private GoogleSignInClient googleSignInClient;
 PersonalDataRepository personalDataRepository;
@@ -142,12 +145,75 @@ CommentRepository commentRepository;
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
                             Glide.with(this).load(imageUri).into(binding.photoUser);
-                            uploadImageToFirebase(imageUri);
+                            showLoadingDialog(); // Показываем диалог загрузки
+                            uploadImageToFirebase(imageUri); // Начинаем загрузку
                         } else {
                             showToast(R.string.error_image_retrieval);
                         }
                     }
                 });
+    }
+
+    private void uploadImageToFirebase(Uri imageUri) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            showToast(getString(R.string.error_user_not_authenticated));
+            hideLoadingDialog(); // Закрываем диалог при ошибке
+            return;
+        }
+
+        String userId = currentUser.getUid();
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("avatars/" + userId + ".jpg");
+
+        storageReference.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> storageReference.getDownloadUrl()
+                        .addOnSuccessListener(uri -> {
+                            String imageUrl = uri.toString();
+                            saveImageUrlToFirestore(imageUrl);
+                            hideLoadingDialog(); // Закрываем диалог после успешной загрузки
+                            showToast(R.string.avatar_updated);
+                        })
+                        .addOnFailureListener(e -> {
+                            showToast(getString(R.string.error_url_retrieval) + ": " + e.getMessage());
+                            hideLoadingDialog(); // Закрываем диалог при ошибке
+                        }))
+                .addOnFailureListener(e -> {
+                    showToast(getString(R.string.error_image_upload) + ": " + e.getMessage());
+                    hideLoadingDialog(); // Закрываем диалог при ошибке
+                });
+    }
+
+    private void showLoadingDialog() {
+        loadingDialog = new ProgressDialog(getContext());
+        loadingDialog.setMessage(getString(R.string.image_upload_progress));
+        loadingDialog.setCancelable(false); // Диалог нельзя закрыть кнопкой "Назад"
+        loadingDialog.show();
+    }
+
+    private void hideLoadingDialog() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        }
+    }
+
+    private void saveImageUrlToFirestore(String imageUrl) {
+        String userId = auth.getCurrentUser().getUid();
+        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+
+        personalDataRepository.getPersonalDataById(userId).whenComplete((personalData, throwable) -> {
+            if (throwable != null) {
+                return;
+            }
+
+            if (personalData != null) {
+                personalData.avatarUrl = imageUrl;
+                personalDataRepository.addOrUpdatePersonalData(personalData).whenComplete((aVoid, updateThrowable) -> {
+                    if (updateThrowable == null) {
+                        showToast(R.string.avatar_updated);
+                    }
+                });
+            }
+        });
     }
 
     private void setupPersonalDataClick() {
@@ -181,19 +247,21 @@ CommentRepository commentRepository;
         View dialogView = inflater.inflate(R.layout.dialog_change_email, null);
         builder.setView(dialogView);
 
-        // Инициализация элементов интерфейса
         googleSignInButton = dialogView.findViewById(R.id.googleSignInButton);
         googleAuthMessage = dialogView.findViewById(R.id.googleAuthMessage);
         newEmailInput = dialogView.findViewById(R.id.newEmail);
+        currentEmail = dialogView.findViewById(R.id.currentEmail);
         saveButton = dialogView.findViewById(R.id.saveButton);
 
-        // Скрываем поля для новой почты и кнопку сохранения
         newEmailInput.setVisibility(View.GONE);
         saveButton.setVisibility(View.GONE);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        // Проверяем провайдера аутентификации
+        if (currentUser != null) {
+            currentEmail.setText(currentUser.getEmail());
+        }
+
         boolean isGoogleSignIn = false;
         for (UserInfo info : currentUser.getProviderData()) {
             if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
@@ -223,6 +291,7 @@ CommentRepository commentRepository;
 
         dialog.show();
     }
+
 
     private void reauthenticateAndChangeEmail(String newEmail) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -376,50 +445,8 @@ CommentRepository commentRepository;
         }
     }
 
-    private void uploadImageToFirebase(Uri imageUri) {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser == null) {
-            showToast(getString(R.string.error_user_not_authenticated));
-            return;
-        }
-        String userId = currentUser.getUid();
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference("avatars/" + userId + ".jpg");
-        storageReference.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    storageReference.getDownloadUrl()
-                            .addOnSuccessListener(uri -> {
-                                String imageUrl = uri.toString();
-                                saveImageUrlToFirestore(imageUrl);
-                            })
-                            .addOnFailureListener(e -> {
-                                showToast(getString(R.string.error_url_retrieval) + ": " + e.getMessage());
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    showToast(getString(R.string.error_image_upload) + ": " + e.getMessage());
-                });
-    }
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-    }
-    private void saveImageUrlToFirestore(String imageUrl) {
-        String userId = auth.getCurrentUser().getUid();
-        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-
-        personalDataRepository.getPersonalDataById(userId).whenComplete((personalData, throwable) -> {
-            if (throwable != null) {
-                return;
-            }
-
-            if (personalData != null) {
-                personalData.avatarUrl = imageUrl;
-                personalDataRepository.addOrUpdatePersonalData(personalData).whenComplete((aVoid, updateThrowable) -> {
-                    if (updateThrowable == null) {
-                        showToast(R.string.avatar_updated);
-                    }
-                });
-            }
-        });
     }
 
     private void setupExitButtonClick() {
@@ -669,6 +696,7 @@ CommentRepository commentRepository;
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_change_password, null);
         builder.setView(dialogView);
+
         EditText currentPasswordInput = dialogView.findViewById(R.id.currentPassword);
         EditText newPasswordInput = dialogView.findViewById(R.id.newPassword);
         EditText confirmNewPasswordInput = dialogView.findViewById(R.id.confirmNewPassword);
@@ -689,14 +717,23 @@ CommentRepository commentRepository;
         } else {
             return;
         }
+
         AlertDialog dialog = builder.create();
+
         saveButton.setOnClickListener(v -> {
             String newPassword = newPasswordInput.getText().toString().trim();
             String confirmNewPassword = confirmNewPasswordInput.getText().toString().trim();
+
             if (!newPassword.equals(confirmNewPassword)) {
                 showToast(R.string.passwords_do_not_match);
                 return;
             }
+
+            if (!isValidPassword(newPassword)) {
+                showToast(R.string.invalid_password);
+                return;
+            }
+
             if (currentUser != null && currentPasswordInput.getVisibility() == View.VISIBLE) {
                 String currentPassword = currentPasswordInput.getText().toString().trim();
                 currentUser.updatePassword(newPassword).addOnCompleteListener(task -> {
@@ -723,6 +760,14 @@ CommentRepository commentRepository;
 
         dialog.show();
     }
+
+    // Метод для проверки сложности пароля
+    private boolean isValidPassword(String password) {
+        // Минимум 8 символов, одна строчная, одна заглавная буква, одна цифра и один специальный символ
+        String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$";
+        return password.matches(passwordPattern);
+    }
+
 
     private void saveNewPasswordToFirestore(String userId, String newPassword) {
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());

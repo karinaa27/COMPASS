@@ -311,7 +311,7 @@
     <string name="add_goal">Add goal</string>
 
     <string name="confirmation_title">Confirmation of deletion</string>
-    <string name="confirmation_message">Are you sure you want to delete category %1$s?</string>
+    <string name="confirmation_message">Are you sure you want to delete category?</string>
     <string name="confirm">Yes</string>
 
     <string name="delete_goal_title">Delete Goal</string>
@@ -413,5 +413,10 @@
     <string name="error_updating_email">Error updating email. Please try again.</string>
 
     <string name="error_fetching_data">Error fetching data. Please try again later.</string>
+    <string name="invalid_password">Password must be at least 8 characters long, contain uppercase and lowercase letters, numbers and special characters</string>
 
+    <string name="image_upload_progress">Uploading image...</string>
+    <string name="image_upload_success">Image uploaded successfully!</string>
+    <string name="image_upload_error">Error uploading image</string>
+    <string name="image_saving_url_error">Error saving image URL</string>
 </resources>

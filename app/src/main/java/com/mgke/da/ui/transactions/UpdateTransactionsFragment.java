@@ -154,7 +154,9 @@ public class UpdateTransactionsFragment extends Fragment {
         loadCategoriesForCurrentTransactionType();
         binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
         binding.textViewCurrencyLabel.setOnClickListener(v -> showSelectCurrencyDialog());
-
+        binding.addCategory.setOnClickListener(v -> {
+            navController.navigate(R.id.action_updateTransactionFragment_to_addCategoryFragment);
+        });
         binding.incomeBtn.setOnClickListener(v -> setTransactionType(INCOME));
         binding.expenseBtn.setOnClickListener(v -> setTransactionType(EXPENSE));
 

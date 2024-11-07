@@ -62,10 +62,6 @@
             }
         }
 
-        public void updateCategory(Category category) {
-            categoryCollection.document(category.id).set(category);
-        }
-
         public CompletableFuture<List<Category>> getAllCategory(String userId) {
             return getAllCategoriesByType(userId, "income");
         }
@@ -106,7 +102,7 @@
             defaultCategories.add(new Category("1", "Зарплата", "Salary", R.drawable.ic_salary, Color.parseColor("#F7EC2E"), "income", userId, true,null));
             defaultCategories.add(new Category("2", "Подарок", "Gift", R.drawable.ic_gift, Color.parseColor("#C1559B"), "income", userId, true, null));
             defaultCategories.add(new Category("3", "Инвестиции", "Investments", R.drawable.category_ic_investment, Color.parseColor("#33B7B6"), "income", userId, true, null));
-            defaultCategories.add(new Category("4", "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "income", userId, false, null));
+            defaultCategories.add(new Category("4", "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "income", userId, true, null));
 
             for (Category category : defaultCategories) {
                 String id = categoryCollection.document().getId();
@@ -122,7 +118,7 @@
             defaultExpenseCategories.add(new Category("1", "Продукты", "Groceries", R.drawable.category_ic_food, Color.parseColor("#00A55D"), "expense", userId, true, null));
             defaultExpenseCategories.add(new Category("2", "Транспорт", "Transport", R.drawable.category_ic_taxi, Color.parseColor("#1EB0E6"), "expense", userId, true, null));
             defaultExpenseCategories.add(new Category("3", "Развлечения", "Entertainment", R.drawable.category_ic_entertainment, Color.parseColor("#ED407B"), "expense", userId, true, null));
-            defaultExpenseCategories.add(new Category("4", "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "expense", userId, false, null));
+            defaultExpenseCategories.add(new Category("4", "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "expense", userId, true, null));
 
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             CompletableFuture<Void> future = CompletableFuture.allOf(
@@ -145,26 +141,6 @@
 
             return future;
         }
-        public CompletableFuture<Category> getCategoryById(String id) {
-            CompletableFuture<Category> future = new CompletableFuture<>();
-            categoryCollection.document(id).get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            Category category = task.getResult().toObject(Category.class);
-                            future.complete(category);
-                        } else {
-                            future.complete(null);
-                        }
-                    });
-            return future;
-        }
-        public CompletableFuture<Void> updateCategoryById(String id, Category updatedCategory) {
-            CompletableFuture<Void> future = new CompletableFuture<>();
-            categoryCollection.document(id).set(updatedCategory)
-                    .addOnSuccessListener(aVoid -> future.complete(null))
-                    .addOnFailureListener(e -> future.completeExceptionally(e));
-            return future;
-        }
         public CompletableFuture<List<Category>> getAllCategories(String userId) {
             CompletableFuture<List<Category>> future = new CompletableFuture<>();
             List<Category> categories = new ArrayList<>();
@@ -182,31 +158,5 @@
                     });
 
             return future;
-        }
-        public CompletableFuture<Boolean> doesCategoryExist(String categoryName, String userId) {
-            CompletableFuture<Boolean> future = new CompletableFuture<>();
-            categoryCollection.whereEqualTo("name", categoryName)
-                    .whereEqualTo("userId", userId).get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            future.complete(!task.getResult().isEmpty());
-                        } else {
-                            future.completeExceptionally(task.getException());
-                        }
-                    });
-            return future;
-        }
-
-        public void updateCategoryNames(String userId, String newLanguage) {
-            categoryCollection.whereEqualTo("userId", userId).get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Category category = document.toObject(Category.class);
-                                updateCategory(category);
-                            }
-                        } else {
-                        }
-                    });
         }
     }

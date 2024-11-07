@@ -1,5 +1,6 @@
     package com.mgke.da.ui.articles;
 
+    import android.content.res.Configuration;
     import android.os.Bundle;
     import android.text.TextUtils;
     import android.util.Log;
@@ -14,7 +15,6 @@
     import androidx.navigation.fragment.NavHostFragment;
     import androidx.recyclerview.widget.LinearLayoutManager;
     import androidx.recyclerview.widget.RecyclerView;
-
     import com.bumptech.glide.Glide;
     import com.google.firebase.auth.FirebaseAuth;
     import com.google.firebase.firestore.FirebaseFirestore;
@@ -26,7 +26,6 @@
     import com.mgke.da.repository.CommentRepository;
     import com.mgke.da.repository.LikeRepository;
     import com.mgke.da.repository.PersonalDataRepository;
-
     import java.text.SimpleDateFormat;
     import java.util.Locale;
 
@@ -76,19 +75,15 @@
             sendCommentButton = root.findViewById(R.id.sendCommentButton);
 
             ImageView deleteButton = root.findViewById(R.id.deleteButton);
-            ImageView editButton = root.findViewById(R.id.editButton); // Новая кнопка редактирования
-
-            // Проверяем, является ли пользователь администратором
+            ImageView editButton = root.findViewById(R.id.editButton);
             checkIfUserIsAdmin(deleteButton, editButton);
 
-            // Загрузка статьи и настройка кнопок
             loadArticleDetails();
             setupLikeButton();
             setupCommentsRecyclerView();
             setupCommentsButton(root);
             setupSendCommentButton();
 
-            // Обработчики кнопок удаления и редактирования
             deleteButton.setOnClickListener(v -> deleteArticle());
             editButton.setOnClickListener(v -> editArticle()); // Обработчик для редактирования статьи
 
@@ -113,14 +108,19 @@
 
                         Glide.with(requireContext())
                                 .load(article.image)
-                                .placeholder(R.drawable.account_fon1)
-                                .error(R.drawable.account_fon2)
+                                .placeholder(isDarkMode() ? R.drawable.user_icon_night : R.drawable.user_icon)  // Выбираем изображение в зависимости от темы
+                                .error(isDarkMode() ? R.drawable.user_icon_night : R.drawable.user_icon)  // Выбираем изображение в зависимости от темы
                                 .into(articleImage);
                         break;
                     }
                 }
             });
         }
+        private boolean isDarkMode() {
+            int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        }
+
 
         private void checkIfUserIsAdmin(ImageView deleteButton, ImageView editButton) {
             FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -147,19 +147,14 @@
             if (articleId != null) {
                 articleRepository.deleteArticle(articleId);
 
-                // Закрываем фрагмент после удаления статьи
-                getActivity().onBackPressed();  // Возвращаемся на предыдущий экран (или показываем сообщение об успешном удалении)
+                getActivity().onBackPressed();
             }
         }
         private void editArticle() {
-            // Получаем статью из репозитория по articleId
             articleRepository.getArticleById(articleId).thenAccept(article -> {
                 if (article != null) {
-                    // Создаём Bundle и передаем все данные статьи
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("article", article);
-
-                    // Открываем AddArticlesFragment с текущими данными статьи для редактирования
                     NavHostFragment.findNavController(this).navigate(R.id.action_articleFragment_to_addArticleFragment, bundle);
                 } else {
                     Log.e("ArticleFragment", "Статья с id " + articleId + " не найдена.");

@@ -311,7 +311,7 @@
     <string name="add_goal">Добавить цель</string>
 
     <string name="confirmation_title">Подтверждение удаления</string>
-    <string name="confirmation_message">Вы действительно хотите удалить категорию %1$s?</string>
+    <string name="confirmation_message">Вы действительно хотите удалить категорию?</string>
     <string name="confirm">Да</string>
 
     <string name="delete_goal_title">Удалить цель</string>
@@ -415,6 +415,11 @@
     <string name="error_updating_email">Ошибка при обновлении почты. Пожалуйста, попробуйте еще раз.</string>
 
     <string name="error_fetching_data">Ошибка при извлечении данных. Пожалуйста, попробуйте позже.</string>
+    <string name="invalid_password">Пароль должен содержать минимум 8 символов, заглавные и строчные буквы, цифры и специальные символы</string>
+    <string name="image_upload_progress">Загрузка изображения...</string>
+    <string name="image_upload_success">Изображение успешно загружено!</string>
+    <string name="image_upload_error">Ошибка загрузки изображения</string>
+    <string name="image_saving_url_error">Ошибка при сохранении URL изображения</string>
 
 
 </resources>

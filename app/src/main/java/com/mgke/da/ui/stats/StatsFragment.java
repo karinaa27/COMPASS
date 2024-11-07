@@ -214,6 +214,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
+
     private void setupGoalsButtonListeners() {
 
         processBtn.setOnClickListener(v -> {

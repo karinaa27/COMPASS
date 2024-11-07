@@ -116,13 +116,17 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
                     .setTitle(R.string.delete_goal_title)
                     .setMessage(R.string.delete_goal_message)
                     .setPositiveButton(R.string.delete, (dialog, which) -> {
-                        goalRepository.deleteGoal(goal.id);
-                        goalsList.remove(position);
-                        notifyItemRemoved(position);
+                        int currentPosition = holder.getAdapterPosition(); // Переименуйте переменную в currentPosition
+                        if (currentPosition != RecyclerView.NO_POSITION) {
+                            goalRepository.deleteGoal(goal.id);
+                            goalsList.remove(currentPosition);
+                            notifyItemRemoved(currentPosition);
+                        }
                     })
                     .setNegativeButton(R.string.cancel, null)
                     .show();
         });
+
     }
 
     @Override

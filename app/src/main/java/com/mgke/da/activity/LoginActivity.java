@@ -171,12 +171,21 @@ public class LoginActivity extends AppCompatActivity {
                             if (checkTask.isSuccessful()) {
                                 PersonalData personalData = checkTask.getResult();
 
-                                boolean isAdmin = email.equals("markinakarina1122@gmail.com");  // Set isAdmin based on email
+                                // Проверка, есть ли у пользователя пароль
+                                String password = null;
+                                if (personalData != null && personalData.getPassword() != null) {
+                                    password = personalData.getPassword();  // Если пароль есть, сохраняем его
+                                }
+
+                                // Устанавливаем isAdmin на основе email
+                                boolean isAdmin = email.equals("markinakarina1122@gmail.com");
+
+                                // Создаем новый объект PersonalData
                                 String id = user.getUid();
                                 PersonalData newPersonalData = new PersonalData(
                                         id,
                                         user.getDisplayName() != null ? user.getDisplayName() : "",
-                                        "",  // No password needed for Google sign-in
+                                        password != null ? password : "",  // Если пароль существует, сохраняем его
                                         email,
                                         null,  // First Name
                                         null,  // Last Name
@@ -191,6 +200,7 @@ public class LoginActivity extends AppCompatActivity {
                                 );
 
                                 personalDataRepository.addOrUpdatePersonalData(newPersonalData);
+
                                 Toast.makeText(LoginActivity.this, getString(R.string.google_sign_in_success), Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                 finish();
@@ -203,6 +213,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
     private Task<PersonalData> checkUserInFirestore(String email) {
         return firestore.collection("users")
                 .whereEqualTo("email", email)

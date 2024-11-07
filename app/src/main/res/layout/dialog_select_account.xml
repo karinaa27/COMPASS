@@ -23,6 +23,7 @@
             android:id="@+id/buttonAddAccount"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            style="@style/CalendarIcon"
             android:src="@drawable/ic_add"
             android:background="?android:selectableItemBackgroundBorderless"
             android:layout_alignParentEnd="true"

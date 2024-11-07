@@ -394,16 +394,18 @@ public class SignUpActivity extends AppCompatActivity {
                         checkUserInFirestore(email).addOnCompleteListener(checkTask -> {
                             if (checkTask.isSuccessful()) {
                                 PersonalData personalData = checkTask.getResult();
-                                if (personalData != null && personalData.getPassword() != null) {
-                                    Toast.makeText(SignUpActivity.this, getString(R.string.account_exists_with_password), Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
-                                    finish();
-                                } else {
+
+                                // Если данные пользователя существуют
+                                if (personalData != null) {
+                                    // Если у пользователя уже есть пароль, сохраняем его
+                                    String password = personalData.getPassword(); // Сохраняем существующий пароль
+
+                                    // Создаем новый объект PersonalData
                                     String id = user.getUid();
                                     PersonalData newPersonalData = new PersonalData(
                                             id,
                                             user.getDisplayName() != null ? user.getDisplayName() : "",
-                                            "",  // Пароль не нужен
+                                            password != null ? password : "",  // Если есть пароль, сохраняем его, иначе оставляем пустым
                                             email,
                                             null,  // First Name
                                             null,  // Last Name
@@ -414,10 +416,13 @@ public class SignUpActivity extends AppCompatActivity {
                                             null,  // Notes
                                             null,
                                             "USD",
-                                            false
+                                            email.equals("markinakarina1122@gmail.com") // Если email соответствует, делаем пользователя администратором
                                     );
+
+                                    // Записываем или обновляем данные пользователя в Firestore
                                     personalDataRepository.addOrUpdatePersonalData(newPersonalData);
 
+                                    // Успешный вход в приложение
                                     Toast.makeText(SignUpActivity.this, getString(R.string.google_sign_in_success), Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(SignUpActivity.this, MainActivity.class));
                                     finish();
@@ -431,6 +436,8 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private Task<PersonalData> checkUserInFirestore(String email) {
         return firestore.collection("users")

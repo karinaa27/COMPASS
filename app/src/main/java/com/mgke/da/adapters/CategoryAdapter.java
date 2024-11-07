@@ -34,8 +34,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private String language;
     private Fragment fragment;
 
+    // Добавляем контекст в конструктор адаптера
     public CategoryAdapter(Fragment fragment, List<Category> categories, CategoryRepository categoryRepository, boolean isSelectionEnabled, String language) {
         this.fragment = fragment;
+        this.context = fragment.getContext(); // Используем контекст фрагмента
         this.categories = categories;
         this.categoryRepository = categoryRepository;
         this.isSelectionEnabled = isSelectionEnabled;
@@ -87,9 +89,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             });
 
             holder.itemView.setOnLongClickListener(v -> {
-                if (!categoryName.equals("Другое")) {
-                    showDeleteConfirmationDialog(category, position);
-                }
+                showDeleteConfirmationDialog(category, position);
                 return true;
             });
         } else if (holder instanceof AddCategoryViewHolder) {
@@ -102,21 +102,24 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+
     private void showDeleteConfirmationDialog(Category category, int position) {
-        String categoryName = categoryRepository.getCategoryName(category);
         String currentLanguage = Locale.getDefault().getLanguage();
 
-        new AlertDialog.Builder(context)
-                .setTitle(R.string.confirmation_title)
-                .setMessage(String.format(context.getString(R.string.confirmation_message), categoryName))
-                .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    categoryRepository.removeCategory(category, currentLanguage);
-                    categories.remove(position);
-                    notifyItemRemoved(position);
-                })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
+        if (context != null) {
+            new AlertDialog.Builder(context)
+                    .setTitle(R.string.confirmation_title)
+                    .setMessage(context.getString(R.string.confirmation_message))  // Просто выводим стандартное сообщение
+                    .setPositiveButton(R.string.confirm, (dialog, which) -> {
+                        categoryRepository.removeCategory(category, currentLanguage);
+                        categories.remove(position);
+                        notifyItemRemoved(position);
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
+        }
     }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -151,5 +154,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void updateCategories(List<Category> newCategories) {
         this.categories = newCategories;
         notifyDataSetChanged();
+    }
+
+    // Добавляем метод для получения списка категорий
+    public List<Category> getCategories() {
+        return categories;
     }
 }

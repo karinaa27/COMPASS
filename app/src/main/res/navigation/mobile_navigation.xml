@@ -76,6 +76,10 @@
         <action
             android:id="@+id/action_navigation_update_to_addAccountFragment"
             app:destination="@id/navigation_add_account" />
+        <action
+            android:id="@+id/action_updateTransactionFragment_to_addCategoryFragment"
+            app:destination="@id/addCategoryFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/fragment_add_articles"

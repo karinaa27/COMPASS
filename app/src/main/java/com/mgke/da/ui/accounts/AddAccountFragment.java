@@ -75,7 +75,7 @@ public class AddAccountFragment extends Fragment {
 
         backButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-            navController.navigate(R.id.navigation_accounts);
+            navController.popBackStack();
         });
 
         deleteAccountButton.setOnClickListener(v -> {

@@ -4,11 +4,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
@@ -27,6 +31,7 @@ public class ArticlesFragment extends Fragment {
     private ArticleRepository articleRepository;
     private FirebaseFirestore firestore;
     private View addArticlesButton;
+    private ImageView emptyStateImageView; // Ссылка на ImageView для гифки
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,20 +42,15 @@ public class ArticlesFragment extends Fragment {
         adapter = new ArticleAdapter(getContext(), articles);
         recyclerView.setAdapter(adapter);
 
-        // Получаем Firestore и ID текущего пользователя
+        emptyStateImageView = root.findViewById(R.id.emptyStateImageView); // Инициализация ImageView
         firestore = FirebaseFirestore.getInstance();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Инициализация репозитория
         articleRepository = new ArticleRepository(firestore);
 
-        // Загрузка статей
         loadArticles();
 
-        // Получаем ссылку на кнопку
         addArticlesButton = root.findViewById(R.id.add_articles_button);
-
-        // Проверяем, является ли пользователь администратором
         checkIfAdmin(userId);
 
         return root;
@@ -61,8 +61,19 @@ public class ArticlesFragment extends Fragment {
             this.articles.clear();
             this.articles.addAll(articles);
             adapter.notifyDataSetChanged();
+
+            // Проверка, если статьи не загружены, показать гифку
+            if (this.articles.isEmpty()) {
+                recyclerView.setVisibility(View.GONE); // Скрыть RecyclerView
+                emptyStateImageView.setVisibility(View.VISIBLE); // Показать ImageView с гифкой
+                Glide.with(this)
+                        .load(R.drawable.working_chart) // Укажите путь к вашему gif
+                        .into(emptyStateImageView); // Загружаем гифку с помощью Glide
+            } else {
+                recyclerView.setVisibility(View.VISIBLE); // Показываем RecyclerView
+                emptyStateImageView.setVisibility(View.GONE); // Скрываем гифку
+            }
         }).exceptionally(e -> {
-            // Обработка ошибок
             return null;
         });
     }
@@ -72,7 +83,7 @@ public class ArticlesFragment extends Fragment {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         PersonalData personalData = documentSnapshot.toObject(PersonalData.class);
-                        if (personalData.isAdmin = true) {
+                        if (personalData.isAdmin == true) {
                             addArticlesButton.setVisibility(View.VISIBLE);
                             addArticlesButton.setOnClickListener(v ->
                                     Navigation.findNavController(v).navigate(R.id.fragment_add_articles)
@@ -83,7 +94,6 @@ public class ArticlesFragment extends Fragment {
                     }
                 })
                 .addOnFailureListener(e -> {
-                    // Обработка ошибок
                     addArticlesButton.setVisibility(View.GONE);
                 });
     }
@@ -91,7 +101,6 @@ public class ArticlesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Очистка ссылок
         recyclerView.setAdapter(null);
     }
 }

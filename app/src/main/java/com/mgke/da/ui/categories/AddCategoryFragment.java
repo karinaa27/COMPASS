@@ -39,6 +39,7 @@ public class AddCategoryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_category, container, false);
 
+        // Инициализация элементов
         iconGrid = view.findViewById(R.id.iconGrid);
         categoryNameEditText = view.findViewById(R.id.categoryNameEditText);
         incomeExpenseRadioGroup = view.findViewById(R.id.incomeExpenseRadioGroup);
@@ -60,10 +61,14 @@ public class AddCategoryFragment extends Fragment {
 
         setupIconSelection();
         updateIconBackgrounds();
+
+        // Возвращаемся на предыдущий экран при нажатии на backButton
         backButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-            navController.navigate(R.id.navigation_settings_category);
+            navController.popBackStack(); // Возврат на предыдущий фрагмент
         });
+
+        // Проверка переданного аргумента для выбора категории (доход или расход)
         if (getArguments() != null) {
             String categoryType = getArguments().getString("category_type", "");
             if ("income".equals(categoryType)) {
@@ -72,11 +77,14 @@ public class AddCategoryFragment extends Fragment {
                 incomeExpenseRadioGroup.check(R.id.radioExpense);
             }
         }
+
+        // Сохранение категории и возврат на предыдущий экран
         addCategoryButton.setOnClickListener(v -> {
             String categoryName = categoryNameEditText.getText().toString();
             boolean isIncome = incomeExpenseRadioGroup.getCheckedRadioButtonId() == R.id.radioIncome;
             addCategory(categoryName, isIncome);
         });
+
         return view;
     }
 
@@ -109,8 +117,9 @@ public class AddCategoryFragment extends Fragment {
 
         categoryRepository.addCategory(categoryName, type, selectedImageResId, selectedColor, userId)
                 .thenAccept(aVoid -> {
+                    // Навигация назад после успешного добавления
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-                    navController.navigate(R.id.navigation_settings_category);
+                    navController.popBackStack();
                 })
                 .exceptionally(e -> {
                     return null;

@@ -18,6 +18,7 @@ import com.mgke.da.adapters.CategoryAdapter;
 import com.mgke.da.repository.CategoryRepository;
 
 public class ExpensesFragment extends Fragment {
+
     private RecyclerView recyclerView;
     private CategoryAdapter categoryAdapter;
     private CategoryRepository categoryRepository;
@@ -32,30 +33,50 @@ public class ExpensesFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerViewCategories);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
+
         categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
+
         if (currentUser != null) {
             userId = currentUser.getUid();
-        } else {
         }
-        loadCategories();
+
+        loadCategories();  // Загружаем категории при первом создании фрагмента
+
         return view;
     }
 
-    private void loadCategories() {
+    @Override
+    public void onResume() {
+        super.onResume();
+            loadCategories();  // Загружаем категории, если они еще не были загружены
+            Log.d("CategoryFragment", "onResume called");
+    }
+
+    public void loadCategories() {
+        // Проверяем, были ли категории загружены ранее
+        if (categoryAdapter != null && categoryAdapter.getItemCount() > 0) {
+            return; // Категории уже загружены, не загружаем их снова
+        }
+
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru"); // Передаем язык
+                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru");
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
+                // Создаем категории по умолчанию, если данных нет
                 categoryRepository.createDefaultExpenseCategories(userId);
-                loadCategories();
+                // Не вызываем loadCategories() снова, а просто выводим сообщение об ошибке
+                Log.w("ExpensesFragment", "No categories found, default categories created.");
             }
         }).exceptionally(e -> {
+            Log.e("ExpensesFragment", "Error loading categories", e);
             return null;
         });
     }
+
 }
+

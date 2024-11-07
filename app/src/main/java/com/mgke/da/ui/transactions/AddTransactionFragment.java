@@ -135,6 +135,9 @@ public class AddTransactionFragment extends Fragment {
         binding.calendarBtn.setOnClickListener(v -> showDatePickerDialog());
         binding.currencyTextView.setOnClickListener(v -> showSelectCurrencyDialog());
         binding.SaveTransactionBtn.setOnClickListener(v -> saveTransaction());
+        binding.addCategory.setOnClickListener(v -> {
+            navController.navigate(R.id.action_addTransactionFragment_to_addCategoryFragment);
+        });
 
         binding.close.setOnClickListener(v -> navController.popBackStack());
 
@@ -615,7 +618,7 @@ public class AddTransactionFragment extends Fragment {
                     loadUserCurrency(personalData);
                 }
             }).exceptionally(e -> {
-                e.printStackTrace(); // Не забываем обрабатывать исключения
+                e.printStackTrace();
                 return null;
             });
         }

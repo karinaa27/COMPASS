@@ -8,7 +8,7 @@
         public String id;
         public String type;
         public String category;
-        public String account;
+        public String accountId;
         public Date date;
         public double amount;
         public String userId;
@@ -20,11 +20,11 @@
 
         public Transaction() {}
 
-        public Transaction(String id, String type, String category, String account, Date date, double amount, String userId, String currency, String goalId, String accountBackground) {
+        public Transaction(String id, String type, String category, String accountId, Date date, double amount, String userId, String currency, String goalId, String accountBackground) {
             this.id = id;
             this.type = type;
             this.category = category;
-            this.account = account;
+            this.accountId = accountId;
             this.date = date;
             this.amount = amount;
             this.userId = userId;

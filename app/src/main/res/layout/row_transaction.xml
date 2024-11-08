@@ -52,7 +52,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:orientation="horizontal">
-
                 <TextView
                     android:id="@+id/accountLbl"
                     android:layout_width="wrap_content"
@@ -64,8 +63,9 @@
                     android:paddingTop="2dp"
                     android:paddingRight="5dp"
                     android:paddingBottom="2dp"
-                    android:text="@{transaction.account}"
-                    android:textColor="#FFFFFF" />
+                    android:text=""
+                android:textColor="#FFFFFF" />
+
             </LinearLayout>
         </LinearLayout>
 

@@ -131,6 +131,7 @@ public class UpdateTransactionsFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         categoryRepository = new CategoryRepository(db);
         GoalRepository goalRepository = new GoalRepository(db);
+        AccountRepository accountRepository = new AccountRepository(db); // Репозиторий для получения данных счета
         NavController navController = Navigation.findNavController(view);
         binding.close.setOnClickListener(v -> navController.popBackStack());
 
@@ -140,7 +141,23 @@ public class UpdateTransactionsFragment extends Fragment {
                 transactionId = transaction.id;
                 currentTransactionType = transaction.type;
                 setTransactionType(currentTransactionType);
-                binding.nameAccount.setText(transaction.account);
+
+                // Загрузка accountName на основе accountId и установка его в nameAccount
+                if (transaction.accountId != null && !transaction.accountId.isEmpty()) {
+                    accountRepository.getAccountById(transaction.accountId).thenAccept(account -> {
+                        if (account != null) {
+                            binding.nameAccount.setText(account.accountName); // Установка имени счета
+                        } else {
+                            // Устанавливаем placeholder если аккаунт не найден
+                        }
+                    }).exceptionally(e -> {
+                       // На случай ошибки
+                        return null;
+                    });
+                } else {
+                  // Если accountId отсутствует
+                }
+
                 binding.editTextCurrency.setText(transaction.currency);
                 binding.sum.setText(String.valueOf(Math.abs(transaction.amount)));
                 binding.date.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(transaction.date));
@@ -193,6 +210,7 @@ public class UpdateTransactionsFragment extends Fragment {
         });
     }
 
+
     private void loadCategoriesForCurrentTransactionType() {
         if (currentTransactionType.equals(INCOME)) {
             loadIncomeCategories();
@@ -201,13 +219,14 @@ public class UpdateTransactionsFragment extends Fragment {
         }
     }
     private void updateTransaction() {
-        String account = binding.nameAccount.getText().toString();
+        // Проверяем наличие accountId, привязанного к счету
+        String accountId = transaction.accountId; // Используем сохранённый accountId
         String currency = binding.editTextCurrency.getText().toString();
         String amountStr = binding.sum.getText().toString();
         String dateStr = binding.date.getText().toString();
 
         // Проверка обязательных полей
-        if (account.isEmpty() || currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty()) {
+        if (accountId == null || accountId.isEmpty() || currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty()) {
             return;
         }
 
@@ -232,7 +251,7 @@ public class UpdateTransactionsFragment extends Fragment {
         }
 
         // Обновление полей транзакции
-        transaction.account = account;
+        transaction.accountId = selectedAccountId; // Используйте selectedAccountId, а не transaction.accountId
         transaction.currency = currency;
         transaction.amount = currentTransactionType.equals(EXPENSE) ? -Math.abs(amount) : Math.abs(amount);
         transaction.date = date;
@@ -247,8 +266,10 @@ public class UpdateTransactionsFragment extends Fragment {
                     navController.popBackStack();
                 })
                 .addOnFailureListener(e -> {
+
                 });
     }
+
 
     private void deleteTransaction(String id) {
         if (id == null || id.isEmpty()) {

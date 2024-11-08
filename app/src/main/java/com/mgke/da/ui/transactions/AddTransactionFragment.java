@@ -256,7 +256,7 @@ public class AddTransactionFragment extends Fragment {
 
         RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupAccounts);
         Button buttonSelectAccount = dialogView.findViewById(R.id.buttonSelectAccount);
-        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);  // добавляем обработку для кнопки "+"
+        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);
 
         accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
             radioGroup.removeAllViews();
@@ -271,7 +271,7 @@ public class AddTransactionFragment extends Fragment {
                 }
 
                 radioButton.setOnClickListener(v -> {
-                    selectedAccountId = account.id;
+                    selectedAccountId = account.id;  // Store the ID
                 });
             }
         });
@@ -284,7 +284,7 @@ public class AddTransactionFragment extends Fragment {
             if (selectedId != -1) {
                 RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
                 String selectedAccountName = selectedRadioButton.getText().toString();
-                binding.nameAccount.setText(selectedAccountName);
+                binding.nameAccount.setText(selectedAccountName);  // Display name in UI
                 dialog.dismiss();
             }
         });
@@ -297,7 +297,6 @@ public class AddTransactionFragment extends Fragment {
 
         dialog.show();
     }
-
 
     private void loadCategoriesWithDefaults() {
         categoryRepository.getAllCategory(userId).whenComplete((categories, throwable) -> {
@@ -482,12 +481,11 @@ public class AddTransactionFragment extends Fragment {
 
         String type = currentTransactionType;
         String category = categoryAdapter.getSelectedCategory();
-        String account = binding.nameAccount.getText() != null ? binding.nameAccount.getText().toString().trim() : "";
         String dateStr = binding.date.getText() != null ? binding.date.getText().toString() : "";
         String amountStr = binding.sum.getText() != null ? binding.sum.getText().toString() : "";
         String currency = binding.currencyTextView.getText() != null ? binding.currencyTextView.getText().toString() : "";
 
-        if (account.isEmpty() || account.equals(getString(R.string.select_account))) {
+        if (selectedAccountId == null || selectedAccountId.isEmpty()) {
             Toast.makeText(getContext(), R.string.toast_select_account, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -523,8 +521,7 @@ public class AddTransactionFragment extends Fragment {
             return;
         }
 
-        // Теперь передаем selectedGoalId вместо goalName
-        Transaction transaction = createTransaction(type, category, account, date, amount, currency, selectedGoalId);
+        Transaction transaction = createTransaction(type, category, selectedAccountId, date, amount, currency, selectedGoalId);  // Pass account ID
         TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
 
         transactionRepository.addTransaction(transaction)
@@ -542,26 +539,27 @@ public class AddTransactionFragment extends Fragment {
                 });
     }
 
-    private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency, String goalId) {
+    private Transaction createTransaction(String type, String category, String accountId, Date date, double amount, String currency, String goalId) {
         int categoryImage = categoryAdapter.getSelectedCategoryImage();
         int categoryColor = categoryAdapter.getSelectedCategoryColor();
-        String accountBackground = getAccountBackground(account);
+        String accountBackground = getAccountBackground(accountId);
 
         Transaction transaction = new Transaction();
         transaction.type = type;
         transaction.category = category;
-        transaction.account = account;
+        transaction.accountId = accountId;  // Store account ID
         transaction.date = date;
         transaction.amount = amount;
         transaction.currency = currency;
         transaction.userId = userId;
-        transaction.goalId = goalId;  // Теперь здесь передается goalId
+        transaction.goalId = goalId;
         transaction.categoryImage = categoryImage;
         transaction.categoryColor = categoryColor;
         transaction.accountBackground = accountBackground;
 
         return transaction;
     }
+
 
 
     private String getAccountBackground(String accountName) {

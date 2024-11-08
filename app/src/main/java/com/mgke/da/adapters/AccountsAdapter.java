@@ -49,7 +49,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
         holder.accountNameTextView.setText(account.accountName);
 
         // Получаем данные по транзакциям
-        transactionRepository.getTransactionsForAccount(account.accountName)
+        transactionRepository.getTransactionsForAccount(account.id) // Теперь ищем по account.id
                 .thenApply(transactions -> {
                     double totalAmount = account.accountAmount;  // Начальная сумма из базы данных
                     double incomeAmount = 0.0;

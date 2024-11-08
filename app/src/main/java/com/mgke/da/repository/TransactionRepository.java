@@ -93,21 +93,24 @@ public class TransactionRepository {
         return future;
     }
 
-    public CompletableFuture<List<Transaction>> getTransactionsForAccount(String accountName) {
+    public CompletableFuture<List<Transaction>> getTransactionsForAccount(String accountId) {
         CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
         List<Transaction> transactions = new ArrayList<>();
 
-        transactionCollection.whereEqualTo("account", accountName).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Transaction transaction = document.toObject(Transaction.class);
-                    transactions.add(transaction);
-                }
-                future.complete(transactions);
-            } else {
-                future.completeExceptionally(task.getException());
-            }
-        });
+        transactionCollection.whereEqualTo("accountId", accountId) // Ищем по accountId
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Transaction transaction = document.toObject(Transaction.class);
+                            transactions.add(transaction);
+                        }
+                        future.complete(transactions);
+                    } else {
+                        future.completeExceptionally(task.getException());
+                    }
+                });
         return future;
     }
+
 }

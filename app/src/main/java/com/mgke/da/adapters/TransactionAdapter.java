@@ -65,35 +65,41 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             if (transaction != null) {
                 binding.setTransaction(transaction);
                 binding.categoryicon.setImageResource(transaction.categoryImage);
+
                 ShapeDrawable shapeDrawable = new ShapeDrawable(new OvalShape());
                 shapeDrawable.getPaint().setColor(transaction.categoryColor);
                 shapeDrawable.setBounds(0, 0, binding.categoryicon.getWidth(), binding.categoryicon.getHeight());
                 binding.categoryicon.setBackground(shapeDrawable);
-                accountRepository.getAccountByName(transaction.account).thenAccept(account -> {
+
+                // Получаем имя аккаунта по accountId и устанавливаем в accountLbl
+                accountRepository.getCachedAccountById(transaction.accountId).thenAccept(account -> {
                     if (account != null) {
+                        binding.accountLbl.setText(account.accountName); // Устанавливаем имя аккаунта
                         int backgroundResource = getBackgroundResource(account.background);
                         binding.accountLbl.setBackgroundResource(backgroundResource);
                     } else {
+                        binding.accountLbl.setText("Неизвестный аккаунт"); // Если аккаунт не найден
                         binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     }
                 }).exceptionally(e -> {
+                    binding.accountLbl.setText("Ошибка загрузки аккаунта"); // Обработка ошибок
                     binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     return null;
                 });
+
                 binding.transactionAmount.setText(String.valueOf(transaction.amount));
                 binding.currencyLbl.setText(transaction.currency);
-                if (transaction.amount < 0) {
-                    binding.transactionAmount.setTextColor(Color.RED);
-                    binding.currencyLbl.setTextColor(Color.RED);
-                } else {
-                    binding.transactionAmount.setTextColor(Color.GREEN);
-                    binding.currencyLbl.setTextColor(Color.GREEN);
-                }
+
+                int color = transaction.amount < 0 ? Color.RED : Color.GREEN;
+                binding.transactionAmount.setTextColor(color);
+                binding.currencyLbl.setTextColor(color);
+
                 binding.executePendingBindings();
             } else {
                 binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
             }
         }
+
 
         private int getBackgroundResource(String backgroundName) {
             switch (backgroundName) {

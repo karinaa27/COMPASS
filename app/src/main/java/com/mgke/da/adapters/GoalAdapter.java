@@ -33,7 +33,6 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         this.listener = listener;
     }
 
-
     public interface OnGoalClickListener {
         void onGoalClick(Goal goal);
     }
@@ -59,7 +58,7 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         Goal goal = goalsList.get(position);
         holder.textViewGoalName.setText(goal.goalName);
 
-        transactionRepository.getTransactionsForGoalName(goal.goalName).thenAccept(transactions -> {
+        transactionRepository.getTransactionsForGoalId(goal.id).thenAccept(transactions -> {
             double totalProgress = 0.0;
             for (Transaction transaction : transactions) {
                 if (transaction.currency.equals(goal.currency)) {
@@ -109,7 +108,6 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
                 listener.onGoalClick(goal);  // Передаем цель через интерфейс
             }
         });
-
 
         holder.deleteGoal.setOnClickListener(v -> {
             new AlertDialog.Builder(context)

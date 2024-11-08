@@ -57,11 +57,11 @@ public class TransactionRepository {
         return future;
     }
 
-    public CompletableFuture<List<Transaction>> getTransactionsForGoalName(String goalName) {
+    public CompletableFuture<List<Transaction>> getTransactionsForGoalId(String goalId) {
         CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
         List<Transaction> transactions = new ArrayList<>();
 
-        transactionCollection.whereEqualTo("nameGoal", goalName).get().addOnCompleteListener(task -> {
+        transactionCollection.whereEqualTo("goalId", goalId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Transaction transaction = document.toObject(Transaction.class);
@@ -74,6 +74,7 @@ public class TransactionRepository {
         });
         return future;
     }
+
     public CompletableFuture<List<Transaction>> getTransactionsForUserId(String userId) {
         CompletableFuture<List<Transaction>> future = new CompletableFuture<>();
         List<Transaction> transactions = new ArrayList<>();

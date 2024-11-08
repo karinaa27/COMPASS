@@ -180,19 +180,19 @@ public class AddTransactionFragment extends Fragment {
 
             resetSelectionButton.setOnClickListener(v -> {
                 selectedGoalId = null;
-                binding.nameGoal.setText("");
+                binding.nameGoal.setText(""); // Очистка текстового поля, если цель не выбрана
             });
 
             // Добавляем цели пользователя
             for (Goal goal : goals) {
                 if (goal.userId.equals(currentUserId)) {
                     RadioButton radioButton = new RadioButton(getContext());
-                    radioButton.setText(goal.goalName);
+                    radioButton.setText(goal.goalName); // Отображаем название цели
                     radioButton.setId(View.generateViewId());
                     radioGroupGoals.addView(radioButton);
 
                     radioButton.setOnClickListener(v -> {
-                        selectedGoalId = goal.id;
+                        selectedGoalId = goal.id; // Сохраняем ID цели
                     });
                 }
             }
@@ -210,7 +210,9 @@ public class AddTransactionFragment extends Fragment {
                 String selectedGoalName = selectedRadioButton.getText().toString();
 
                 if (!selectedGoalName.equals(getString(R.string.no_goal_selected))) {
-                    binding.nameGoal.setText(selectedGoalName);
+                    binding.nameGoal.setText(selectedGoalName); // Отображаем выбранное название цели
+                } else {
+                    selectedGoalId = null; // Если выбрано "Сбросить выбор", очищаем ID
                 }
 
                 dialog.dismiss();
@@ -218,6 +220,7 @@ public class AddTransactionFragment extends Fragment {
                 Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
             }
         });
+
         buttonAddGoal.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.AddGoalFragment);
@@ -520,16 +523,14 @@ public class AddTransactionFragment extends Fragment {
             return;
         }
 
-        String nameGoal = binding.nameGoal.getText() != null ? binding.nameGoal.getText().toString().trim() : "";
-        Transaction transaction = createTransaction(type, category, account, date, amount, currency, nameGoal);
+        // Теперь передаем selectedGoalId вместо goalName
+        Transaction transaction = createTransaction(type, category, account, date, amount, currency, selectedGoalId);
         TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
 
         transactionRepository.addTransaction(transaction)
                 .addOnSuccessListener(transactionId -> {
                     if (!isAdded()) return;
                     transaction.id = transactionId;
-                    if (!nameGoal.isEmpty()) {
-                    }
                     Toast.makeText(getContext(), getString(R.string.toast_save_success, transactionId), Toast.LENGTH_SHORT).show();
                     clearFields();
                     NavController navController = Navigation.findNavController(getView());
@@ -541,12 +542,7 @@ public class AddTransactionFragment extends Fragment {
                 });
     }
 
-    private void onGoalSelected(String goalName) {
-        this.selectedGoalName = goalName;
-        binding.nameGoal.setText(goalName);
-    }
-
-    private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency, String nameGoal) {
+    private Transaction createTransaction(String type, String category, String account, Date date, double amount, String currency, String goalId) {
         int categoryImage = categoryAdapter.getSelectedCategoryImage();
         int categoryColor = categoryAdapter.getSelectedCategoryColor();
         String accountBackground = getAccountBackground(account);
@@ -559,13 +555,14 @@ public class AddTransactionFragment extends Fragment {
         transaction.amount = amount;
         transaction.currency = currency;
         transaction.userId = userId;
-        transaction.nameGoal = nameGoal;
+        transaction.goalId = goalId;  // Теперь здесь передается goalId
         transaction.categoryImage = categoryImage;
         transaction.categoryColor = categoryColor;
         transaction.accountBackground = accountBackground;
 
         return transaction;
     }
+
 
     private String getAccountBackground(String accountName) {
         if (accountName == null) return "account_fon1";

@@ -130,8 +130,10 @@ public class UpdateTransactionsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         categoryRepository = new CategoryRepository(db);
+        GoalRepository goalRepository = new GoalRepository(db);
         NavController navController = Navigation.findNavController(view);
         binding.close.setOnClickListener(v -> navController.popBackStack());
+
         if (getArguments() != null) {
             transaction = (Transaction) getArguments().getSerializable("transaction");
             if (transaction != null) {
@@ -142,16 +144,26 @@ public class UpdateTransactionsFragment extends Fragment {
                 binding.editTextCurrency.setText(transaction.currency);
                 binding.sum.setText(String.valueOf(Math.abs(transaction.amount)));
                 binding.date.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(transaction.date));
-                if (transaction.nameGoal != null && !transaction.nameGoal.isEmpty()) {
-                    binding.nameGoal.setText(transaction.nameGoal);
-                    binding.nameGoal.setVisibility(View.VISIBLE);
+
+                // Если сохранён goalId, то загружаем название цели
+                if (transaction.goalId != null && !transaction.goalId.isEmpty()) {
+                    goalRepository.getGoalById(transaction.goalId).thenAccept(goal -> {
+                        if (goal != null) {
+                            binding.nameGoal.setText(goal.goalName); // Устанавливаем название цели
+                            binding.nameGoal.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.nameGoal.setVisibility(View.GONE);
+                        }
+                    });
                 } else {
                     binding.nameGoal.setVisibility(View.GONE);
                 }
             }
         }
+
         binding.recyclerViewCategories.setLayoutManager(new GridLayoutManager(getContext(), 4));
         loadCategoriesForCurrentTransactionType();
+
         binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
         binding.textViewCurrencyLabel.setOnClickListener(v -> showSelectCurrencyDialog());
         binding.addCategory.setOnClickListener(v -> {
@@ -159,15 +171,14 @@ public class UpdateTransactionsFragment extends Fragment {
         });
         binding.incomeBtn.setOnClickListener(v -> setTransactionType(INCOME));
         binding.expenseBtn.setOnClickListener(v -> setTransactionType(EXPENSE));
-
         binding.nameAccount.setOnClickListener(v -> showSelectAccountDialog());
         binding.date.setOnClickListener(v -> showDatePickerDialog());
         binding.calendarBtn.setOnClickListener(v -> showDatePickerDialog());
         binding.textViewDeleteTransaction.setOnClickListener(v -> deleteTransaction(transactionId));
         binding.currencyTextView.setOnClickListener(v -> showSelectCurrencyDialog());
-        binding.SaveTransactionBtn.setOnClickListener(v -> {
-            updateTransaction();
-        });
+
+        binding.SaveTransactionBtn.setOnClickListener(v -> updateTransaction());
+
         binding.editTextCurrency.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -194,11 +205,13 @@ public class UpdateTransactionsFragment extends Fragment {
         String currency = binding.editTextCurrency.getText().toString();
         String amountStr = binding.sum.getText().toString();
         String dateStr = binding.date.getText().toString();
-        String goal = binding.nameGoal.getText().toString();
+
+        // Проверка обязательных полей
         if (account.isEmpty() || currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty()) {
             return;
         }
 
+        // Преобразование суммы
         double amount;
         try {
             amountStr = amountStr.replace(',', '.');
@@ -207,33 +220,36 @@ public class UpdateTransactionsFragment extends Fragment {
             Toast.makeText(getContext(), getString(R.string.toast_invalid_amount), Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Преобразование даты
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         Date date;
-
         try {
             date = dateFormat.parse(dateStr);
         } catch (ParseException e) {
             Toast.makeText(getContext(), getString(R.string.toast_invalid_date), Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Обновление полей транзакции
         transaction.account = account;
         transaction.currency = currency;
-        if (currentTransactionType.equals(EXPENSE)) {
-            transaction.amount = -Math.abs(amount);
-        } else {
-            transaction.amount = Math.abs(amount);
-        }
+        transaction.amount = currentTransactionType.equals(EXPENSE) ? -Math.abs(amount) : Math.abs(amount);
         transaction.date = date;
-        transaction.nameGoal = goal.isEmpty() ? null : goal;
+
+        // Сохранение выбранного goalId вместо названия
+        transaction.goalId = selectedGoalId != null && !selectedGoalId.isEmpty() ? selectedGoalId : null;
+
+        // Сохранение транзакции в базе данных
         transactionRepository.updateTransaction(transaction)
                 .addOnSuccessListener(aVoid -> {
-
                     NavController navController = Navigation.findNavController(getView());
                     navController.popBackStack();
                 })
                 .addOnFailureListener(e -> {
                 });
     }
+
     private void deleteTransaction(String id) {
         if (id == null || id.isEmpty()) {
             return;

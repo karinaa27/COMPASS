@@ -84,7 +84,8 @@
             setupCommentsButton(root);
             setupSendCommentButton();
 
-            deleteButton.setOnClickListener(v -> deleteArticle());
+            // В методе onCreateView()
+            deleteButton.setOnClickListener(v -> showDeleteConfirmationDialog());
             editButton.setOnClickListener(v -> editArticle()); // Обработчик для редактирования статьи
 
             return root;
@@ -141,6 +142,16 @@
                     return null;
                 });
             }
+        }
+        // Метод для отображения диалога подтверждения удаления
+        private void showDeleteConfirmationDialog() {
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Подтвердите удаление")
+                    .setMessage("Вы уверены, что хотите удалить эту статью?")
+                    .setPositiveButton("Удалить", (dialog, which) -> deleteArticle())
+                    .setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss())
+                    .setCancelable(false)  // Не позволяет закрыть диалог другим способом
+                    .show();
         }
 
         private void deleteArticle() {

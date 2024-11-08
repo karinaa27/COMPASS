@@ -57,6 +57,7 @@
             <EditText
                 android:id="@+id/login_email"
                 style="@style/EdittextLogin"
+                android:inputType="textCapSentences"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="40dp"

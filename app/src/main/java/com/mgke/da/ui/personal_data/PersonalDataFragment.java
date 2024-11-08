@@ -59,12 +59,13 @@ public class PersonalDataFragment extends Fragment {
         closeButton = view.findViewById(R.id.close);
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
+        personalDataRepository = new PersonalDataRepository(db); // инициализация репозитория
         etUsername = view.findViewById(R.id.etUsername);
         loadPersonalData();
 
         // Ограничение только на выбор из выпадающего списка
-        etCountry.setKeyListener(null); // Блокируем ввод текста с клавиатуры
-        etCountry.setOnClickListener(v -> showCountrySelectionDialog()); // Открываем диалог при нажатии
+        etCountry.setKeyListener(null);
+        etCountry.setOnClickListener(v -> showCountrySelectionDialog());
 
         // Установка слушателя для выбора даты рождения
         etBirthday.setOnClickListener(v -> showDatePicker());
@@ -72,7 +73,6 @@ public class PersonalDataFragment extends Fragment {
         closeButton.setOnClickListener(v -> navigateToSettings());
         buttonSave.setOnClickListener(v -> {
             savePersonalData();
-            navigateToSettings();
         });
 
         return view;
@@ -150,7 +150,7 @@ public class PersonalDataFragment extends Fragment {
     private void savePersonalData() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
-            String username = etUsername.getText().toString().trim(); // Получение имени пользователя
+            String username = etUsername.getText().toString().trim();
             String userId = currentUser.getUid();
             String firstName = etFirstName.getText().toString().trim();
             String lastName = etLastName.getText().toString().trim();
@@ -177,7 +177,7 @@ public class PersonalDataFragment extends Fragment {
 
                             // Проверка и обновление имени пользователя
                             if (!username.equals(existingData.username)) {
-                                existingData.username = username; // Обновление имени пользователя
+                                existingData.username = username;
                                 isChanged = true;
                             }
                             if (!firstName.equals(existingData.firstName)) {
@@ -218,12 +218,14 @@ public class PersonalDataFragment extends Fragment {
                                 existingData.gender = gender;
                                 isChanged = true;
                             }
+
                             if (isChanged) {
                                 docRef.set(existingData).addOnCompleteListener(updateTask -> {
                                     if (updateTask.isSuccessful()) {
                                         Toast.makeText(getContext(), R.string.data_saved_successfully, Toast.LENGTH_SHORT).show();
+                                        navigateToSettings(); // Переход после успешного сохранения
                                     } else {
-                                        Toast.makeText(getContext(), R.string.data_save_error + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), getString(R.string.data_save_error) + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }
@@ -236,7 +238,6 @@ public class PersonalDataFragment extends Fragment {
             });
         }
     }
-
 
 
     private void navigateToSettings() {

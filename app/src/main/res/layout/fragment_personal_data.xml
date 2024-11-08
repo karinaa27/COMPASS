@@ -105,6 +105,7 @@
                 android:id="@+id/etProfession"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                android:inputType="textCapSentences"
                 android:layout_marginTop="20dp"
                 style="@style/EdittextLogin"
                 android:padding="8dp"

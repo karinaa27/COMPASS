@@ -50,6 +50,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -122,8 +123,6 @@ CommentRepository commentRepository;
         setupCurrencySpinner();
         setupPasswordSettingsClick();
 
-
-        // Инициализация GoogleSignInClient
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id)) // Убедитесь, что у вас есть правильный ID клиента
                 .requestEmail()
@@ -260,40 +259,42 @@ CommentRepository commentRepository;
 
         if (currentUser != null) {
             currentEmail.setText(currentUser.getEmail());
-        }
 
-        boolean isGoogleSignIn = false;
-        for (UserInfo info : currentUser.getProviderData()) {
-            if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
-                isGoogleSignIn = true;
-                break;
+            boolean isGoogleSignIn = false;
+            for (UserInfo info : currentUser.getProviderData()) {
+                if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
+                    isGoogleSignIn = true;
+                    break;
+                }
             }
-        }
-        if (isGoogleSignIn) {
-            googleSignInButton.setVisibility(View.VISIBLE);
-            googleAuthMessage.setVisibility(View.VISIBLE);
-            googleSignInButton.setOnClickListener(v -> requestNewGoogleSignInToken());
-        } else {
-            newEmailInput.setVisibility(View.VISIBLE);
-            saveButton.setVisibility(View.VISIBLE);
+
+            if (isGoogleSignIn) {
+                googleSignInButton.setVisibility(View.VISIBLE);
+                googleAuthMessage.setVisibility(View.VISIBLE);
+                googleSignInButton.setOnClickListener(v -> requestNewGoogleSignInToken());
+            } else {
+                newEmailInput.setVisibility(View.VISIBLE);
+                saveButton.setVisibility(View.VISIBLE);
+            }
         }
 
         AlertDialog dialog = builder.create();
+
         saveButton.setOnClickListener(v -> {
             String newEmail = newEmailInput.getText().toString().trim();
             if (TextUtils.isEmpty(newEmail)) {
                 showToast("Введите новую почту");
                 return;
             }
-            reauthenticateAndChangeEmail(newEmail);
-            dialog.dismiss();
+            // Используем уже созданный dialog
+            reauthenticateAndChangeEmail(newEmail, dialog); // передаем диалог как параметр
         });
 
         dialog.show();
     }
 
 
-    private void reauthenticateAndChangeEmail(String newEmail) {
+    private void reauthenticateAndChangeEmail(String newEmail, AlertDialog dialog) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             showToast("Пользователь не авторизован");
@@ -313,85 +314,118 @@ CommentRepository commentRepository;
             GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getContext());
             if (account != null) {
                 AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-                reauthenticateWithCredential(credential, newEmail);
+                reauthenticateWithCredential(credential, newEmail, dialog);
             } else {
                 showToast("Ошибка: учетная запись Google недоступна.");
             }
         } else {
             // Повторная аутентификация через email и пароль
-            fetchPasswordFromFirestoreAndReauthenticate(newEmail);
+            fetchPasswordFromFirestoreAndReauthenticate(newEmail, dialog);
         }
     }
-    private void fetchPasswordFromFirestoreAndReauthenticate(String newEmail) {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            showToast("Пользователь не авторизован.");
-            return;
-        }
 
-        String userId = currentUser.getUid();
-        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-
-        personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
-            if (personalData != null && personalData.password != null) {
-                AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), personalData.password);
-                reauthenticateWithCredential(credential, newEmail);
-            } else {
-                showToast("Пароль не найден. Пожалуйста, войдите заново.");
-            }
-        }).exceptionally(e -> {
-            showToast("Ошибка доступа к данным пользователя.");
-            return null;
-        });
-    }
-    private void updateEmailInFirestore(String newEmail) {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            showToast("Пользователь не авторизован.");
-            return;
-        }
-
-        String userId = currentUser.getUid();
-        PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-
-        personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
-            if (personalData != null) {
-                personalData.email = newEmail;
-                personalDataRepository.addOrUpdatePersonalData(personalData).thenRun(() -> {
-                    showToast("Почта обновлена в Firestore");
-                }).exceptionally(e -> {
-                    showToast("Ошибка при обновлении почты в Firestore: " + e.getMessage());
-                    return null;
-                });
-            }
-        });
-    }
-
-    private void reauthenticateWithCredential(AuthCredential credential, String newEmail) {
+    private void reauthenticateWithCredential(AuthCredential credential, String newEmail, AlertDialog dialog) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
         currentUser.reauthenticate(credential).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                updateEmail(newEmail);
+                updateEmail(newEmail, dialog);
             } else {
                 showToast("Ошибка повторной аутентификации: " + task.getException().getMessage());
             }
         });
     }
+    private void updateEmail(String newEmail, final AlertDialog dialog) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showToast("Пользователь не авторизован.");
+            return;
+        }
 
-    private void updateEmail(String newEmail) {
+        // Отправка письма для подтверждения нового email
+        currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                showToast("На почту " + newEmail + " отправлено письмо для подтверждения.");
+
+                // Закрытие диалога перед выходом из аккаунта и переходом в LoginActivity
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss(); // Закрываем диалог
+                }
+
+                // После успешной отправки письма выход из аккаунта и переход в LoginActivity
+                FirebaseAuth.getInstance().signOut(); // Осуществляем выход
+                navigateToLoginActivity(); // Переход в LoginActivity
+            } else {
+                showToast("Ошибка при отправке письма для подтверждения: " + task.getException().getMessage());
+            }
+        });
+    }
+
+
+    private void checkIfEmailConfirmed(final AlertDialog dialog, final String newEmail) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
-        currentUser.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(task -> {
+        currentUser.reload().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                updateEmailInFirestore(newEmail);
-                showToast("На новую почту отправлено письмо для подтверждения.");
+                boolean isVerified = currentUser.isEmailVerified();
+                String currentEmail = currentUser.getEmail();
+                if (isVerified && newEmail.equals(currentEmail)) {
+                    // Email подтвержден и совпадает с новым email
+                    updateEmailInFirestore(newEmail);
+                    showToast("Почта подтверждена и обновлена.");
+                    dialog.dismiss();  // Закрываем диалог после подтверждения почты
+                } else {
+                    showToast("Почта еще не подтверждена или не совпадает. Пожалуйста, проверьте свою почту.");
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> checkIfEmailConfirmed(dialog, newEmail), 5000);
+                }
             } else {
-                showToast("Ошибка при обновлении почты: " + task.getException().getMessage());
+                showToast("Ошибка при проверке статуса почты.");
             }
         });
+    }
+
+    private void updateEmailInFirestore(String newEmail) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            DocumentReference userRef = db.collection("personalData").document(currentUser.getUid());
+            userRef.update("email", newEmail)
+                    .addOnSuccessListener(aVoid -> showToast("Email успешно обновлен в базе данных"))
+                    .addOnFailureListener(e -> showToast("Ошибка при обновлении email в базе данных"));
+        }
+    }
+
+    private void fetchPasswordFromFirestoreAndReauthenticate(final String newEmail, final AlertDialog dialog) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showToast("Пользователь не авторизован");
+            return;
+        }
+
+        FirebaseFirestore.getInstance().collection("personalData")
+                .document(currentUser.getUid())
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null) {
+                            String password = document.getString("password"); // убедитесь, что пароль существует
+                            if (password == null || password.isEmpty()) {
+                                showToast("Пароль не найден.");
+                                return;
+                            }
+
+                            AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), password);
+                            reauthenticateWithCredential(credential, newEmail, dialog);
+                        } else {
+                            showToast("Ошибка при получении данных пользователя.");
+                        }
+                    } else {
+                        showToast("Ошибка при обращении к базе данных.");
+                    }
+                });
     }
 
     private void requestNewGoogleSignInToken() {

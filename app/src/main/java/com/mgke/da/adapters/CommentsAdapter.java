@@ -1,5 +1,7 @@
 package com.mgke.da.adapters;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,11 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
     private List<Comment> comments = new ArrayList<>();
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault());
+    private Context context;  // Declare context
+
+    public CommentsAdapter(Context context) {
+        this.context = context;  // Initialize context
+    }
 
     @NonNull
     @Override
@@ -34,7 +41,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = comments.get(position);
-        holder.bind(comment);
+        holder.bind(comment, context);  // Pass context to the bind method
     }
 
     @Override
@@ -63,22 +70,25 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             commentDate = itemView.findViewById(R.id.commentDate);
         }
 
-        public void bind(Comment comment) {
+        public void bind(Comment comment, Context context) {
             userName.setText(comment.getUserName());
             commentText.setText(comment.getText());
 
             // Форматирование даты
-            // Убедитесь, что comment.getTimestamp() возвращает Date
             String formattedDate = dateFormat.format(comment.getTimestamp());
             commentDate.setText(formattedDate);
 
             Glide.with(itemView.getContext())
                     .load(comment.getUserImage())
-                    .placeholder(R.drawable.account_fon1)
-                    .error(R.drawable.account_fon2)
+                    .placeholder(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)  // Выбираем изображение в зависимости от темы
+                    .error(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
                     .into(userImage);
         }
 
-
+        private boolean isDarkMode(Context context) {
+            int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        }
     }
 }
+

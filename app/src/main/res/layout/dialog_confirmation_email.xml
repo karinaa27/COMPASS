@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:id="@+id/dialog_confirmation_email">
+
+    <TextView
+        android:id="@+id/confirmationMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Для завершения процесса подтвердите свой email"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/googleSignInButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
+</LinearLayout>

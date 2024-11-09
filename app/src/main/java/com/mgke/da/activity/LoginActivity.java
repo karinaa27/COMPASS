@@ -41,17 +41,26 @@ public class LoginActivity extends AppCompatActivity {
     private PersonalDataRepository personalDataRepository;
     private static final int RC_SIGN_IN = 9001;
     private FirebaseFirestore firestore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Log.d("ActivityLifecycle", "LoginActivity onCreate called");
+
         initializeViews();
         initializeGoogleSignIn();
-        checkLoginStatus();
+        checkIfUserIsLoggedIn();
         setupClickListeners();
     }
-
+    private void checkIfUserIsLoggedIn() {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null) {
+            // Если пользователь уже аутентифицирован, перенаправляем его в MainActivity
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
+    }
     private void initializeViews() {
         loginEmail = findViewById(R.id.login_email);
         loginPassword = findViewById(R.id.login_password);
@@ -81,17 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
-
-    private void checkLoginStatus() {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean isLoggedIn = preferences.getBoolean(KEY_IS_LOGGED_IN, false);
-
-        if (isLoggedIn) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
-        }
-    }
-
     private void setupClickListeners() {
         Button loginButton = findViewById(R.id.login_button);
         loginButton.setOnClickListener(v -> loginUser());
@@ -112,7 +110,24 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnSuccessListener(authResult -> {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null && user.isEmailVerified()) {
-                            navigateToMain();
+                            // Получаем ссылку на Firestore
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                            // Получаем ID пользователя (или используйте другую логику поиска документа пользователя)
+                            String userId = user.getUid();
+
+                            // Обновляем email в коллекции PersonalData
+                            db.collection("personalData").document(userId)
+                                    .update("email", email)
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Успешное обновление
+                                        Log.d("Login", "Email успешно обновлен в PersonalData");
+                                        navigateToMain();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        // Ошибка при обновлении
+                                        Log.e("Login", "Ошибка обновления email в PersonalData: " + e.getMessage());
+                                    });
                         } else {
                             Toast.makeText(LoginActivity.this, getString(R.string.verify_email), Toast.LENGTH_LONG).show();
                             auth.signOut();
@@ -121,6 +136,8 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Toast.makeText(LoginActivity.this, getString(R.string.login_failed, e.getMessage()), Toast.LENGTH_SHORT).show());
         }
     }
+
+
 
     private boolean validateInput(String email, String password) {
         if (email.isEmpty()) {
@@ -152,6 +169,7 @@ public class LoginActivity extends AppCompatActivity {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
                 // Directly authenticate with Firebase
+
                 firebaseAuthWithGoogle(account.getIdToken());
             }
         } catch (ApiException e) {
@@ -226,38 +244,11 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveUserData(FirebaseUser user) {
-        String id = user.getUid();
-        String email = user.getEmail() != null ? user.getEmail() : "";
-        boolean isAdmin = email.equals("markinakarina1122@gmail.com");  // Set isAdmin based on email
-
-        PersonalData personalData = new PersonalData(
-                id,
-                user.getDisplayName() != null ? user.getDisplayName() : "",
-                "",
-                email,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "USD",
-                isAdmin
-        );
-
-        personalDataRepository.addOrUpdatePersonalData(personalData);
-    }
-
     private void navigateToMain() {
-        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-        editor.putBoolean(KEY_IS_LOGGED_IN, true);
-        editor.apply();
         startActivity(new Intent(LoginActivity.this, MainActivity.class));
         finish();
     }
+
 
     private void resetPassword() {
         String email = loginEmail.getText().toString();

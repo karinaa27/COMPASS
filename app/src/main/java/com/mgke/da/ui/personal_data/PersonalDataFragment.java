@@ -189,17 +189,21 @@ public class PersonalDataFragment extends Fragment {
                                 isChanged = true;
                             }
 
-                            // Преобразование строки в Date для сравнения
                             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                            try {
-                                Date newBirthday = sdf.parse(selectedBirthday);
-                                if (newBirthday != null && !newBirthday.equals(existingData.birthDate)) {
-                                    existingData.birthDate = newBirthday;
-                                    isChanged = true;
+                            if (!selectedBirthday.isEmpty()) { // Проверка на пустое значение
+                                try {
+                                    Date newBirthday = sdf.parse(selectedBirthday);
+                                    if (newBirthday != null && !newBirthday.equals(existingData.birthDate)) {
+                                        existingData.birthDate = newBirthday;
+                                        isChanged = true;
+                                    }
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                    return;
                                 }
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                                return;
+                            } else {
+                                existingData.birthDate = null; // Установка null для пустой даты
+                                isChanged = true;
                             }
 
                             if (!country.equals(existingData.country)) {

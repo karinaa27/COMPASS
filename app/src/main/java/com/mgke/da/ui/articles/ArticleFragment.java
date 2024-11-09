@@ -16,6 +16,7 @@
     import androidx.recyclerview.widget.LinearLayoutManager;
     import androidx.recyclerview.widget.RecyclerView;
     import com.bumptech.glide.Glide;
+    import com.bumptech.glide.load.engine.DiskCacheStrategy;
     import com.google.firebase.auth.FirebaseAuth;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.mgke.da.R;
@@ -105,22 +106,32 @@
                             articleContent.setText(article.textEn);
                         }
 
-                        articleDate.setText(new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault()).format(article.timestamp));
+                        // Логирование перед установкой даты
+                        String formattedDate = article.getFormattedTimestamp();
+                        Log.d("ArticleFragment", "Formatted Date: " + formattedDate); // Логируем дату
 
-                        Glide.with(requireContext())
+                        articleDate.setText(formattedDate);
+
+                        // Логирование URL изображения для отладки
+                        Log.d("ArticleFragment", "Image URL: " + article.image);
+
+                        Glide.with(getActivity())
                                 .load(article.image)
-                                .placeholder(isDarkMode() ? R.drawable.user_icon_night : R.drawable.user_icon)  // Выбираем изображение в зависимости от темы
-                                .error(isDarkMode() ? R.drawable.user_icon_night : R.drawable.user_icon)  // Выбираем изображение в зависимости от темы
+                                .placeholder(R.drawable.account_fon1)
+                                .error(R.drawable.account_fon2)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .into(articleImage);
+
                         break;
                     }
                 }
+            }).exceptionally(ex -> {
+                Log.e("ArticleFragment", "Error loading article details", ex);
+                return null;
             });
         }
-        private boolean isDarkMode() {
-            int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
-        }
+
 
 
         private void checkIfUserIsAdmin(ImageView deleteButton, ImageView editButton) {
@@ -224,7 +235,7 @@
 
         private void setupCommentsRecyclerView() {
             commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            commentsAdapter = new CommentsAdapter();
+            commentsAdapter = new CommentsAdapter(requireContext()); // Передаем контекст здесь
             commentsRecyclerView.setAdapter(commentsAdapter);
         }
 

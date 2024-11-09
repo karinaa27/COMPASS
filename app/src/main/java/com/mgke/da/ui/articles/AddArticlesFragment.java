@@ -165,7 +165,7 @@ public class AddArticlesFragment extends Fragment {
         // Получаем текущего пользователя
         FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
-            db.collection("PersonalData").document(user.getUid())
+            db.collection("personalData").document(user.getUid())
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
@@ -226,8 +226,13 @@ public class AddArticlesFragment extends Fragment {
             article = currentArticle;
         } else {
             article = new Article();
-            article.timestamp = new Date(); // Устанавливаем текущую дату и время
         }
+
+        // Всегда устанавливаем метку времени в текущее время
+        article.timestamp = new Date();
+
+        // Логируем используемую дату
+        Log.d("AddArticlesFragment", "Article Timestamp: " + article.timestamp);
 
         article.nameRu = nameRu;
         article.nameEn = nameEn;
@@ -249,20 +254,12 @@ public class AddArticlesFragment extends Fragment {
                 });
     }
 
+
     private boolean validateInputs(String nameRu, String nameEn, String descriptionRu, String descriptionEn, String textRu, String textEn) {
-        // Список всех полей
-        String[] fields = {nameRu, nameEn, descriptionRu, descriptionEn, textRu, textEn};
-
-        // Проверка на пустые поля
-        for (String field : fields) {
-            if (field.isEmpty()) {
-                Toast.makeText(getActivity(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show();
-                return false;
-            }
+        if (nameRu.isEmpty() || nameEn.isEmpty() || descriptionRu.isEmpty() || descriptionEn.isEmpty() || textRu.isEmpty() || textEn.isEmpty()) {
+            Toast.makeText(getActivity(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show();
+            return false;
         }
-
         return true;
     }
-
 }
-

@@ -127,10 +127,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
-        googleSignInButton.setOnClickListener(view -> {
-            isGoogleSignUp = true;
-            signInWithGoogle();
-        });
+        googleSignInButton.setOnClickListener(v -> signInWithGoogle());
 
         signupCurrency.setOnClickListener(view -> showCurrencyPickerDialog());
         loginRedirectText.setOnClickListener(v -> {
@@ -198,7 +195,6 @@ public class SignUpActivity extends AppCompatActivity {
         String country = signupCountry.getText().toString().trim();
         String gender = getSelectedGender();
         String currency = signupCurrency.getText().toString().trim();
-
         Date birthDate = getBirthDateFromInput();
 
         // Валидация полей
@@ -246,7 +242,8 @@ public class SignUpActivity extends AppCompatActivity {
                     if (firebaseUser != null) {
                         sendVerificationEmail(); // Отправка письма для подтверждения
                         String userId = firebaseUser.getUid();
-                        PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency, false);
+                        boolean isAdmin = user.equals("markinakarina1122@gmail.ru"); // Проверка на админа
+                        PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency, isAdmin);
                         personalDataRepository.addOrUpdatePersonalData(personalData);
 
                         // Уведомляем пользователя о том, что письмо отправлено
@@ -311,15 +308,9 @@ public class SignUpActivity extends AppCompatActivity {
         setupTextChangedListeners();
     }
 
-
-
     private void signInWithGoogle() {
-        if (googleSignInClient != null) {
-            Intent signInIntent = googleSignInClient.getSignInIntent();
-            startActivityForResult(signInIntent, RC_SIGN_IN);
-        } else {
-            Toast.makeText(this, getString(R.string.google_sign_in_error), Toast.LENGTH_SHORT).show();
-        }
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     @Override
@@ -330,19 +321,17 @@ public class SignUpActivity extends AppCompatActivity {
             handleSignInResult(task);
         }
     }
-
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                String idToken = account.getIdToken();
-                firebaseAuthWithGoogle(idToken);
+                // Directly authenticate with Firebase
+                firebaseAuthWithGoogle(account.getIdToken());
             }
         } catch (ApiException e) {
-            Toast.makeText(this, getString(R.string.sign_in_error, e.getMessage()), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.login_error, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
-
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -402,6 +391,7 @@ public class SignUpActivity extends AppCompatActivity {
 
                                     // Создаем новый объект PersonalData
                                     String id = user.getUid();
+                                    boolean isAdmin = email.equals("markinakarina1122@gmail.ru"); // Проверка на админа
                                     PersonalData newPersonalData = new PersonalData(
                                             id,
                                             user.getDisplayName() != null ? user.getDisplayName() : "",
@@ -416,7 +406,7 @@ public class SignUpActivity extends AppCompatActivity {
                                             null,  // Notes
                                             null,
                                             "USD",
-                                            email.equals("markinakarina1122@gmail.com") // Если email соответствует, делаем пользователя администратором
+                                            isAdmin // Устанавливаем admin
                                     );
 
                                     // Записываем или обновляем данные пользователя в Firestore
@@ -436,8 +426,6 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
     }
-
-
 
     private Task<PersonalData> checkUserInFirestore(String email) {
         return firestore.collection("users")

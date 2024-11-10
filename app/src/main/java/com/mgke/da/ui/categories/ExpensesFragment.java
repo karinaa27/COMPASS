@@ -17,6 +17,8 @@ import com.mgke.da.R;
 import com.mgke.da.adapters.CategoryAdapter;
 import com.mgke.da.repository.CategoryRepository;
 
+import java.util.Locale;
+
 public class ExpensesFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -45,14 +47,10 @@ public class ExpensesFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-            loadCategories();  // Загружаем категории, если они еще не были загружены
-            Log.d("CategoryFragment", "onResume called");
-    }
-
     public void loadCategories() {
+        // Получаем текущий язык
+        String currentLanguage = Locale.getDefault().getLanguage();
+
         // Проверяем, были ли категории загружены ранее
         if (categoryAdapter != null && categoryAdapter.getItemCount() > 0) {
             return; // Категории уже загружены, не загружаем их снова
@@ -61,15 +59,16 @@ public class ExpensesFragment extends Fragment {
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru");
+                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, currentLanguage);
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
                 // Создаем категории по умолчанию, если данных нет
-                categoryRepository.createDefaultExpenseCategories(userId);
-                // Не вызываем loadCategories() снова, а просто выводим сообщение об ошибке
+                categoryRepository.createDefaultCategories(userId, "expense").thenRun(() -> {
+                    loadCategories();  // Повторная попытка загрузки после создания категорий
+                });
                 Log.w("ExpensesFragment", "No categories found, default categories created.");
             }
         }).exceptionally(e -> {
@@ -78,5 +77,7 @@ public class ExpensesFragment extends Fragment {
         });
     }
 
+
 }
+
 

@@ -7,83 +7,76 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
 import com.mgke.da.databinding.FragmentCategoryBinding;
+import com.mgke.da.repository.CategoryRepository;
 
 public class CategoryFragment extends Fragment {
 
-    private FragmentCategoryBinding binding;
     private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private CategoryRepository categoryRepository;
+    private FirebaseUser currentUser;
+    private String userId;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        Log.d("CategoryFragment", "onCreateView called");
-        binding = FragmentCategoryBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-        setupViewPagerAndTabs();
-        return root;
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_category, container, false);
+
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        userId = currentUser != null ? currentUser.getUid() : null;
+
+        categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
+
+        tabLayout = view.findViewById(R.id.tabLayout);
+        viewPager = view.findViewById(R.id.viewPager);
+
+        setupTabs();
+
+        return view;
     }
 
-    private void setupViewPagerAndTabs() {
-        Log.d("CategoryFragment", "setupViewPagerAndTabs called");
-
-        tabLayout = binding.tabLayout;
-        ViewPager viewPager = binding.viewPager;
-
-        viewPager.setAdapter(new FragmentStatePagerAdapter(getChildFragmentManager()) {
-            @Override
-            public int getCount() {
-                return 2; // 2 вкладки: расходы и доходы
-            }
-
-            @Override
-            public Fragment getItem(int position) {
-                Log.d("CategoryFragment", "getItem called, position: " + position);
-                if (position == 0) {
-                    return new ExpensesFragment(); // Фрагмент для расходов
-                } else {
-                    return new IncomeFragment(); // Фрагмент для доходов
-                }
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                if (position == 0) {
-                    return getString(R.string.tab_expenses); // Заголовок для расходов
-                } else {
-                    return getString(R.string.tab_income); // Заголовок для доходов
-                }
-            }
-        });
-
+    private void setupTabs() {
+        CategoryPagerAdapter adapter = new CategoryPagerAdapter(getChildFragmentManager());
+        viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
-        viewPager.setCurrentItem(0); // По умолчанию показываем вкладку расходов
     }
 
+    public class CategoryPagerAdapter extends FragmentPagerAdapter {
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d("CategoryFragment", "onResume called");
-        setupViewPagerAndTabs(); // Обновление ViewPager при возврате
-    }
+        public CategoryPagerAdapter(@NonNull FragmentManager fm) {
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d("CategoryFragment", "onPause called");
-    }
+        @Override
+        public Fragment getItem(int position) {
+            if (position == 0) {
+                return new ExpensesFragment(); // Загружаем фрагмент расходов
+            } else {
+                return new IncomeFragment(); // Загружаем фрагмент доходов
+            }
+        }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.d("CategoryFragment", "onDestroyView called");
-        binding = null;
+        @Override
+        public int getCount() {
+            return 2; // Два таба: расходы и доходы
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return position == 0 ? "Расходы" : "Доходы";
+        }
     }
 }
+

@@ -53,6 +53,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -76,6 +78,8 @@ public class UpdateTransactionsFragment extends Fragment {
     private Transaction transaction;
     private List<Category> categories;
     private String transactionId;
+    private static final String TAG = "AddTransactionFragment"; // Тег для логов
+    private static boolean areCategoriesCreated = false;
 
     public UpdateTransactionsFragment() {
     }
@@ -134,7 +138,10 @@ public class UpdateTransactionsFragment extends Fragment {
         AccountRepository accountRepository = new AccountRepository(db); // Репозиторий для получения данных счета
         NavController navController = Navigation.findNavController(view);
         binding.close.setOnClickListener(v -> navController.popBackStack());
-
+        if (!areCategoriesCreated) {
+            loadCategoriesWithDefaults();
+        } else {
+        }
         if (getArguments() != null) {
             transaction = (Transaction) getArguments().getSerializable("transaction");
             if (transaction != null) {
@@ -585,25 +592,39 @@ public class UpdateTransactionsFragment extends Fragment {
         }
     }
     private void loadCategoriesWithDefaults() {
-        categoryRepository.getAllCategory(userId).whenComplete((categories, throwable) -> {
+        Log.d(TAG, "loadCategoriesWithDefaults: Вызван метод для загрузки категорий с дефолтами");
+
+        categoryRepository.getAllCategories(userId).whenComplete((categories, throwable) -> {
             if (throwable != null) {
-                // Обработка ошибки при получении категорий
-                throwable.printStackTrace();
+                Log.e(TAG, "Ошибка при получении категорий", throwable);
                 return;
             }
 
             if (categories == null || categories.isEmpty()) {
-                // Если категории пустые, создаем дефолтные категории
-                categoryRepository.createDefaultCategories(userId);
-                categoryRepository.createDefaultExpenseCategories(userId);
-                // Заново загружаем категории после создания дефолтных
-                loadCategoriesBasedOnTransactionType();
+                Log.d(TAG, "Категории не найдены, создаем дефолтные");
+                // Создаем дефолтные категории
+                CompletableFuture<Void> incomeCategories = categoryRepository.createDefaultCategories(userId, "income");
+                CompletableFuture<Void> expenseCategories = categoryRepository.createDefaultCategories(userId, "expense");
+
+                CompletableFuture.allOf(incomeCategories, expenseCategories).whenComplete((v, ex) -> {
+                    if (ex != null) {
+                        Log.e(TAG, "Ошибка при создании категорий", ex);
+                    } else {
+                        Log.d(TAG, "Дефолтные категории успешно созданы");
+                        // После создания категорий обновляем флаг
+                        areCategoriesCreated = true;
+                        loadCategoriesBasedOnTransactionType();
+                    }
+                });
             } else {
-                // Если категории уже существуют, просто загружаем их
+                Log.d(TAG, "Категории уже существуют, обновляем флаг");
+                // Если категории уже существуют, обновляем флаг
+                areCategoriesCreated = true;
                 loadCategoriesBasedOnTransactionType();
             }
         });
     }
+
     private void loadCategoriesBasedOnTransactionType() {
         if (currentTransactionType.equals(INCOME)) {
             loadIncomeCategories();
@@ -616,6 +637,5 @@ public class UpdateTransactionsFragment extends Fragment {
         super.onResume();
         binding.recyclerViewCategories.setAdapter(categoryAdapter);
         loadUserCurrencyFromDatabase();
-        loadCategoriesWithDefaults();
     }
 }

@@ -20,6 +20,7 @@ import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
 
 import java.util.List;
+import java.util.Locale;
 
 public class IncomeFragment extends Fragment {
 
@@ -29,7 +30,6 @@ public class IncomeFragment extends Fragment {
     private FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
     private String userId = null;
     private boolean isCategoriesLoaded = false; // Флаг, чтобы избежать повторной загрузки
-    private List<Category> cachedCategories = null; // Для хранения загруженных категорий
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -53,38 +53,40 @@ public class IncomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadCategories();
-            Log.d("CategoryFragment", "onResume called income");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Сохраняем загруженные категории в кэш
-        if (categoryAdapter != null) {
-                cachedCategories = categoryAdapter.getCategories(); // Предполагается, что в адаптере есть метод для получения категорий
+        // Можно добавить логику для повторной загрузки категорий, если они не были загружены
+        if (!isCategoriesLoaded) {
+            loadCategories();
         }
-        Log.d("CategoryFragment", "onPause called");
     }
 
     public void loadCategories() {
+        // Получаем текущий язык
+        String currentLanguage = Locale.getDefault().getLanguage();
+
+        if (isCategoriesLoaded) {
+            return;
+        }
+
         categoryRepository.getAllCategory(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
-                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, "ru");
+                    categoryAdapter = new CategoryAdapter(this, categories, categoryRepository, true, currentLanguage);
                     recyclerView.setAdapter(categoryAdapter);
                 } else {
                     categoryAdapter.updateCategories(categories);
                 }
-                isCategoriesLoaded = true; // Устанавливаем флаг, что категории загружены
-                cachedCategories = categories; // Сохраняем категории в кэш
+                isCategoriesLoaded = true;
             } else {
-                categoryRepository.createDefaultCategories(userId);
-                loadCategories();  // Повторная попытка загрузки, если категории пусты
+                categoryRepository.createDefaultCategories(userId, "income").thenRun(() -> {
+                    loadCategories();  // Повторная попытка загрузки после создания категорий
+                });
             }
         }).exceptionally(e -> {
             Log.e("IncomeFragment", "Error loading categories", e);
             return null;
         });
     }
+
 }
+
+

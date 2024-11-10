@@ -72,6 +72,8 @@ public class AddTransactionFragment extends Fragment {
     private String currentTransactionType = INCOME;
     private FirebaseAuth auth;
     private String selectedGoalId;
+    private static final String TAG = "AddTransactionFragment"; // Тег для логов
+    private static boolean areCategoriesCreated = false;
 
     public AddTransactionFragment() {
     }
@@ -124,7 +126,10 @@ public class AddTransactionFragment extends Fragment {
         binding.textViewCurrencyLabel.setVisibility(View.GONE);
         setTransactionType(INCOME);
 
-        loadCategoriesWithDefaults();
+        if (!areCategoriesCreated) {
+            loadCategoriesWithDefaults();
+        } else {
+        }
 
         binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
         binding.textViewCurrencyLabel.setOnClickListener(v -> showSelectCurrencyDialog());
@@ -299,21 +304,34 @@ public class AddTransactionFragment extends Fragment {
     }
 
     private void loadCategoriesWithDefaults() {
-        categoryRepository.getAllCategory(userId).whenComplete((categories, throwable) -> {
+        Log.d(TAG, "loadCategoriesWithDefaults: Вызван метод для загрузки категорий с дефолтами");
+
+        categoryRepository.getAllCategories(userId).whenComplete((categories, throwable) -> {
             if (throwable != null) {
-                // Обработка ошибки при получении категорий
-                throwable.printStackTrace();
+                Log.e(TAG, "Ошибка при получении категорий", throwable);
                 return;
             }
 
             if (categories == null || categories.isEmpty()) {
-                // Если категории пустые, создаем дефолтные категории
-                categoryRepository.createDefaultCategories(userId);
-                categoryRepository.createDefaultExpenseCategories(userId);
-                // Заново загружаем категории после создания дефолтных
-                loadCategoriesBasedOnTransactionType();
+                Log.d(TAG, "Категории не найдены, создаем дефолтные");
+                // Создаем дефолтные категории
+                CompletableFuture<Void> incomeCategories = categoryRepository.createDefaultCategories(userId, "income");
+                CompletableFuture<Void> expenseCategories = categoryRepository.createDefaultCategories(userId, "expense");
+
+                CompletableFuture.allOf(incomeCategories, expenseCategories).whenComplete((v, ex) -> {
+                    if (ex != null) {
+                        Log.e(TAG, "Ошибка при создании категорий", ex);
+                    } else {
+                        Log.d(TAG, "Дефолтные категории успешно созданы");
+                        // После создания категорий обновляем флаг
+                        areCategoriesCreated = true;
+                        loadCategoriesBasedOnTransactionType();
+                    }
+                });
             } else {
-                // Если категории уже существуют, просто загружаем их
+                Log.d(TAG, "Категории уже существуют, обновляем флаг");
+                // Если категории уже существуют, обновляем флаг
+                areCategoriesCreated = true;
                 loadCategoriesBasedOnTransactionType();
             }
         });
@@ -451,6 +469,7 @@ public class AddTransactionFragment extends Fragment {
     }
 
     private void loadIncomeCategories() {
+        Log.d(TAG, "loadIncomeCategories: Вызван метод загрузки категорий доходов");
         categoryRepository.getAllCategory(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
@@ -464,6 +483,7 @@ public class AddTransactionFragment extends Fragment {
     }
 
     private void loadExpenseCategories() {
+        Log.d(TAG, "loadExpenseCategories: Вызван метод загрузки категорий расходов");
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
             if (categories != null && !categories.isEmpty()) {
                 if (categoryAdapter == null) {
@@ -602,7 +622,7 @@ public class AddTransactionFragment extends Fragment {
         super.onResume();
         binding.recyclerViewCategories.setAdapter(categoryAdapter);
         loadUserCurrencyFromDatabase();
-        loadCategoriesWithDefaults();
+
     }
 
     private void loadUserCurrencyFromDatabase() {

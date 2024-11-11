@@ -16,7 +16,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
 import com.mgke.da.adapters.CategoryAdapter;
 import com.mgke.da.repository.CategoryRepository;
-
 import java.util.Locale;
 
 public class ExpensesFragment extends Fragment {
@@ -42,18 +41,15 @@ public class ExpensesFragment extends Fragment {
             userId = currentUser.getUid();
         }
 
-        loadCategories();  // Загружаем категории при первом создании фрагмента
+        loadCategories();
 
         return view;
     }
 
     public void loadCategories() {
-        // Получаем текущий язык
         String currentLanguage = Locale.getDefault().getLanguage();
-
-        // Проверяем, были ли категории загружены ранее
         if (categoryAdapter != null && categoryAdapter.getItemCount() > 0) {
-            return; // Категории уже загружены, не загружаем их снова
+            return;
         }
 
         categoryRepository.getAllExpenseCategories(userId).thenAccept(categories -> {
@@ -65,9 +61,8 @@ public class ExpensesFragment extends Fragment {
                     categoryAdapter.updateCategories(categories);
                 }
             } else {
-                // Создаем категории по умолчанию, если данных нет
                 categoryRepository.createDefaultCategories(userId, "expense").thenRun(() -> {
-                    loadCategories();  // Повторная попытка загрузки после создания категорий
+                    loadCategories();
                 });
                 Log.w("ExpensesFragment", "No categories found, default categories created.");
             }

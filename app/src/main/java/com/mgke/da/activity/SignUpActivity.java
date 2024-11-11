@@ -48,7 +48,6 @@ public class SignUpActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private EditText signupEmail, signupPassword, signupPassword2, signupUsername, signupFirstName, signupLastName, signupBirthDate, signupCountry, signupCurrency;
     private Button signupButton;
-    private com.google.android.gms.common.SignInButton googleSignInButton;
     private TextView loginRedirectText;
     private static final int RC_SIGN_IN = 9001;
     private PersonalDataRepository personalDataRepository;
@@ -68,7 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         personalDataRepository = new PersonalDataRepository(firestore);
-
+        initializeGoogleSignIn();
         signupEmail = findViewById(R.id.signup_email);
         signupPassword = findViewById(R.id.signup_password);
         signupPassword2 = findViewById(R.id.signup_password2);
@@ -79,21 +78,7 @@ public class SignUpActivity extends AppCompatActivity {
         signupCountry = findViewById(R.id.signup_country);
         signupCurrency = findViewById(R.id.signup_currency);
         signupButton = findViewById(R.id.sign_up_button);
-        googleSignInButton = findViewById(R.id.googleSignInButton);
         loginRedirectText = findViewById(R.id.loginRedirectText);
-
-        // Проверка на уже авторизованного пользователя
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-            finish();
-        }
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.client_id))
-                .requestEmail()
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
 
         // Подсветка пустых обязательных полей при создании активности
         highlightEmptyFields();
@@ -127,13 +112,25 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
-        googleSignInButton.setOnClickListener(v -> signInWithGoogle());
-
         signupCurrency.setOnClickListener(view -> showCurrencyPickerDialog());
         loginRedirectText.setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
             finish();
         });
+    }
+
+    private void initializeGoogleSignIn() {
+        // Инициализация Firestore
+        firestore = FirebaseFirestore.getInstance(); // Добавьте эту строку
+        personalDataRepository = new PersonalDataRepository(firestore);
+        auth = FirebaseAuth.getInstance();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.client_id))
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     // Метод для подсветки пустых обязательных полей
@@ -262,9 +259,6 @@ public class SignUpActivity extends AppCompatActivity {
             return null;
         });
     }
-
-
-
     private Date getBirthDateFromInput() {
         String dateString = signupBirthDate.getText().toString().trim();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -309,29 +303,47 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
+        Log.d("GoogleSignIn", "Google sign-in initiated");
+
+        // Запускаем процесс выбора аккаунта
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
+            Log.d("GoogleSignIn", "Google sign-in result received");
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
     }
+
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                // Directly authenticate with Firebase
+                // Получение информации о пользователе
+                String accountName = account.getDisplayName();
+                String accountEmail = account.getEmail();
+                String accountId = account.getId();
+
+                // Логируем информацию о аккаунте
+                Log.d("GoogleSignIn", "Google sign-in successful, authenticated with Firebase");
+                Log.d("GoogleSignIn", "Signed in with account: " + accountName + " (" + accountEmail + ")");
+
+                // Далее передаем в Firebase для аутентификации
                 firebaseAuthWithGoogle(account.getIdToken());
             }
         } catch (ApiException e) {
+            Log.e("GoogleSignIn", "Google sign-in failed: " + e.getMessage());
             Toast.makeText(this, getString(R.string.login_error, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
+
+
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);

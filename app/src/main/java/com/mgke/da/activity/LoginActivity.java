@@ -50,17 +50,9 @@ public class LoginActivity extends AppCompatActivity {
 
         initializeViews();
         initializeGoogleSignIn();
-        checkIfUserIsLoggedIn();
         setupClickListeners();
     }
-    private void checkIfUserIsLoggedIn() {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            // Если пользователь уже аутентифицирован, перенаправляем его в MainActivity
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
-        }
-    }
+
     private void initializeViews() {
         loginEmail = findViewById(R.id.login_email);
         loginPassword = findViewById(R.id.login_password);
@@ -109,35 +101,20 @@ public class LoginActivity extends AppCompatActivity {
             auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
                         FirebaseUser user = auth.getCurrentUser();
-                        if (user != null && user.isEmailVerified()) {
-                            // Получаем ссылку на Firestore
-                            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                            // Получаем ID пользователя (или используйте другую логику поиска документа пользователя)
-                            String userId = user.getUid();
-
-                            // Обновляем email в коллекции PersonalData
-                            db.collection("personalData").document(userId)
-                                    .update("email", email)
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Успешное обновление
-                                        Log.d("Login", "Email успешно обновлен в PersonalData");
-                                        navigateToMain();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        // Ошибка при обновлении
-                                        Log.e("Login", "Ошибка обновления email в PersonalData: " + e.getMessage());
-                                    });
-                        } else {
-                            Toast.makeText(LoginActivity.this, getString(R.string.verify_email), Toast.LENGTH_LONG).show();
-                            auth.signOut();
+                        if (user != null) {
+                            if (user.isEmailVerified()) {
+                                // Если email подтвержден, переходим в MainActivity
+                                navigateToMain();
+                            } else {
+                                // Если email не подтвержден, выводим сообщение и выполняем выход
+                                Toast.makeText(LoginActivity.this, getString(R.string.verify_email), Toast.LENGTH_LONG).show();
+                                auth.signOut();  // Не позволяем продолжить сессии
+                            }
                         }
                     })
                     .addOnFailureListener(e -> Toast.makeText(LoginActivity.this, getString(R.string.login_failed, e.getMessage()), Toast.LENGTH_SHORT).show());
         }
     }
-
-
 
     private boolean validateInput(String email, String password) {
         if (email.isEmpty()) {
@@ -145,6 +122,10 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             loginEmail.setError(getString(R.string.email_invalid));
+            return false;
+        }
+        if (password.isEmpty()) {
+            loginPassword.setError(getString(R.string.password_empty)); // Добавьте ошибку для пустого пароля
             return false;
         }
         return true;
@@ -245,10 +226,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToMain() {
+        Log.d("LoginActivity", "Переход в MainActivity");
         startActivity(new Intent(LoginActivity.this, MainActivity.class));
         finish();
     }
-
 
     private void resetPassword() {
         String email = loginEmail.getText().toString();

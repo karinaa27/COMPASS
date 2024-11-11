@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -95,13 +96,7 @@ public class SettingsFragment extends Fragment {
     private EditText newEmailInput, currentEmail;
     private Button saveButton;
     private GoogleSignInClient googleSignInClient;
-PersonalDataRepository personalDataRepository;
-GoalRepository goalRepository;
-CategoryRepository categoryRepository;
-AccountRepository accountRepository;
-TransactionRepository transactionRepository;
-LikeRepository likeRepository;
-CommentRepository commentRepository;
+    private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 2;
 
     @Nullable
     @Override
@@ -221,9 +216,42 @@ CommentRepository commentRepository;
             navController.navigate(R.id.PersonalDataFragment);
         });
     }
-
     private void setupAvatarClick() {
-        binding.photoUser.setOnClickListener(v -> showChangePhotoDialog());
+        binding.photoUser.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Для Android 10 (API 29) и выше мы можем работать с галереей без дополнительных разрешений
+                openGallery();
+            } else {
+                // Для устройств с более низкими версиями проверяем разрешения
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Если разрешение не предоставлено, запрашиваем его
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+                } else {
+                    // Если разрешение уже есть, сразу открываем галерею
+                    openGallery();
+                }
+            }
+        });
+    }
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_PERMISSION_READ_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                openGallery();
+            } else {
+                Toast.makeText(getActivity(), "Для выбора фотографии необходимо разрешение", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void showChangePhotoDialog() {
@@ -465,18 +493,6 @@ CommentRepository commentRepository;
                         showToast("Ошибка повторной аутентификации: " + task.getException().getMessage());
                     }
                 });
-    }
-
-    private void openGallery() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    GALLERY_REQUEST_CODE);
-        } else {
-            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            imagePickerLauncher.launch(intent);
-        }
     }
 
     private void showToast(String message) {

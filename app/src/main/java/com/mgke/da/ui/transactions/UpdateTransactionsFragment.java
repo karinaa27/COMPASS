@@ -72,6 +72,8 @@ public class UpdateTransactionsFragment extends Fragment {
     private FirebaseUser currentUser;
     private String userId;
     private String selectedAccountId = null;
+    private String selectedCategory;
+
     private String currentTransactionType = INCOME;
     private FirebaseAuth auth;
     private String selectedGoalId;
@@ -135,6 +137,7 @@ public class UpdateTransactionsFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         categoryRepository = new CategoryRepository(db);
         GoalRepository goalRepository = new GoalRepository(db);
+        categoryAdapter = new SimpleCategoryAdapter(getContext(), categories, categoryRepository, true);
         AccountRepository accountRepository = new AccountRepository(db); // Репозиторий для получения данных счета
         NavController navController = Navigation.findNavController(view);
         binding.close.setOnClickListener(v -> navController.popBackStack());
@@ -147,6 +150,8 @@ public class UpdateTransactionsFragment extends Fragment {
             if (transaction != null) {
                 transactionId = transaction.id;
                 currentTransactionType = transaction.type;
+                binding.nameGoal.setVisibility(View.GONE);
+                binding.textViewCurrencyLabel.setVisibility(View.GONE);
                 setTransactionType(currentTransactionType);
 
                 // Загрузка accountName на основе accountId и установка его в nameAccount
@@ -169,33 +174,33 @@ public class UpdateTransactionsFragment extends Fragment {
                 binding.sum.setText(String.valueOf(Math.abs(transaction.amount)));
                 binding.date.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(transaction.date));
 
-                // Если сохранён goalId, то загружаем название цели
-                if (transaction.goalId != null && !transaction.goalId.isEmpty()) {
-                    goalRepository.getGoalById(transaction.goalId).thenAccept(goal -> {
-                        if (goal != null) {
-                            binding.nameGoal.setText(goal.goalName); // Устанавливаем название цели
-                            binding.nameGoal.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.nameGoal.setVisibility(View.GONE);
-                        }
-                    });
-                } else {
-                    binding.nameGoal.setVisibility(View.GONE);
-                }
             }
         }
 
         binding.recyclerViewCategories.setLayoutManager(new GridLayoutManager(getContext(), 4));
         loadCategoriesForCurrentTransactionType();
 
-        binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
+        binding.nameGoal.setOnClickListener(v -> {
+            if (transaction != null) {
+                showSelectGoalDialog(transaction); // Передаем текущую транзакцию
+            } else {
+                // Обработка случая, когда transaction равен null
+                Toast.makeText(getContext(), "Transaction не доступна", Toast.LENGTH_SHORT).show();
+            }
+        });
         binding.textViewCurrencyLabel.setOnClickListener(v -> showSelectCurrencyDialog());
         binding.addCategory.setOnClickListener(v -> {
             navController.navigate(R.id.action_updateTransactionFragment_to_addCategoryFragment);
         });
         binding.incomeBtn.setOnClickListener(v -> setTransactionType(INCOME));
         binding.expenseBtn.setOnClickListener(v -> setTransactionType(EXPENSE));
-        binding.nameAccount.setOnClickListener(v -> showSelectAccountDialog());
+        binding.nameAccount.setOnClickListener(v -> {
+            if (transaction != null) {
+                showSelectAccountDialog(transaction); // Передаем текущую транзакцию
+            } else {
+                Toast.makeText(getContext(), "Transaction не доступна", Toast.LENGTH_SHORT).show();
+            }
+        });
         binding.date.setOnClickListener(v -> showDatePickerDialog());
         binding.calendarBtn.setOnClickListener(v -> showDatePickerDialog());
         binding.textViewDeleteTransaction.setOnClickListener(v -> deleteTransaction(transactionId));
@@ -217,27 +222,84 @@ public class UpdateTransactionsFragment extends Fragment {
         });
     }
 
+    private void setTransactionType(String type) {
+        currentTransactionType = type;
 
+        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+
+        if (type.equals(INCOME)) {
+            // Настроим кнопки для дохода
+            binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_income_selector);
+            binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
+
+            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.parseColor("#00C853"));
+            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+
+            // Показываем поле цели для дохода
+            binding.goal.setVisibility(View.VISIBLE);
+            binding.nameGoal.setVisibility(View.VISIBLE);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            GoalRepository goalRepository = new GoalRepository(db);
+            // Если у транзакции уже есть цель, то устанавливаем её в поле nameGoal
+            if (transaction != null && transaction.goalId != null && !transaction.goalId.isEmpty()) {
+                goalRepository.getGoalById(transaction.goalId).thenAccept(goal -> {
+                    if (goal != null) {
+                        binding.nameGoal.setText(goal.goalName); // Устанавливаем название цели
+                    } else {
+                        binding.nameGoal.setText(""); // Если цель не найдена, ставим пустое значение
+                    }
+                }).exceptionally(e -> {
+                    binding.nameGoal.setText(""); // В случае ошибки тоже ставим пустое значение
+                    return null;
+                });
+            } else {
+                binding.nameGoal.setText(""); // Если нет goalId, ставим пустое значение
+            }
+
+            loadIncomeCategories();
+        } else if (type.equals(EXPENSE)) {
+            // Настроим кнопки для расхода
+            binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
+            binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_expence_selector);
+
+            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
+            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.RED);
+
+            // Скрываем поле цели для расхода
+            binding.goal.setVisibility(View.GONE);
+            binding.nameGoal.setVisibility(View.GONE);
+
+            loadExpenseCategories();
+        }
+    }
     private void loadCategoriesForCurrentTransactionType() {
+        // Пример загрузки категорий для текущего типа транзакции
         if (currentTransactionType.equals(INCOME)) {
             loadIncomeCategories();
         } else if (currentTransactionType.equals(EXPENSE)) {
             loadExpenseCategories();
         }
+
+        // Убедитесь, что категорию, связанную с транзакцией, правильно передали в адаптер
+        if (transaction != null && transaction.category != null) {
+            selectedCategory = transaction.category; // Присваиваем выбранную категорию
+            categoryAdapter.setSelectedCategory(selectedCategory); // Устанавливаем выбранную категорию
+        }
     }
+
     private void updateTransaction() {
-        // Проверяем наличие accountId, привязанного к счету
-        String accountId = transaction.accountId; // Используем сохранённый accountId
+        String accountId = selectedAccountId;
         String currency = binding.editTextCurrency.getText().toString();
         String amountStr = binding.sum.getText().toString();
         String dateStr = binding.date.getText().toString();
+        String category = categoryAdapter.getSelectedCategory();
 
-        // Проверка обязательных полей
-        if (accountId == null || accountId.isEmpty() || currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty()) {
-            return;
+        // Проверка на обязательные поля
+        if (currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty() || category == null || category.isEmpty()) {
+            return; // Возврат, если какие-либо обязательные поля пустые
         }
 
-        // Преобразование суммы
         double amount;
         try {
             amountStr = amountStr.replace(',', '.');
@@ -247,7 +309,6 @@ public class UpdateTransactionsFragment extends Fragment {
             return;
         }
 
-        // Преобразование даты
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         Date date;
         try {
@@ -257,26 +318,33 @@ public class UpdateTransactionsFragment extends Fragment {
             return;
         }
 
-        // Обновление полей транзакции
-        transaction.accountId = selectedAccountId; // Используйте selectedAccountId, а не transaction.accountId
+        int categoryImage = categoryAdapter.getSelectedCategoryImage();
+        int categoryColor = categoryAdapter.getSelectedCategoryColor();
+
+        // Устанавливаем accountId, только если он был изменен
+        if (accountId != null && !accountId.isEmpty()) {
+            transaction.accountId = accountId; // Обновляем accountId только если он не пустой
+        }
+
         transaction.currency = currency;
         transaction.amount = currentTransactionType.equals(EXPENSE) ? -Math.abs(amount) : Math.abs(amount);
         transaction.date = date;
+        transaction.category = category;
+        transaction.categoryImage = categoryImage;
+        transaction.categoryColor = categoryColor;
+        transaction.goalId = selectedGoalId;
 
-        // Сохранение выбранного goalId вместо названия
-        transaction.goalId = selectedGoalId != null && !selectedGoalId.isEmpty() ? selectedGoalId : null;
-
-        // Сохранение транзакции в базе данных
+        TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
         transactionRepository.updateTransaction(transaction)
                 .addOnSuccessListener(aVoid -> {
+                    if (!isAdded()) return;
                     NavController navController = Navigation.findNavController(getView());
                     navController.popBackStack();
                 })
                 .addOnFailureListener(e -> {
-
+                    if (!isAdded()) return;
                 });
     }
-
 
     private void deleteTransaction(String id) {
         if (id == null || id.isEmpty()) {
@@ -289,22 +357,24 @@ public class UpdateTransactionsFragment extends Fragment {
         }).addOnFailureListener(e -> {
         });
     }
-    private void showSelectGoalDialog() {
+    private void showSelectGoalDialog(Transaction transaction) { // Передаем объект Transaction
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_select_goal, null);
 
         RadioGroup radioGroupGoals = dialogView.findViewById(R.id.radioGroupGoals);
         Button buttonSelectGoal = dialogView.findViewById(R.id.buttonSelectGoal);
-        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal); // Кнопка для добавления новой цели
+        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal);
 
         GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
         String currentUserId = getCurrentUserId();
 
+        // Получаем goalId напрямую из объекта transaction
+        String transactionGoalId = transaction.goalId; // Используем публичное поле
+
         goalRepository.getAllGoal().thenAccept(goals -> {
             radioGroupGoals.removeAllViews();
 
-            // Добавляем опцию "Сбросить выбор"
             RadioButton resetSelectionButton = new RadioButton(getContext());
             resetSelectionButton.setText(getString(R.string.no_goal_selected));
             resetSelectionButton.setId(View.generateViewId());
@@ -315,13 +385,19 @@ public class UpdateTransactionsFragment extends Fragment {
                 binding.nameGoal.setText("");
             });
 
-            // Добавляем цели пользователя
             for (Goal goal : goals) {
                 if (goal.userId.equals(currentUserId)) {
                     RadioButton radioButton = new RadioButton(getContext());
                     radioButton.setText(goal.goalName);
                     radioButton.setId(View.generateViewId());
                     radioGroupGoals.addView(radioButton);
+
+                    // Проверяем, совпадает ли goal.id с transactionGoalId
+                    if (goal.id.equals(transactionGoalId)) {
+                        radioButton.setChecked(true);
+                        selectedGoalId = goal.id; // Устанавливаем selectedGoalId
+                        binding.nameGoal.setText(goal.goalName); // Заполняем поле с именем цели
+                    }
 
                     radioButton.setOnClickListener(v -> {
                         selectedGoalId = goal.id;
@@ -350,6 +426,7 @@ public class UpdateTransactionsFragment extends Fragment {
                 Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
             }
         });
+
         buttonAddGoal.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.AddGoalFragment);
@@ -380,14 +457,14 @@ public class UpdateTransactionsFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void showSelectAccountDialog() {
+    private void showSelectAccountDialog(Transaction transaction) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_select_account, null);
 
         RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupAccounts);
         Button buttonSelectAccount = dialogView.findViewById(R.id.buttonSelectAccount);
-        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);  // добавляем обработку для кнопки "+"
+        ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);
 
         accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
             radioGroup.removeAllViews();
@@ -397,8 +474,9 @@ public class UpdateTransactionsFragment extends Fragment {
                 radioButton.setId(View.generateViewId());
                 radioGroup.addView(radioButton);
 
-                if (selectedAccountId != null && selectedAccountId.equals(account.id)) {
-                    radioButton.setChecked(true);
+                // Устанавливаем выбранную радиокнопку, если ID счета совпадает с accountId транзакции
+                if (transaction != null && transaction.accountId != null && transaction.accountId.equals(account.id)) {
+                    radioButton.setChecked(true); // Устанавливаем флаг для выбранной радиокнопки
                 }
 
                 radioButton.setOnClickListener(v -> {
@@ -417,6 +495,8 @@ public class UpdateTransactionsFragment extends Fragment {
                 String selectedAccountName = selectedRadioButton.getText().toString();
                 binding.nameAccount.setText(selectedAccountName);
                 dialog.dismiss();
+            } else {
+                Toast.makeText(getContext(), "Пожалуйста, выберите счет", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -520,35 +600,6 @@ public class UpdateTransactionsFragment extends Fragment {
             }
         } else {
             binding.sum.setText(""); // Если поле пустое
-        }
-    }
-
-
-    private void setTransactionType(String type) {
-        currentTransactionType = type;
-
-        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
-                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-
-        if (type.equals(INCOME)) {
-            binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_income_selector);
-            binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
-
-            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.parseColor("#00C853"));
-            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
-
-            binding.goal.setVisibility(View.VISIBLE);
-            binding.nameGoal.setVisibility(View.VISIBLE);
-
-            loadIncomeCategories();
-        } else if (type.equals(EXPENSE)) {
-            binding.incomeBtn.setBackgroundResource(R.drawable.transaction_add_default_selector);
-            binding.expenseBtn.setBackgroundResource(R.drawable.transaction_add_expence_selector);
-            binding.incomeBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
-            binding.expenseBtn.setTextColor(isDarkTheme ? Color.WHITE : Color.RED);
-            binding.goal.setVisibility(View.GONE);
-            binding.nameGoal.setVisibility(View.GONE);
-            loadExpenseCategories();
         }
     }
 

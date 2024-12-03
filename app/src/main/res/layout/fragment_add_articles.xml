@@ -15,8 +15,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingTop="16dp"
-        android:paddingEnd="10dp"
-        >
+        android:paddingEnd="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,7 +45,7 @@
                 android:src="@drawable/baseline_close_24" />
         </LinearLayout>
 
-        <!-- Название на русском -->
+        <!-- Title in Russian -->
         <EditText
             android:id="@+id/article_name_ru"
             style="@style/EdittextTransactions"
@@ -55,10 +54,10 @@
             android:layout_marginTop="16dp"
             android:maxLength="35"
             android:fontFamily="@font/montserrat"
-            android:hint="Название статьи (русский)"
+            android:hint="Article Title (Russian)"
             android:inputType="text" />
 
-        <!-- Название на английском -->
+        <!-- Title in English -->
         <EditText
             android:id="@+id/article_name_en"
             style="@style/EdittextTransactions"
@@ -67,10 +66,10 @@
             android:layout_marginTop="16dp"
             android:maxLength="35"
             android:fontFamily="@font/montserrat"
-            android:hint="Название статьи (английский)"
+            android:hint="Article Title (English)"
             android:inputType="text" />
 
-        <!-- Описание на русском -->
+        <!-- Description in Russian -->
         <EditText
             android:id="@+id/article_description_ru"
             style="@style/EdittextTransactions"
@@ -79,10 +78,10 @@
             android:layout_marginTop="16dp"
             android:maxLength="80"
             android:fontFamily="@font/montserrat"
-            android:hint="Описание статьи (русский)"
+            android:hint="Article Description (Russian)"
             android:inputType="text" />
 
-        <!-- Описание на английском -->
+        <!-- Description in English -->
         <EditText
             android:id="@+id/article_description_en"
             style="@style/EdittextTransactions"
@@ -91,10 +90,10 @@
             android:layout_marginTop="16dp"
             android:maxLength="80"
             android:fontFamily="@font/montserrat"
-            android:hint="Описание статьи (английский)"
+            android:hint="Article Description (English)"
             android:inputType="text" />
 
-        <!-- Ссылка на изображение -->
+        <!-- Image URL -->
         <EditText
             android:id="@+id/article_image"
             style="@style/EdittextTransactions"
@@ -105,10 +104,10 @@
             android:focusable="false"
             android:clickable="true"
             android:fontFamily="@font/montserrat"
-            android:hint="Изображение"
+            android:hint="Image URL"
             android:inputType="text" />
 
-        <!-- Текст статьи на русском -->
+        <!-- Article Text in Russian -->
         <EditText
             android:id="@+id/article_text_ru"
             style="@style/EdittextTransactions"
@@ -116,11 +115,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/montserrat"
-            android:hint="Текст статьи на русском"
+            android:hint="Article Text (Russian)"
             android:inputType="textMultiLine"
             android:minLines="5" />
 
-        <!-- Текст статьи на английском -->
+        <!-- Article Text in English -->
         <EditText
             android:id="@+id/article_text_en"
             style="@style/EdittextTransactions"
@@ -128,7 +127,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/montserrat"
-            android:hint="Текст статьи на английском"
+            android:hint="Article Text (English)"
             android:inputType="textMultiLine"
             android:minLines="5" />
 
@@ -136,7 +135,7 @@
             android:id="@+id/add_article_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/add_article"
+            android:text="SAVE"
             style="@style/CustomButtonStyle"
             app:cornerRadius="16dp"
             app:backgroundTint="@null"

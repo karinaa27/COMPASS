@@ -14,6 +14,7 @@ import com.mgke.da.R;
 import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,9 +28,11 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
     private CategoryRepository categoryRepository;
     private boolean isSelectionEnabled;
 
+
     public SimpleCategoryAdapter(Context context, List<Category> categories, CategoryRepository categoryRepository, boolean isSelectionEnabled) {
         this.context = context;
-        this.categories = categories;
+        // Если categories == null, инициализируем пустым списком
+        this.categories = categories != null ? categories : new ArrayList<>();
         this.categoryRepository = categoryRepository;
         this.isSelectionEnabled = isSelectionEnabled;
     }
@@ -80,7 +83,7 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
 
         new AlertDialog.Builder(context)
                 .setTitle(R.string.confirmation_title)
-                .setMessage(String.format(context.getString(R.string.confirmation_message), categoryName))
+                .setMessage(R.string.confirmation_message)
                 .setPositiveButton(R.string.confirm, (dialog, which) -> {
                     categoryRepository.removeCategory(category, currentLanguage);
                     categories.remove(position);
@@ -106,13 +109,20 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
         }
     }
 
+
+
     public void updateCategories(List<Category> newCategories) {
-        this.categories = newCategories;
+        this.categories = newCategories != null ? newCategories : new ArrayList<>();
         notifyDataSetChanged();
     }
 
     public String getSelectedCategory() {
         return selectedCategory;
+    }
+
+    public void setSelectedCategory(String categoryName) {
+        this.selectedCategory = categoryName;
+        notifyDataSetChanged();  // Перерисовываем элементы, чтобы отображалась выбранная категория
     }
 
     public int getSelectedCategoryImage() {

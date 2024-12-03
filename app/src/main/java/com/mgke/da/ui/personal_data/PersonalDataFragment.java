@@ -160,88 +160,97 @@ public class PersonalDataFragment extends Fragment {
             String selectedBirthday = etBirthday.getText().toString().trim();
             String gender = radioGroupGender.getCheckedRadioButtonId() == R.id.radioMale ? "male" : "female";
 
-            // Проверка уникальности имени пользователя
-            personalDataRepository.isUsernameUnique(username).thenAccept(isUnique -> {
-                if (!isUnique) {
-                    etUsername.setError(getString(R.string.username_taken_error));
-                    return; // Прерываем выполнение, если имя пользователя уже занято
-                }
-
-                // Если имя пользователя уникально, продолжаем процесс сохранения
-                DocumentReference docRef = db.collection("personalData").document(userId);
-                docRef.get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        PersonalData existingData = task.getResult().toObject(PersonalData.class);
-                        if (existingData != null) {
-                            boolean isChanged = false;
-
-                            // Проверка и обновление имени пользователя
-                            if (!username.equals(existingData.username)) {
-                                existingData.username = username;
-                                isChanged = true;
-                            }
-                            if (!firstName.equals(existingData.firstName)) {
-                                existingData.firstName = firstName;
-                                isChanged = true;
-                            }
-                            if (!lastName.equals(existingData.lastName)) {
-                                existingData.lastName = lastName;
-                                isChanged = true;
-                            }
-
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                            if (!selectedBirthday.isEmpty()) { // Проверка на пустое значение
-                                try {
-                                    Date newBirthday = sdf.parse(selectedBirthday);
-                                    if (newBirthday != null && !newBirthday.equals(existingData.birthDate)) {
-                                        existingData.birthDate = newBirthday;
-                                        isChanged = true;
-                                    }
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                    return;
-                                }
-                            } else {
-                                existingData.birthDate = null; // Установка null для пустой даты
-                                isChanged = true;
-                            }
-
-                            if (!country.equals(existingData.country)) {
-                                existingData.country = country;
-                                isChanged = true;
-                            }
-                            if (!profession.equals(existingData.profession)) {
-                                existingData.profession = profession;
-                                isChanged = true;
-                            }
-                            if (!notes.equals(existingData.notes)) {
-                                existingData.notes = notes;
-                                isChanged = true;
-                            }
-                            if (!gender.equals(existingData.gender)) {
-                                existingData.gender = gender;
-                                isChanged = true;
-                            }
-
-                            if (isChanged) {
-                                docRef.set(existingData).addOnCompleteListener(updateTask -> {
-                                    if (updateTask.isSuccessful()) {
-                                        Toast.makeText(getContext(), R.string.data_saved_successfully, Toast.LENGTH_SHORT).show();
-                                        navigateToSettings(); // Переход после успешного сохранения
-                                    } else {
-                                        Toast.makeText(getContext(), getString(R.string.data_save_error) + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }
+            // Сохраняем данные, если имя пользователя не изменилось
+            if (username.equals(currentUser.getDisplayName())) {
+                updatePersonalData(userId, username, firstName, lastName, country, profession, notes, selectedBirthday, gender);
+            } else {
+                // Проверка уникальности имени пользователя
+                personalDataRepository.isUsernameUnique(username).thenAccept(isUnique -> {
+                    if (!isUnique) {
+                        etUsername.setError(getString(R.string.username_taken_error));
+                        return; // Прерываем выполнение, если имя пользователя уже занято
                     }
+                    updatePersonalData(userId, username, firstName, lastName, country, profession, notes, selectedBirthday, gender);
+                }).exceptionally(e -> {
+                    Toast.makeText(getContext(), getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
+                    return null;
                 });
-            }).exceptionally(e -> {
-                Toast.makeText(getContext(), getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
-                return null;
-            });
+            }
         }
     }
+
+    private void updatePersonalData(String userId, String username, String firstName, String lastName, String country,
+                                    String profession, String notes, String selectedBirthday, String gender) {
+        DocumentReference docRef = db.collection("personalData").document(userId);
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                PersonalData existingData = task.getResult().toObject(PersonalData.class);
+                if (existingData != null) {
+                    boolean isChanged = false;
+
+                    // Проверка и обновление имени пользователя
+                    if (!username.equals(existingData.username)) {
+                        existingData.username = username;
+                        isChanged = true;
+                    }
+                    if (!firstName.equals(existingData.firstName)) {
+                        existingData.firstName = firstName;
+                        isChanged = true;
+                    }
+                    if (!lastName.equals(existingData.lastName)) {
+                        existingData.lastName = lastName;
+                        isChanged = true;
+                    }
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    if (!selectedBirthday.isEmpty()) { // Проверка на пустое значение
+                        try {
+                            Date newBirthday = sdf.parse(selectedBirthday);
+                            if (newBirthday != null && !newBirthday.equals(existingData.birthDate)) {
+                                existingData.birthDate = newBirthday;
+                                isChanged = true;
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    } else {
+                        existingData.birthDate = null; // Установка null для пустой даты
+                        isChanged = true;
+                    }
+
+                    if (!country.equals(existingData.country)) {
+                        existingData.country = country;
+                        isChanged = true;
+                    }
+                    if (!profession.equals(existingData.profession)) {
+                        existingData.profession = profession;
+                        isChanged = true;
+                    }
+                    if (!notes.equals(existingData.notes)) {
+                        existingData.notes = notes;
+                        isChanged = true;
+                    }
+                    if (!gender.equals(existingData.gender)) {
+                        existingData.gender = gender;
+                        isChanged = true;
+                    }
+
+                    if (isChanged) {
+                        docRef.set(existingData).addOnCompleteListener(updateTask -> {
+                            if (updateTask.isSuccessful()) {
+                                Toast.makeText(getContext(), R.string.data_saved_successfully, Toast.LENGTH_SHORT).show();
+                                navigateToSettings(); // Переход после успешного сохранения
+                            } else {
+                                Toast.makeText(getContext(), getString(R.string.data_save_error) + updateTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
 
 
     private void navigateToSettings() {

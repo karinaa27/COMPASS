@@ -419,4 +419,13 @@
     <string name="image_upload_success">Image uploaded successfully!</string>
     <string name="image_upload_error">Error uploading image</string>
     <string name="image_saving_url_error">Error saving image URL</string>
+    <string name="invalid_amount">Please enter a valid amount.</string>
+    <string name="load">Loading...</string>
+    <string name="google_auth_message">To confirm it\'s you, please sign in with your Google account</string>
+    <string name="google_sign_in_button">Sign in with Google</string>
+    <string name="current_email_hint">Current Email</string>
+    <string name="new_email_hint">New Email</string>
+    <string name="save_button">Save</string>
+
+    <string name="password_mismatch_error">Passwords do not match.</string>
 </resources>

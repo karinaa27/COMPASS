@@ -37,7 +37,7 @@
                     android:layout_gravity="center"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-                    style="@style/TextColor"
+                    app:tabTextColor="@color/white"
                     android:background="@android:color/transparent"
                     android:layout_width="350dp"
                     android:layout_height="wrap_content"
@@ -209,7 +209,7 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="12sp"
-                android:layout_gravity="center"
+                android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
 
 
@@ -308,23 +308,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_gravity="center" />
-            <TextView
-                android:id="@+id/emptyStateTextView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginTop="-30dp"
-                android:fontFamily="@font/montserrat"
-                android:text="@string/goal_label_select"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:layout_gravity="center"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
-
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fab_add_goal"

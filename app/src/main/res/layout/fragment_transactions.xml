@@ -244,7 +244,7 @@
         android:layout_marginTop="-150dp"
         android:fontFamily="@font/montserrat"
         android:text="@string/add_transaction_prompt"
-       android:textColor="@color/black"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:textSize="12sp"
         android:gravity="center"

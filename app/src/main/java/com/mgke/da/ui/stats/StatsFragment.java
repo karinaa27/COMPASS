@@ -81,7 +81,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     @Override
     public void onGoalClick(Goal goal) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable("goal", goal); // Передаем объект Goal
+        bundle.putSerializable("goal", goal);
         NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment, bundle);
     }
 
@@ -210,6 +210,290 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         return root;
     }
 
+    public double convertCurrency(double amount, String fromCurrency, String toCurrency) {
+        double rate = 1.0;
+
+        if (fromCurrency.equals("USD")) {
+            if (toCurrency.equals("EUR")) {
+                rate = 0.85;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 70.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 2.6;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 27.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 3.7;
+            }
+        } else if (fromCurrency.equals("EUR")) {
+            if (toCurrency.equals("USD")) {
+                rate = 1.18;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 82.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 3.1;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 4.3;
+            }
+        } else if (fromCurrency.equals("RUB")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.014;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.012;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 0.36;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.05;
+            }
+        } else if (fromCurrency.equals("BYN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.38;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.32;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 11.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 1.4;
+            }
+        } else if (fromCurrency.equals("UAH")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.037;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 2.8;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.091;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.12;
+            }
+        } else if (fromCurrency.equals("PLN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.27;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.23;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 20.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.71;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 8.4;
+            }
+        }
+
+        return amount * rate;
+    }
+
+
+    private void loadStatsData() {
+        if (selectedTab == 0) {
+            loadDailyTransactions();
+        } else if (selectedTab == 1) {
+            loadMonthlyTransactions();
+        } else if (selectedTab == 2) {
+            loadMonthlysTransactions();
+        }
+    }
+
+    private void loadMonthlyTransactions() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return;
+        }
+
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Получаем валюту пользователя асинхронно
+        FirebaseFirestore.getInstance()
+                .collection("personalData")
+                .document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String targetCurrency = documentSnapshot.exists() ? documentSnapshot.getString("currency") : "USD"; // Валюта по умолчанию
+                    processTransactions(currentUserId, targetCurrency); // Передаем валюту для дальнейшей обработки
+                })
+                .addOnFailureListener(e -> {
+                    // Логируем ошибку или возвращаем валюту по умолчанию
+                    processTransactions(currentUserId, "USD");
+                });
+    }
+
+    private void processTransactions(String currentUserId, String targetCurrency) {
+        Calendar startCalendar = Calendar.getInstance();
+        Calendar endCalendar = Calendar.getInstance();
+        startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1, 0, 0, 0);
+        startCalendar.set(Calendar.MILLISECOND, 0);
+        endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), startCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        endCalendar.set(Calendar.MILLISECOND, 999);
+
+        transactionRepository.getAllTransaction()
+                .thenAccept(transactions -> {
+                    Map<String, Float> categorySums = new HashMap<>();
+                    for (Transaction transaction : transactions) {
+                        boolean isIncomeActive = binding.incomeBtn.isSelected();
+                        boolean isExpenseActive = binding.expenseBtn.isSelected();
+
+                        if (transaction.userId.equals(currentUserId) &&
+                                !transaction.date.before(startCalendar.getTime()) &&
+                                !transaction.date.after(endCalendar.getTime())) {
+                            String category = transaction.category;
+                            double convertedAmount = convertCurrency(
+                                    Math.abs(transaction.amount),
+                                    transaction.currency, // Исходная валюта транзакции
+                                    targetCurrency // Валюта пользователя
+                            );
+
+                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
+                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
+                                categorySums.put(category, categorySums.getOrDefault(category, 0f) + (float) convertedAmount);
+                            }
+                        }
+                    }
+                    updatePieChart(categorySums);
+                    updateHorizontalBarChart(categorySums);
+                })
+                .exceptionally(e -> {
+                    return null;
+                });
+    }
+
+
+
+    private void loadDailyTransactions() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return;
+        }
+
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Получаем валюту пользователя асинхронно
+        FirebaseFirestore.getInstance()
+                .collection("personalData")
+                .document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String targetCurrency = documentSnapshot.exists() ? documentSnapshot.getString("currency") : "USD"; // Валюта по умолчанию
+                    processDailyTransactions(currentUserId, targetCurrency); // Передаем валюту для дальнейшей обработки
+                })
+                .addOnFailureListener(e -> {
+                    // Логируем ошибку или возвращаем валюту по умолчанию
+                    processDailyTransactions(currentUserId, "USD");
+                });
+    }
+
+    private void processDailyTransactions(String currentUserId, String targetCurrency) {
+        Calendar startCalendar = Calendar.getInstance();
+        Calendar endCalendar = Calendar.getInstance();
+        startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
+        startCalendar.set(Calendar.MILLISECOND, 0);
+        endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 23, 59, 59);
+        endCalendar.set(Calendar.MILLISECOND, 999);
+
+        transactionRepository.getAllTransaction()
+                .thenAccept(transactions -> {
+                    Map<String, Float> categorySums = new HashMap<>();
+                    for (Transaction transaction : transactions) {
+                        boolean isIncomeActive = binding.incomeBtn.isSelected();
+                        boolean isExpenseActive = binding.expenseBtn.isSelected();
+
+                        if (transaction.userId.equals(currentUserId) &&
+                                !transaction.date.before(startCalendar.getTime()) &&
+                                !transaction.date.after(endCalendar.getTime())) {
+                            String category = transaction.category;
+                            double convertedAmount = convertCurrency(
+                                    Math.abs(transaction.amount),
+                                    transaction.currency, // Исходная валюта транзакции
+                                    targetCurrency // Валюта пользователя
+                            );
+
+                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
+                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
+                                categorySums.put(category, categorySums.getOrDefault(category, 0f) + (float) convertedAmount);
+                            }
+                        }
+                    }
+                    updatePieChart(categorySums);
+                    updateHorizontalBarChart(categorySums);
+                })
+                .exceptionally(e -> {
+                    return null;
+                });
+    }
+
+    private void loadMonthlysTransactions() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return;
+        }
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        Calendar endCalendar = Calendar.getInstance();
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.add(Calendar.MONTH, -3);
+
+        // Получаем валюту пользователя асинхронно
+        FirebaseFirestore.getInstance()
+                .collection("personalData")
+                .document(currentUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String targetCurrency = documentSnapshot.exists() ? documentSnapshot.getString("currency") : "USD"; // Валюта по умолчанию
+                    processMonthlysTransactions(currentUserId, startCalendar, endCalendar, targetCurrency); // Передаем валюту для дальнейшей обработки
+                })
+                .addOnFailureListener(e -> {
+                    // Логируем ошибку или возвращаем валюту по умолчанию
+                    processMonthlysTransactions(currentUserId, startCalendar, endCalendar, "USD");
+                });
+    }
+
+    private void processMonthlysTransactions(String currentUserId, Calendar startCalendar, Calendar endCalendar, String targetCurrency) {
+        transactionRepository.getAllTransaction()
+                .thenAccept(transactions -> {
+                    Map<String, Float[]> categorySums = new HashMap<>();
+                    boolean isIncomeActive = binding.incomeBtn.isSelected();
+                    boolean isExpenseActive = binding.expenseBtn.isSelected();
+
+                    for (Transaction transaction : transactions) {
+                        Calendar transactionCalendar = Calendar.getInstance();
+                        transactionCalendar.setTime(transaction.date);
+
+                        if (transaction.userId.equals(currentUserId) &&
+                                transactionCalendar.after(startCalendar) &&
+                                transactionCalendar.before(endCalendar)) {
+                            String category = transaction.category;
+                            double convertedAmount = convertCurrency(
+                                    Math.abs(transaction.amount),
+                                    transaction.currency, // Исходная валюта транзакции
+                                    targetCurrency // Валюта пользователя
+                            );
+
+                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
+                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
+
+                                int monthIndex = 2 - (endCalendar.get(Calendar.MONTH) - transactionCalendar.get(Calendar.MONTH));
+                                if (monthIndex < 0) monthIndex += 12;
+
+                                categorySums.putIfAbsent(category, new Float[3]);
+                                Float[] sums = categorySums.get(category);
+
+                                if (sums[monthIndex] == null) sums[monthIndex] = 0f;
+                                sums[monthIndex] += (float) convertedAmount;
+                            }
+                        }
+                    }
+                    updateRadarChart(categorySums);
+                })
+                .exceptionally(e -> {
+                    return null;
+                });
+    }
+
+
+
     private boolean isDarkTheme() {
         return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
@@ -235,7 +519,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         unselected.setTextColor(isDarkTheme() ? Color.WHITE : Color.BLACK);
     }
     private void loadGoals(boolean showCompleted) {
-        String currentUserId = getCurrentUserId(); // Метод для получения текущего userId
+        String currentUserId = getCurrentUserId();
 
         goalRepository.getUserGoals(currentUserId).thenAccept(goals -> {
             goalList.clear();
@@ -252,7 +536,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
 
             if (goalList.isEmpty()) {
                 binding.emptyStateImageView.setVisibility(View.VISIBLE);
-                binding.emptyStateTextView2.setVisibility(View.VISIBLE);
                 int gifResource = isDarkTheme() ? R.drawable.document_search_night : R.drawable.document_search;
                 Glide.with(this)
                         .asGif()
@@ -260,14 +543,11 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                         .into(binding.emptyStateImageView);
             } else {
                 binding.emptyStateImageView.setVisibility(View.GONE);
-                binding.emptyStateTextView2.setVisibility(View.GONE);
             }
         });
     }
 
-    // Пример метода для получения текущего идентификатора пользователя
     private String getCurrentUserId() {
-        // Предположим, что используете Firebase Auth для получения текущего пользователя
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         return currentUser != null ? currentUser.getUid() : null;
     }
@@ -423,143 +703,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         } else {
             binding.currentDate.setText(formatMonth(calendar.getTime()));
         }
-    }
-
-    private void loadStatsData() {
-        if (selectedTab == 0) {
-            loadDailyTransactions();
-        } else if (selectedTab == 1) {
-            loadMonthlyTransactions();
-        } else if (selectedTab == 2) {
-            loadMonthlysTransactions();
-        }
-    }
-
-    private void loadMonthlyTransactions() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return;
-        }
-
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Calendar startCalendar = Calendar.getInstance();
-        Calendar endCalendar = Calendar.getInstance();
-        startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), 1, 0, 0, 0);
-        startCalendar.set(Calendar.MILLISECOND, 0);
-        endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), startCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
-        endCalendar.set(Calendar.MILLISECOND, 999);
-
-        transactionRepository.getAllTransaction()
-                .thenAccept(transactions -> {
-                    Map<String, Float> categorySums = new HashMap<>();
-                    for (Transaction transaction : transactions) {
-                        boolean isIncomeActive = binding.incomeBtn.isSelected();
-                        boolean isExpenseActive = binding.expenseBtn.isSelected();
-                        if (transaction.userId.equals(currentUserId) &&
-                                !transaction.date.before(startCalendar.getTime()) &&
-                                !transaction.date.after(endCalendar.getTime())) {
-                            String category = transaction.category;
-                            float amount = (float) Math.abs(transaction.amount);
-
-                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
-                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
-                                categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount);
-                            }
-                        }
-                    }
-                    updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums);
-                })
-                .exceptionally(e -> {
-                    return null;
-                });
-    }
-
-    private void loadDailyTransactions() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return;
-        }
-
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        Calendar startCalendar = Calendar.getInstance();
-        Calendar endCalendar = Calendar.getInstance();
-        startCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 0, 0, 0);
-        startCalendar.set(Calendar.MILLISECOND, 0);
-        endCalendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DATE), 23, 59, 59);
-        endCalendar.set(Calendar.MILLISECOND, 999);
-
-        transactionRepository.getAllTransaction()
-                .thenAccept(transactions -> {
-                    Map<String, Float> categorySums = new HashMap<>();
-                    for (Transaction transaction : transactions) {
-                        boolean isIncomeActive = binding.incomeBtn.isSelected();
-                        boolean isExpenseActive = binding.expenseBtn.isSelected();
-
-                        if (transaction.userId.equals(currentUserId) &&
-                                !transaction.date.before(startCalendar.getTime()) &&
-                                !transaction.date.after(endCalendar.getTime())) {
-                            String category = transaction.category;
-                            float amount = (float) Math.abs(transaction.amount);
-
-                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
-                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
-                                categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount);
-                            }
-                        }
-                    }
-                    updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums);
-                })
-                .exceptionally(e -> {
-                    return null;
-                });
-    }
-
-    private void loadMonthlysTransactions() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            return;
-        }
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        Calendar endCalendar = Calendar.getInstance();
-        Calendar startCalendar = Calendar.getInstance();
-        startCalendar.add(Calendar.MONTH, -3);
-
-        transactionRepository.getAllTransaction()
-                .thenAccept(transactions -> {
-                    Map<String, Float[]> categorySums = new HashMap<>();
-                    boolean isIncomeActive = binding.incomeBtn.isSelected();
-                    boolean isExpenseActive = binding.expenseBtn.isSelected();
-
-                    for (Transaction transaction : transactions) {
-                        Calendar transactionCalendar = Calendar.getInstance();
-                        transactionCalendar.setTime(transaction.date);
-
-                        if (transaction.userId.equals(currentUserId) &&
-                                transactionCalendar.after(startCalendar) &&
-                                transactionCalendar.before(endCalendar)) {
-                            String category = transaction.category;
-                            float amount = (float) Math.abs(transaction.amount);
-
-                            if ((transaction.type.equals("DOHOD") && isIncomeActive) ||
-                                    (transaction.type.equals("RACHOD") && isExpenseActive)) {
-
-                                int monthIndex = 2 - (endCalendar.get(Calendar.MONTH) - transactionCalendar.get(Calendar.MONTH));
-                                if (monthIndex < 0) monthIndex += 12;
-
-                                categorySums.putIfAbsent(category, new Float[3]);
-                                Float[] sums = categorySums.get(category);
-
-                                if (sums[monthIndex] == null) sums[monthIndex] = 0f;
-                                sums[monthIndex] += amount;
-                            }
-                        }
-                    }
-                    updateRadarChart(categorySums);
-                })
-                .exceptionally(e -> {
-                    return null;
-                });
     }
 
     private void updateRadarChart(Map<String, Float[]> categorySums) {

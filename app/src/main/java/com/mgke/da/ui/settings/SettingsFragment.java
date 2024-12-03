@@ -138,7 +138,12 @@ public class SettingsFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            Glide.with(this).load(imageUri).into(binding.photoUser);
+                            Glide.with(this)
+                                    .load(imageUri)
+                                    .circleCrop() // Применяет округлую обрезку изображения
+                                    .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Плейсхолдер на случай отсутствия аватара
+                                    .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Картинка на случай ошибки
+                                    .into(binding.photoUser);
                             showLoadingDialog(); // Показываем диалог загрузки
                             uploadImageToFirebase(imageUri); // Начинаем загрузку
                         } else {
@@ -615,7 +620,7 @@ public class SettingsFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.languageSpinner.setAdapter(adapter);
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
+        String selectedLanguage = sharedPreferences.getString("selectedLanguage", "ru");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
         binding.languageSpinner.setSelection(spinnerPosition);
         binding.languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -663,7 +668,8 @@ public class SettingsFragment extends Fragment {
         binding.textCategories.setText(getString(R.string.categories_string_settings));
         binding.textCurrency.setText(getString(R.string.Currency));
         binding.textPersonalData.setText(getString(R.string.personaldata));
-
+        binding.textEmail.setText(getString(R.string.email));
+        binding.textPersonalData.setText(getString(R.string.personaldata));
         binding.textPassword.setText(getString(R.string.password));
         binding.textSettings.setText(getString(R.string.settings));
         binding.textExit.setText(getString(R.string.exit));
@@ -674,7 +680,7 @@ public class SettingsFragment extends Fragment {
         binding.languageSpinner.setAdapter(adapter);
 
         String selectedLanguage = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE)
-                .getString("selectedLanguage", "en");
+                .getString("selectedLanguage", "ru");
         int spinnerPosition = selectedLanguage.equals("ru") ? 0 : 1;
         binding.languageSpinner.setSelection(spinnerPosition);
     }
@@ -691,7 +697,12 @@ public class SettingsFragment extends Fragment {
                         binding.textUser.setText(personalData.username);
                     }
                     if (personalData.avatarUrl != null) {
-                        Glide.with(this).load(personalData.avatarUrl).into(binding.photoUser);
+                        Glide.with(this)
+                                .load(personalData.avatarUrl)
+                                .circleCrop() // Применяет округлую обрезку изображения
+                                .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Плейсхолдер на случай отсутствия аватара
+                                .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Картинка на случай ошибки
+                                .into(binding.photoUser);
                     }
                     loadUserCurrency(personalData);
                 }
@@ -699,6 +710,11 @@ public class SettingsFragment extends Fragment {
                 return null;
             });
         }
+    }
+    private boolean isNightMode() {
+        int nightModeFlags = getContext().getResources().getConfiguration().uiMode &
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
     }
 
     private void setupCurrencySpinner() {

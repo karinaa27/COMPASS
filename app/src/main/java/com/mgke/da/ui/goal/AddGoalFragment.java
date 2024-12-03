@@ -177,11 +177,25 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
         String dateEndStr = editTextDateEnd.getText().toString().trim();
         String note = editTextNote.getText().toString().trim();
         String currency = spinnerCurrency.getSelectedItem().toString();
+
         if (goalName.isEmpty() || targetAmountStr.isEmpty() || dateEndStr.isEmpty()) {
             Toast.makeText(getContext(), R.string.fill_all_fields, Toast.LENGTH_SHORT).show();
             return;
         }
-        double targetAmount = Double.parseDouble(targetAmountStr);
+
+        // Проверка на корректность введенной суммы
+        double targetAmount;
+        try {
+            targetAmount = Double.parseDouble(targetAmountStr);
+            if (targetAmount < 0) {
+                Toast.makeText(getContext(), R.string.invalid_amount, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), R.string.invalid_amount, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Date dateEnd;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         try {
@@ -190,6 +204,7 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             Toast.makeText(getContext(), R.string.invalid_date, Toast.LENGTH_SHORT).show();
             return;
         }
+
         Goal newGoal = new Goal(UUID.randomUUID().toString(), goalName, targetAmount, 0.0, userId, dateEnd, false, note, currency);
         goalRepository.addGoal(newGoal);
         Toast.makeText(getContext(), R.string.goal_added, Toast.LENGTH_SHORT).show();
@@ -198,16 +213,31 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
 
     private void updateGoal() {
         if (goal == null) return;
+
         String goalName = editTextGoalName.getText().toString().trim();
         String targetAmountStr = editTextTargetAmount.getText().toString().trim();
         String dateEndStr = editTextDateEnd.getText().toString().trim();
         String note = editTextNote.getText().toString().trim();
         String currency = spinnerCurrency.getSelectedItem().toString();
+
         if (goalName.isEmpty() || targetAmountStr.isEmpty() || dateEndStr.isEmpty()) {
             Toast.makeText(getContext(), R.string.fill_all_fields, Toast.LENGTH_SHORT).show();
             return;
         }
-        double targetAmount = Double.parseDouble(targetAmountStr);
+
+        // Проверка на корректность введенной суммы
+        double targetAmount;
+        try {
+            targetAmount = Double.parseDouble(targetAmountStr);
+            if (targetAmount < 0) {
+                Toast.makeText(getContext(), R.string.invalid_amount, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), R.string.invalid_amount, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Date dateEnd;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         try {
@@ -216,6 +246,7 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             Toast.makeText(getContext(), R.string.invalid_date, Toast.LENGTH_SHORT).show();
             return;
         }
+
         goal.goalName = goalName;
         goal.targetAmount = targetAmount;
         goal.dateEnd = dateEnd;

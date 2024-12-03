@@ -104,12 +104,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
     private void showDeleteConfirmationDialog(Category category, int position) {
+        String categoryName = categoryRepository.getCategoryName(category);
         String currentLanguage = Locale.getDefault().getLanguage();
 
         if (context != null) {
             new AlertDialog.Builder(context)
                     .setTitle(R.string.confirmation_title)
-                    .setMessage(context.getString(R.string.confirmation_message))  // Просто выводим стандартное сообщение
+                    .setMessage(String.format(context.getString(R.string.confirmation_message)))
                     .setPositiveButton(R.string.confirm, (dialog, which) -> {
                         categoryRepository.removeCategory(category, currentLanguage);
                         categories.remove(position);
@@ -119,7 +120,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     .show();
         }
     }
-
 
     @Override
     public int getItemViewType(int position) {

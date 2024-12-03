@@ -426,4 +426,14 @@
     <string name="image_upload_success">Изображение успешно загружено!</string>
     <string name="image_upload_error">Ошибка загрузки изображения</string>
     <string name="image_saving_url_error">Ошибка при сохранении URL изображения</string>
+    <string name="password_mismatch_error">Пароли не совпадают.</string>
+    <string name="invalid_amount">Введите корректную сумму.</string>
+
+    <string name="load">Loading...</string>
+
+    <string name="google_auth_message">Чтобы подтвердить, что это вы, авторизуйтесь с помощью учетной записи Google</string>
+    <string name="google_sign_in_button">Войдите через Google</string>
+    <string name="current_email_hint">Текущая почта</string>
+    <string name="new_email_hint">Новая почта</string>
+    <string name="save_button">Сохранить</string>
 </resources>

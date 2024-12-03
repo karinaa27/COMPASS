@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setLocale() {
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        String languageCode = sharedPreferences.getString("selectedLanguage", "en");
+        String languageCode = sharedPreferences.getString("selectedLanguage", "ru");
         Locale locale = new Locale(languageCode);
         Locale.setDefault(locale);
         Configuration config = getResources().getConfiguration();

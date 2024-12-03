@@ -1,5 +1,6 @@
     package com.mgke.da.ui.articles;
 
+    import android.app.ProgressDialog;
     import android.content.res.Configuration;
     import android.os.Bundle;
     import android.text.TextUtils;
@@ -29,6 +30,7 @@
     import com.mgke.da.repository.PersonalDataRepository;
     import java.text.SimpleDateFormat;
     import java.util.Locale;
+    import java.util.concurrent.CompletableFuture;
 
     public class ArticleFragment extends Fragment {
 
@@ -36,7 +38,7 @@
         private ArticleRepository articleRepository;
         private LikeRepository likeRepository;
         private CommentRepository commentRepository;
-
+        private ProgressDialog progressDialog;
         private ImageView articleImage;
         private TextView articleTitle, articleDate, articleContent, likeCount;
         private ImageButton likeButton;
@@ -64,6 +66,10 @@
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View root = inflater.inflate(R.layout.fragment_article, container, false);
+
+            progressDialog = new ProgressDialog(requireContext());
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCancelable(false);
 
             articleImage = root.findViewById(R.id.articleImage);
             articleTitle = root.findViewById(R.id.articleTitle);
@@ -131,9 +137,6 @@
                 return null;
             });
         }
-
-
-
         private void checkIfUserIsAdmin(ImageView deleteButton, ImageView editButton) {
             FirebaseAuth auth = FirebaseAuth.getInstance();
             String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -194,19 +197,35 @@
         }
 
         private void toggleLike() {
+            CompletableFuture<Void> future;
+
+            // Определяем действие: добавление или удаление лайка
             if (isLiked) {
-                likeRepository.removeLike(articleId).thenRun(() -> {
+                future = likeRepository.removeLike(articleId).thenRun(() -> {
                     isLiked = false;
-                    updateLikeIcon();
-                    updateLikeCount(-1);
+                    // Обновляем UI в основном потоке после успешного удаления лайка
+                    updateUIAfterLikeToggle(-1);
                 });
             } else {
-                likeRepository.addLike(articleId).thenRun(() -> {
+                future = likeRepository.addLike(articleId).thenRun(() -> {
                     isLiked = true;
-                    updateLikeIcon();
-                    updateLikeCount(1);
+                    // Обновляем UI в основном потоке после успешного добавления лайка
+                    updateUIAfterLikeToggle(1);
                 });
             }
+
+            future.exceptionally(ex -> {
+                Log.e("ArticleFragment", "Error toggling like", ex);
+                return null;
+            });
+        }
+        private void updateUIAfterLikeToggle(int delta) {
+            // Обновляем UI в главном потоке
+            getActivity().runOnUiThread(() -> {
+                updateLikeIcon();
+                updateLikeCount(delta); // Обновляем счетчик лайков
+                Log.d("ArticleFragment", "Like status updated: " + isLiked);
+            });
         }
 
         private void updateLikeStatus() {
@@ -221,11 +240,16 @@
         }
 
         private void updateLikeCount(int delta) {
-            int count = Integer.parseInt(likeCount.getText().toString()) + delta;
-            likeCount.setText(String.valueOf(count));
+            // Получаем текущее количество лайков и обновляем
+            int currentCount = Integer.parseInt(likeCount.getText().toString());
+            int newCount = currentCount + delta;
+
+            // Обновляем текст лайков с проверкой на отрицательное значение
+            likeCount.setText(String.valueOf(Math.max(newCount, 0))); // Не допускаем отрицательных значений
         }
 
         private void updateLikeIcon() {
+            // Обновляем иконку в зависимости от состояния лайка
             if (isLiked) {
                 likeButton.setImageResource(R.drawable.baseline_favorite_24);
             } else {
@@ -246,6 +270,7 @@
 
         private void toggleComments() {
             if (commentsRecyclerView.getVisibility() == View.GONE) {
+                showLoadingDialog(); // Show the loading dialog before fetching comments
                 loadComments();
                 commentsRecyclerView.setVisibility(View.VISIBLE);
                 commentEditText.setVisibility(View.VISIBLE);
@@ -257,11 +282,31 @@
             }
         }
 
+        private void showLoadingDialog() {
+            if (progressDialog != null && !progressDialog.isShowing()) {
+                progressDialog.show();
+            }
+        }
+
+        private void dismissLoadingDialog() {
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+        }
+
         private void loadComments() {
             commentRepository.getCommentsForArticle(articleId).thenAccept(comments -> {
+                // Dismiss the loading dialog once comments are loaded
+                dismissLoadingDialog();
                 commentsAdapter.setComments(comments);
+            }).exceptionally(ex -> {
+                // Dismiss the loading dialog in case of an error
+                dismissLoadingDialog();
+                Log.e("ArticleFragment", "Error loading comments", ex);
+                return null;
             });
         }
+
 
         private void setupSendCommentButton() {
             sendCommentButton.setOnClickListener(v -> {

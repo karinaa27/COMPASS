@@ -46,6 +46,22 @@
             return categoryCollection.document(id).delete();
         }
 
+        public CompletableFuture<Void> updateCategory(Category category, int categoryImage, int categoryColor) {
+            CompletableFuture<Void> future = new CompletableFuture<>();
+
+            // Update the category with the new values
+            category.categoryImage = categoryImage;
+            category.categoryColor = categoryColor;
+
+            // Update the document in Firestore
+            categoryCollection.document(category.id)
+                    .set(category)
+                    .addOnSuccessListener(aVoid -> future.complete(null))
+                    .addOnFailureListener(future::completeExceptionally);
+
+            return future;
+        }
+
 
         public void removeCategory(Category category, String language) {
             String categoryName = category.name;

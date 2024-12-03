@@ -28,6 +28,7 @@
 
                 <ImageView
                     android:id="@+id/backButton"
+                    android:tint="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
@@ -38,6 +39,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     style="@style/TextColor"
+                    android:textColor="@color/white"
                     android:text="@string/add_category"
                     android:textSize="18sp"
                     android:fontFamily="@font/montserrat"
@@ -90,187 +92,189 @@
 
             <GridLayout
                 android:id="@+id/iconGrid"
-                android:layout_width="match_parent"
+                android:layout_width="328dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginTop="8dp"
                 android:columnCount="4"
+
                 android:padding="10dp">
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 1"
-                        android:padding="10dp"
-                        android:tag="category_ic_investment"
-                        app:srcCompat="@drawable/category_ic_investment"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 1"
+                    android:padding="10dp"
+                    android:tag="category_ic_investment"
+                    app:srcCompat="@drawable/category_ic_investment"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 2"
-                        android:padding="10dp"
-                        android:tag="category_ic_entertainment"
-                        app:srcCompat="@drawable/category_ic_entertainment"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 2"
+                    android:padding="10dp"
+                    android:tag="category_ic_entertainment"
+                    app:srcCompat="@drawable/category_ic_entertainment"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 3"
-                        android:padding="10dp"
-                        android:tag="category_ic_business"
-                        app:srcCompat="@drawable/category_ic_business"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 3"
+                    android:padding="10dp"
+                    android:tag="category_ic_business"
+                    app:srcCompat="@drawable/category_ic_business"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 4"
-                        android:padding="10dp"
-                        android:tag="category_ic_cloth"
-                        app:srcCompat="@drawable/category_ic_cloth"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 4"
+                    android:padding="10dp"
+                    android:tag="category_ic_cloth"
+                    app:srcCompat="@drawable/category_ic_cloth"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 5"
-                        android:padding="10dp"
-                        android:tag="category_ic_electricity"
-                        app:srcCompat="@drawable/category_ic_electricity"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 5"
+                    android:padding="10dp"
+                    android:tag="category_ic_electricity"
+                    app:srcCompat="@drawable/category_ic_electricity"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 6"
-                        android:padding="10dp"
-                        android:tag="category_ic_food"
-                        app:srcCompat="@drawable/category_ic_food"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 6"
+                    android:padding="10dp"
+                    android:tag="category_ic_food"
+                    app:srcCompat="@drawable/category_ic_food"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 7"
-                        android:padding="10dp"
-                        android:tag="category_ic_gadget"
-                        app:srcCompat="@drawable/category_ic_gadget"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 7"
+                    android:padding="10dp"
+                    android:tag="category_ic_gadget"
+                    app:srcCompat="@drawable/category_ic_gadget"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 8"
-                        android:padding="10dp"
-                        android:tag="category_ic_health"
-                        app:srcCompat="@drawable/category_ic_health"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 8"
+                    android:padding="10dp"
+                    android:tag="category_ic_health"
+                    app:srcCompat="@drawable/category_ic_health"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 9"
-                        android:padding="10dp"
-                        android:tag="category_ic_house"
-                        app:srcCompat="@drawable/category_ic_house"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 9"
+                    android:padding="10dp"
+                    android:tag="category_ic_house"
+                    app:srcCompat="@drawable/category_ic_house"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 10"
-                        android:padding="10dp"
-                        android:tag="category_ic_pet"
-                        app:srcCompat="@drawable/category_ic_pet"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 10"
+                    android:padding="10dp"
+                    android:tag="category_ic_pet"
+                    app:srcCompat="@drawable/category_ic_pet"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 11"
-                        android:padding="10dp"
-                        android:tag="category_ic_salary"
-                        app:srcCompat="@drawable/category_ic_salary"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 11"
+                    android:padding="10dp"
+                    android:tag="category_ic_salary"
+                    app:srcCompat="@drawable/category_ic_salary"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 12"
-                        android:padding="10dp"
-                        android:tag="category_ic_snack"
-                        app:srcCompat="@drawable/category_ic_snack"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 12"
+                    android:padding="10dp"
+                    android:tag="category_ic_snack"
+                    app:srcCompat="@drawable/category_ic_snack"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 13"
-                        android:padding="10dp"
-                        android:tag="category_ic_studying"
-                        app:srcCompat="@drawable/category_ic_studying"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 13"
+                    android:padding="10dp"
+                    android:tag="category_ic_studying"
+                    app:srcCompat="@drawable/category_ic_studying"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 14"
-                        android:padding="10dp"
-                        android:tag="category_ic_subscribe"
-                        app:srcCompat="@drawable/category_ic_subscribe"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 14"
+                    android:padding="10dp"
+                    android:tag="category_ic_subscribe"
+                    app:srcCompat="@drawable/category_ic_subscribe"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 15"
-                        android:padding="10dp"
-                        android:tag="category_ic_taxi"
-                        app:srcCompat="@drawable/category_ic_taxi"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 15"
+                    android:padding="10dp"
+                    android:tag="category_ic_taxi"
+                    app:srcCompat="@drawable/category_ic_taxi"
+                    app:tint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/category_bg"
-                        android:contentDescription="Icon 16"
-                        android:padding="10dp"
-                        android:tag="category_ic_travelling"
-                        app:srcCompat="@drawable/category_ic_travelling"
-                        app:tint="@color/white" />
+                <ImageView
+                    android:layout_width="62dp"
+                    android:layout_height="62dp"
+                    android:layout_margin="5dp"
+                    android:background="@drawable/category_bg"
+                    android:contentDescription="Icon 16"
+                    android:padding="10dp"
+                    android:tag="category_ic_travelling"
+                    app:srcCompat="@drawable/category_ic_travelling"
+                    app:tint="@color/white" />
 
             </GridLayout>
 

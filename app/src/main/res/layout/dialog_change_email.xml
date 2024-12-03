@@ -11,7 +11,7 @@
         android:id="@+id/googleAuthMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Чтобы подтвердить, что это вы, авторизуйтесь с помощью учетной записи Google"
+        android:text="@string/google_auth_message"
         android:textSize="16sp"
         android:layout_marginBottom="16dp"
         android:visibility="gone"/>
@@ -21,7 +21,7 @@
         android:id="@+id/googleSignInButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Войдите через Google"
+        android:text="@string/google_sign_in_button"
         android:layout_marginBottom="16dp"
         android:visibility="gone"/>
 
@@ -30,7 +30,7 @@
         android:id="@+id/currentEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Текущая почта"
+        android:hint="@string/current_email_hint"
         android:focusable="false"
         android:focusableInTouchMode="false"
         android:padding="8dp"
@@ -43,7 +43,7 @@
         android:id="@+id/newEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Новая почта"
+        android:hint="@string/new_email_hint"
         android:layout_marginTop="10dp"
         android:padding="8dp"
         android:drawableLeft="@drawable/baseline_email_24"
@@ -56,7 +56,7 @@
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Сохранить"
+        android:text="@string/save_button"
         android:layout_marginTop="16dp"
         android:visibility="gone"/>
 </LinearLayout>

@@ -127,7 +127,7 @@ public class AddArticlesFragment extends Fragment {
             textEditTextEn.setText(currentArticle.textEn);
             imageUrl = currentArticle.image;
             imageUrlEditText.setText(imageUrl);
-            addButton.setText("Обновить статью");
+            addButton.setText("SAVE");
         }
 
         imageUrlEditText.setOnClickListener(v -> {
@@ -189,7 +189,7 @@ public class AddArticlesFragment extends Fragment {
     private void uploadImageToFirebase() {
         if (imageUri != null) {
             progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage("Загрузка изображения...");
+            progressDialog.setMessage(getString(R.string.load));
             progressDialog.setCancelable(false);
             progressDialog.show();
 

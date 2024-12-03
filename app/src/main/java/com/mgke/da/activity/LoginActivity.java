@@ -1,8 +1,8 @@
 package com.mgke.da.activity;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,19 +37,19 @@ public class LoginActivity extends AppCompatActivity {
     private EditText loginEmail, loginPassword;
     private com.google.android.gms.common.SignInButton googleSignInButton;
     private TextView signupRedirectText, forgotPasswordText;
-    public static final String PREFS_NAME = "UserPrefs";
-    public static final String KEY_IS_LOGGED_IN = "isLoggedIn";
     private PersonalDataRepository personalDataRepository;
     private static final int RC_SIGN_IN = 9001;
     private FirebaseFirestore firestore;
+    private ProgressDialog progressDialog;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        Log.d("ActivityLifecycle", "LoginActivity onCreate called");
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
-        initializeViews();
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+            setContentView(R.layout.activity_login);
+            initializeViews();
         initializeGoogleSignIn();
         setupClickListeners();
     }
@@ -98,22 +99,46 @@ public class LoginActivity extends AppCompatActivity {
         String password = loginPassword.getText().toString();
 
         if (validateInput(email, password)) {
+            showLoadingDialog();
+
             auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
                             if (user.isEmailVerified()) {
-                                // Если email подтвержден, переходим в MainActivity
                                 navigateToMain();
                             } else {
-                                // Если email не подтвержден, выводим сообщение и выполняем выход
                                 Toast.makeText(LoginActivity.this, getString(R.string.verify_email), Toast.LENGTH_LONG).show();
-                                auth.signOut();  // Не позволяем продолжить сессии
+                                auth.signOut();
                             }
                         }
                     })
-                    .addOnFailureListener(e -> Toast.makeText(LoginActivity.this, getString(R.string.login_failed, e.getMessage()), Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(LoginActivity.this, getString(R.string.login_failed, e.getMessage()), Toast.LENGTH_SHORT).show();
+                        hideLoadingDialog();
+                    });
         }
+    }
+
+    private void showLoadingDialog() {
+        progressDialog = new ProgressDialog(LoginActivity.this);
+        progressDialog.setMessage(getString(R.string.load));
+        progressDialog.setCancelable(false);  // Prevent canceling the dialog
+        progressDialog.setIndeterminate(true); // Set circular progress style
+        progressDialog.show();
+
+        // Disable login button and google sign-in button to prevent multiple clicks
+        findViewById(R.id.login_button).setEnabled(false);
+        googleSignInButton.setEnabled(false);
+    }
+    private void hideLoadingDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+
+        // Re-enable the buttons
+        findViewById(R.id.login_button).setEnabled(true);
+        googleSignInButton.setEnabled(true);
     }
 
     private boolean validateInput(String email, String password) {
@@ -132,6 +157,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
+        showLoadingDialog();
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -149,14 +175,14 @@ public class LoginActivity extends AppCompatActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             if (account != null) {
-                // Directly authenticate with Firebase
-
                 firebaseAuthWithGoogle(account.getIdToken());
             }
         } catch (ApiException e) {
             Toast.makeText(this, getString(R.string.login_error, e.getMessage()), Toast.LENGTH_SHORT).show();
+            hideLoadingDialog();  // Hide the progress dialog on error
         }
     }
+
 
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);

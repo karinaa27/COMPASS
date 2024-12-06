@@ -1,7 +1,6 @@
     package com.mgke.da.ui.articles;
 
     import android.app.ProgressDialog;
-    import android.content.res.Configuration;
     import android.os.Bundle;
     import android.text.TextUtils;
     import android.util.Log;
@@ -28,7 +27,6 @@
     import com.mgke.da.repository.CommentRepository;
     import com.mgke.da.repository.LikeRepository;
     import com.mgke.da.repository.PersonalDataRepository;
-    import java.text.SimpleDateFormat;
     import java.util.Locale;
     import java.util.concurrent.CompletableFuture;
 
@@ -44,10 +42,8 @@
         private ImageButton likeButton;
         private RecyclerView commentsRecyclerView;
         private CommentsAdapter commentsAdapter;
-
         private EditText commentEditText;
         private ImageButton sendCommentButton;
-
         private boolean isLiked = false;
 
         @Override
@@ -56,7 +52,6 @@
             if (getArguments() != null) {
                 articleId = getArguments().getString("articleId");
             }
-
             articleRepository = new ArticleRepository(FirebaseFirestore.getInstance());
             likeRepository = new LikeRepository(FirebaseFirestore.getInstance());
             commentRepository = new CommentRepository(FirebaseFirestore.getInstance());
@@ -70,7 +65,6 @@
             progressDialog = new ProgressDialog(requireContext());
             progressDialog.setMessage(getString(R.string.load));
             progressDialog.setCancelable(false);
-
             articleImage = root.findViewById(R.id.articleImage);
             articleTitle = root.findViewById(R.id.articleTitle);
             articleDate = root.findViewById(R.id.articleDate);

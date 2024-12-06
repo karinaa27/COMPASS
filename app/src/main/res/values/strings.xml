@@ -414,9 +414,9 @@
     <string name="no_goal_selected">Сбросить выбор</string>
     <string name="new_email">Новая почта</string>
 
-        <string name="email_empty_error">Email cannot be empty!</string>
-        <string name="email_changed_successfully">Email changed successfully!</string>
-        <string name="error_email_change">Error changing email.</string>
+    <string name="email_empty_error">Email cannot be empty!</string>
+    <string name="email_changed_successfully">Email changed successfully!</string>
+    <string name="error_email_change">Error changing email.</string>
     <string name="new_email_saved">New email saved</string>
     <string name="error_updating_email">Error updating email. Please try again.</string>
 
@@ -436,4 +436,21 @@
     <string name="current_email_hint">Текущая почта</string>
     <string name="new_email_hint">Новая почта</string>
     <string name="save_button">Сохранить</string>
+    <string name="skip">Skip</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+
+    <string name="onboarding_welcome_title">Добро пожаловать в ваш цифровой финансовый компас!</string>
+    <string name="onboarding_welcome_description">Держите свои финансы под контролем и достигайте финансовых целей без лишних усилий.</string>
+    <string name="onboarding_tracking_title">Учет денег стал проще</string>
+    <string name="onboarding_tracking_description">Записывайте доходы и расходы в пару кликов. Все ваши транзакции — под рукой.</string>
+    <string name="onboarding_goals_title">Достигайте своих целей</string>
+    <string name="onboarding_goals_description">Создавайте и отслеживайте финансовые цели, чтобы всегда быть уверенными в своем будущем.</string>
+    <string name="onboarding_analytics_title">Ваш финансовый помощник</string>
+    <string name="onboarding_analytics_description">Просматривайте аналитику, следите за бюджетом и получайте полезные рекомендации для улучшения финансового здоровья.</string>
+    <string name="finish">Finish</string>
+
+    <string name="welcome_4_title">Вы готовы начать?</string>
+    <string name="welcome_4_desc">Управляйте своими финансами, достигайте целей и живите свободно. Давайте начнем прямо сейчас!</string>
+    <string name="get_started">Get Started</string>
 </resources>

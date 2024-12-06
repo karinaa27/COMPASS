@@ -428,4 +428,22 @@
     <string name="save_button">Save</string>
 
     <string name="password_mismatch_error">Passwords do not match.</string>
+    <string name="skip">Skip</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+
+    <string name="onboarding_welcome_title">Welcome to your digital financial compass!</string>
+    <string name="onboarding_welcome_description">Keep your finances under control and achieve your financial goals effortlessly.</string>
+    <string name="onboarding_tracking_title">Money tracking made simple</string>
+    <string name="onboarding_tracking_description">Record your income and expenses in just a few taps. All your transactions are at your fingertips.</string>
+    <string name="onboarding_goals_title">Achieve your goals</string>
+    <string name="onboarding_goals_description">Set and track financial goals to stay confident about your future.</string>
+    <string name="onboarding_analytics_title">Your financial assistant</string>
+    <string name="onboarding_analytics_description">View analytics, monitor your budget, and get valuable recommendations to improve your financial well-being.</string>
+
+    <string name="finish">Finish</string>
+
+    <string name="welcome_4_title">Are you ready to get started?</string>
+    <string name="welcome_4_desc">Manage your finances, achieve your goals, and live freely. Lets get started now!</string>
+    <string name="get_started">Get Started</string>
 </resources>

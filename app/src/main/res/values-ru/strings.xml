@@ -429,4 +429,22 @@
     <string name="load">Загрузка...</string>
     <string name="password_mismatch_error">Пароли не совпадают.</string>
     <string name="invalid_amount">Введите корректную сумму.</string>
+    <string name="skip">Пропустить</string>
+    <string name="back">Назад</string>
+    <string name="next">Далее</string>
+
+    <string name="onboarding_welcome_title">Добро пожаловать в ваш цифровой финансовый компас!</string>
+    <string name="onboarding_welcome_description">Держите свои финансы под контролем и достигайте финансовых целей без лишних усилий.</string>
+    <string name="onboarding_tracking_title">Учет денег стал проще</string>
+    <string name="onboarding_tracking_description">Записывайте доходы и расходы в пару кликов. Все ваши транзакции — под рукой.</string>
+    <string name="onboarding_goals_title">Достигайте своих целей</string>
+    <string name="onboarding_goals_description">Создавайте и отслеживайте финансовые цели, чтобы всегда быть уверенными в своем будущем.</string>
+    <string name="onboarding_analytics_title">Ваш финансовый помощник</string>
+    <string name="onboarding_analytics_description">Просматривайте аналитику, следите за бюджетом и получайте полезные рекомендации для улучшения финансового здоровья.</string>
+
+    <string name="finish">Завершить</string>
+
+    <string name="welcome_4_title">Вы готовы начать?</string>
+    <string name="welcome_4_desc">Управляйте своими финансами, достигайте целей и живите свободно. Давайте начнем прямо сейчас!</string>
+    <string name="get_started">Начать</string>
 </resources>

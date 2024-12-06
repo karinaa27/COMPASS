@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:flow_horizontalAlign="center"
+    tools:context=".activity.GetStarted">
+
+    <ImageView
+        android:id="@+id/sliderImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:src="@drawable/welcome_4" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sliderTitle"
+        android:text="@string/welcome_4_title"
+        android:textSize="25sp"
+        android:textAlignment="center"
+        android:textColor="#8785D9"
+        android:fontFamily="@font/montserrat"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sliderDesc"
+        android:text="@string/welcome_4_desc"
+        android:layout_marginHorizontal="15dp"
+        android:textSize="15sp"
+        android:textAlignment="center"
+        android:textColor="#B6B5FF"
+        android:fontFamily="@font/montserrat"
+        android:textStyle="bold"/>
+
+    <Button
+        android:layout_width="180dp"
+        android:layout_height="60dp"
+        android:text="@string/get_started"
+        android:id="@+id/startButton"
+        android:fontFamily="@font/montserrat"
+        android:textStyle="bold"
+        style="@style/CustomButtonStyle"
+        app:backgroundTint="@null"
+        android:padding="8dp"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:layout_gravity="center"
+        app:cornerRadius = "16dp"/>
+
+
+
+</LinearLayout>

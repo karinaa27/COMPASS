@@ -43,13 +43,21 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
 
     @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-            setContentView(R.layout.activity_login);
-            initializeViews();
+        // Проверяем, если пользователь уже аутентифицирован
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // Если пользователь уже вошел, переходим в MainActivity
+            navigateToMain();
+            return;  // Завершаем работу текущей Activity, чтобы не показывать LoginActivity
+        }
+
+        setContentView(R.layout.activity_login);
+        initializeViews();
         initializeGoogleSignIn();
         setupClickListeners();
     }

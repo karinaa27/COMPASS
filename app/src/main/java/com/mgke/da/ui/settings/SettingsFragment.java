@@ -117,6 +117,7 @@ public class SettingsFragment extends Fragment {
         setupImagePickerLauncher();
         setupCurrencySpinner();
         setupPasswordSettingsClick();
+        setupNotificationSettingsClick();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id)) // Убедитесь, что у вас есть правильный ID клиента
@@ -611,6 +612,14 @@ public class SettingsFragment extends Fragment {
         categoriesSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.navigation_settings_category);
+        });
+    }
+
+    private void setupNotificationSettingsClick() {
+        RelativeLayout notificationSettings = binding.NotificationsSettings;
+        notificationSettings.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.navigate(R.id.fragment_notification);
         });
     }
 

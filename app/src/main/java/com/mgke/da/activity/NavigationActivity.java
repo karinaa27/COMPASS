@@ -1,20 +1,16 @@
 package com.mgke.da.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.viewpager.widget.ViewPager;
-
 import com.mgke.da.R;
 import com.mgke.da.adapters.ViewPagerAdapter;
 
@@ -52,8 +48,23 @@ public class NavigationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_navigation);
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Проверка, был ли уже пройден стартовый экран
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isFirstLaunch = sharedPreferences.getBoolean("isFirstLaunch", true);
+
+        if (!isFirstLaunch) {
+            // Если это не первый запуск, сразу переходите в LoginActivity
+            Intent intent = new Intent(NavigationActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return; // Выход из текущей активности
+        }
+
+        setContentView(R.layout.activity_navigation);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         backButton = findViewById(R.id.backButton);
         nextButton = findViewById(R.id.nextButton);
         skipButton = findViewById(R.id.skipButton);
@@ -84,6 +95,13 @@ public class NavigationActivity extends AppCompatActivity {
         skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Обновляем флаг, что пользователь пропустил начальную настройку
+                SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isFirstLaunch", false); // Устанавливаем, что это не первый запуск
+                editor.apply();
+
+                // Переходим в LoginActivity
                 Intent intent = new Intent(NavigationActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();

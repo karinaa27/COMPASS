@@ -78,7 +78,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                         int backgroundResource = getBackgroundResource(account.background);
                         binding.accountLbl.setBackgroundResource(backgroundResource);
                     } else {
-                        binding.accountLbl.setText("Неизвестный аккаунт"); // Если аккаунт не найден
+                        binding.accountLbl.setText("счёт"); // Если аккаунт не найден
                         binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     }
                 }).exceptionally(e -> {

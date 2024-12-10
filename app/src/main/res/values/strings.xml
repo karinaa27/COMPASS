@@ -453,4 +453,10 @@
     <string name="welcome_4_title">Вы готовы начать?</string>
     <string name="welcome_4_desc">Управляйте своими финансами, достигайте целей и живите свободно. Давайте начнем прямо сейчас!</string>
     <string name="get_started">Get Started</string>
+
+    <string-array name="repeat_intervals">
+        <item>Каждый день</item>
+        <item>Каждую неделю</item>
+        <item>Каждый месяц</item>
+    </string-array>
 </resources>

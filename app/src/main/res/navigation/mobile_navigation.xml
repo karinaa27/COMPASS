@@ -93,4 +93,8 @@
             android:id="@+id/action_articleFragment_to_addArticleFragment"
             app:destination="@id/fragment_add_articles" />
     </fragment>
+    <fragment
+        android:id="@+id/fragment_notification"
+        android:name="com.mgke.da.ui.notification.NotificationFragment"
+        tools:layout="@layout/fragment_notification"/>
 </navigation>

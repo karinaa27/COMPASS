@@ -5,6 +5,8 @@ import android.app.DatePickerDialog;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -56,6 +58,10 @@ import retrofit2.Response;
 
 public class AddTransactionFragment extends Fragment {
 
+    private boolean isRequestInProgress = false;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable convertCurrencyRunnable;
+    private static final long DELAY_MS = 2000; // задержка 500 мс (0.5 сек)
     private FragmentAddTransactionBinding binding;
     private String defaultCurrency;
     public static final String INCOME = "DOHOD";
@@ -126,7 +132,6 @@ public class AddTransactionFragment extends Fragment {
 
         if (!areCategoriesCreated) {
             loadCategoriesWithDefaults();
-        } else {
         }
 
         binding.nameGoal.setOnClickListener(v -> showSelectGoalDialog());
@@ -147,11 +152,21 @@ public class AddTransactionFragment extends Fragment {
         binding.editTextCurrency.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Отмена предыдущего запроса, если новый ввод
+                handler.removeCallbacks(convertCurrencyRunnable);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                convertCurrencyToRUB();
+                // Запланировать новый запрос
+                handler.removeCallbacks(convertCurrencyRunnable);
+                convertCurrencyRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        convertCurrencyToRUB(); // Выполнить запрос
+                    }
+                };
+                handler.postDelayed(convertCurrencyRunnable, DELAY_MS); // Запустить с задержкой
             }
 
             @Override
@@ -385,6 +400,11 @@ public class AddTransactionFragment extends Fragment {
     }
 
     private void convertCurrencyToRUB() {
+        // Если запрос уже выполняется, не отправляем новый
+        if (isRequestInProgress) {
+            return;
+        }
+
         String inputAmountStr = binding.editTextCurrency.getText().toString();
 
         if (!inputAmountStr.isEmpty()) {
@@ -405,11 +425,17 @@ public class AddTransactionFragment extends Fragment {
 
                 String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
 
+                // Устанавливаем флаг запроса в процессе
+                isRequestInProgress = true;
+
                 // Конвертация валюты через API
                 ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount)
                         .enqueue(new Callback<ConversionResponse>() {
                             @Override
                             public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
+                                // Сбрасываем флаг запроса
+                                isRequestInProgress = false;
+
                                 if (response.isSuccessful() && response.body() != null) {
                                     double convertedAmount = response.body().getResult();
 
@@ -428,6 +454,9 @@ public class AddTransactionFragment extends Fragment {
 
                             @Override
                             public void onFailure(Call<ConversionResponse> call, Throwable t) {
+                                // Сбрасываем флаг запроса
+                                isRequestInProgress = false;
+
                                 binding.sum.setText("Ошибка: " + t.getMessage());
                             }
                         });
@@ -439,8 +468,6 @@ public class AddTransactionFragment extends Fragment {
             binding.sum.setText(""); // Если поле пустое
         }
     }
-
-
 
     private void setTransactionType(String type) {
         currentTransactionType = type;

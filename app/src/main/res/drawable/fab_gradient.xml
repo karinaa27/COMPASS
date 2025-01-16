@@ -1,0 +1,8 @@
+<!-- res/drawable/fab_gradient.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient
+        android:startColor="#FF7F50"
+        android:endColor="#FF4500"
+        android:angle="45"
+        android:type="linear" />
+</shape>

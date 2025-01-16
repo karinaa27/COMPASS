@@ -14,8 +14,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="10dp">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/topContainer"
@@ -28,7 +27,7 @@
 
                 <ImageView
                     android:id="@+id/backButton"
-                    android:tint="@color/white"
+                    app:tint="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
@@ -49,6 +48,7 @@
             <EditText
                 android:id="@+id/categoryNameEditText"
                 android:layout_width="match_parent"
+                android:layout_marginStart="10dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/montserrat"
@@ -62,6 +62,7 @@
                 android:id="@+id/incomeExpenseRadioGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
@@ -86,13 +87,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginStart="10dp"
                 android:fontFamily="@font/montserrat"
                 android:text="@string/select_icon"
                 style="@style/TextColor" />
 
             <GridLayout
                 android:id="@+id/iconGrid"
-                android:layout_width="328dp"
+                android:layout_width="308dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="8dp"
@@ -282,6 +284,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginStart="10dp"
                 android:fontFamily="@font/montserrat"
                 android:text="@string/select_color"
                 style="@style/TextColor" />

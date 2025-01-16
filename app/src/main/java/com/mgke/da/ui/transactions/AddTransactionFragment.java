@@ -2,6 +2,7 @@ package com.mgke.da.ui.transactions;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -28,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
+import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.adapters.SimpleCategoryAdapter;
 import com.mgke.da.models.Account;
 import com.mgke.da.models.ConversionResponse;
@@ -61,7 +64,8 @@ public class AddTransactionFragment extends Fragment {
     private boolean isRequestInProgress = false;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable convertCurrencyRunnable;
-    private static final long DELAY_MS = 2000; // задержка 500 мс (0.5 сек)
+    private ProgressDialog progressDialog;
+    private static final long DELAY_MS = 2000;
     private FragmentAddTransactionBinding binding;
     private String defaultCurrency;
     public static final String INCOME = "DOHOD";
@@ -76,7 +80,7 @@ public class AddTransactionFragment extends Fragment {
     private String currentTransactionType = INCOME;
     private FirebaseAuth auth;
     private String selectedGoalId;
-    private static final String TAG = "AddTransactionFragment"; // Тег для логов
+    private static final String TAG = "AddTransactionFragment";
     private static boolean areCategoriesCreated = false;
 
     public AddTransactionFragment() {
@@ -152,23 +156,20 @@ public class AddTransactionFragment extends Fragment {
         binding.editTextCurrency.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Отмена предыдущего запроса, если новый ввод
                 handler.removeCallbacks(convertCurrencyRunnable);
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Запланировать новый запрос
                 handler.removeCallbacks(convertCurrencyRunnable);
                 convertCurrencyRunnable = new Runnable() {
                     @Override
                     public void run() {
-                        convertCurrencyToRUB(); // Выполнить запрос
+                        convertCurrencyToRUB();
                     }
                 };
-                handler.postDelayed(convertCurrencyRunnable, DELAY_MS); // Запустить с задержкой
+                handler.postDelayed(convertCurrencyRunnable, DELAY_MS);
             }
-
             @Override
             public void afterTextChanged(Editable s) {
             }
@@ -182,7 +183,7 @@ public class AddTransactionFragment extends Fragment {
 
         RadioGroup radioGroupGoals = dialogView.findViewById(R.id.radioGroupGoals);
         Button buttonSelectGoal = dialogView.findViewById(R.id.buttonSelectGoal);
-        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal); // Кнопка для добавления новой цели
+        ImageView buttonAddGoal = dialogView.findViewById(R.id.buttonAddGoal);
 
         GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
         String currentUserId = getCurrentUserId();
@@ -190,7 +191,6 @@ public class AddTransactionFragment extends Fragment {
         goalRepository.getAllGoal().thenAccept(goals -> {
             radioGroupGoals.removeAllViews();
 
-            // Добавляем опцию "Сбросить выбор"
             RadioButton resetSelectionButton = new RadioButton(getContext());
             resetSelectionButton.setText(getString(R.string.no_goal_selected));
             resetSelectionButton.setId(View.generateViewId());
@@ -198,19 +198,18 @@ public class AddTransactionFragment extends Fragment {
 
             resetSelectionButton.setOnClickListener(v -> {
                 selectedGoalId = null;
-                binding.nameGoal.setText(""); // Очистка текстового поля, если цель не выбрана
+                binding.nameGoal.setText("");
             });
 
-            // Добавляем цели пользователя
             for (Goal goal : goals) {
                 if (goal.userId.equals(currentUserId)) {
                     RadioButton radioButton = new RadioButton(getContext());
-                    radioButton.setText(goal.goalName); // Отображаем название цели
+                    radioButton.setText(goal.goalName);
                     radioButton.setId(View.generateViewId());
                     radioGroupGoals.addView(radioButton);
 
                     radioButton.setOnClickListener(v -> {
-                        selectedGoalId = goal.id; // Сохраняем ID цели
+                        selectedGoalId = goal.id;
                     });
                 }
             }
@@ -226,13 +225,11 @@ public class AddTransactionFragment extends Fragment {
             if (selectedId != -1) {
                 RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
                 String selectedGoalName = selectedRadioButton.getText().toString();
-
                 if (!selectedGoalName.equals(getString(R.string.no_goal_selected))) {
-                    binding.nameGoal.setText(selectedGoalName); // Отображаем выбранное название цели
+                    binding.nameGoal.setText(selectedGoalName);
                 } else {
-                    selectedGoalId = null; // Если выбрано "Сбросить выбор", очищаем ID
+                    selectedGoalId = null;
                 }
-
                 dialog.dismiss();
             } else {
                 Toast.makeText(getContext(), getString(R.string.goal_label_select), Toast.LENGTH_SHORT).show();
@@ -275,22 +272,31 @@ public class AddTransactionFragment extends Fragment {
         RadioGroup radioGroup = dialogView.findViewById(R.id.radioGroupAccounts);
         Button buttonSelectAccount = dialogView.findViewById(R.id.buttonSelectAccount);
         ImageView addButton = dialogView.findViewById(R.id.buttonAddAccount);
+        TextView noAccountsMessage = dialogView.findViewById(R.id.noAccountsMessage); // Ссылка на TextView
 
         accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
             radioGroup.removeAllViews();
-            for (Account account : accounts) {
-                RadioButton radioButton = new RadioButton(getContext());
-                radioButton.setText(account.accountName);
-                radioButton.setId(View.generateViewId());
-                radioGroup.addView(radioButton);
 
-                if (selectedAccountId != null && selectedAccountId.equals(account.id)) {
-                    radioButton.setChecked(true);
+            if (accounts.isEmpty()) {
+                // Если счетов нет, показываем сообщение
+                noAccountsMessage.setVisibility(View.VISIBLE);
+            } else {
+                noAccountsMessage.setVisibility(View.GONE); // Если счета есть, скрываем сообщение
+
+                for (Account account : accounts) {
+                    RadioButton radioButton = new RadioButton(getContext());
+                    radioButton.setText(account.accountName);
+                    radioButton.setId(View.generateViewId());
+                    radioGroup.addView(radioButton);
+
+                    if (selectedAccountId != null && selectedAccountId.equals(account.id)) {
+                        radioButton.setChecked(true);
+                    }
+
+                    radioButton.setOnClickListener(v -> {
+                        selectedAccountId = account.id;
+                    });
                 }
-
-                radioButton.setOnClickListener(v -> {
-                    selectedAccountId = account.id;  // Store the ID
-                });
             }
         });
 
@@ -302,7 +308,7 @@ public class AddTransactionFragment extends Fragment {
             if (selectedId != -1) {
                 RadioButton selectedRadioButton = dialogView.findViewById(selectedId);
                 String selectedAccountName = selectedRadioButton.getText().toString();
-                binding.nameAccount.setText(selectedAccountName);  // Display name in UI
+                binding.nameAccount.setText(selectedAccountName);
                 dialog.dismiss();
             }
         });
@@ -316,6 +322,7 @@ public class AddTransactionFragment extends Fragment {
         dialog.show();
     }
 
+
     private void loadCategoriesWithDefaults() {
         Log.d(TAG, "loadCategoriesWithDefaults: Вызван метод для загрузки категорий с дефолтами");
 
@@ -327,7 +334,6 @@ public class AddTransactionFragment extends Fragment {
 
             if (categories == null || categories.isEmpty()) {
                 Log.d(TAG, "Категории не найдены, создаем дефолтные");
-                // Создаем дефолтные категории
                 CompletableFuture<Void> incomeCategories = categoryRepository.createDefaultCategories(userId, "income");
                 CompletableFuture<Void> expenseCategories = categoryRepository.createDefaultCategories(userId, "expense");
 
@@ -336,7 +342,6 @@ public class AddTransactionFragment extends Fragment {
                         Log.e(TAG, "Ошибка при создании категорий", ex);
                     } else {
                         Log.d(TAG, "Дефолтные категории успешно созданы");
-                        // После создания категорий обновляем флаг
                         areCategoriesCreated = true;
                         loadCategoriesBasedOnTransactionType();
                     }
@@ -400,7 +405,7 @@ public class AddTransactionFragment extends Fragment {
     }
 
     private void convertCurrencyToRUB() {
-        // Если запрос уже выполняется, не отправляем новый
+
         if (isRequestInProgress) {
             return;
         }
@@ -412,60 +417,55 @@ public class AddTransactionFragment extends Fragment {
                 double inputAmount = Double.parseDouble(inputAmountStr);
 
                 if (inputAmount <= 0) {
-                    return; // Возвращаемся, если сумма меньше или равна нулю
+                    return;
                 }
 
                 String selectedCurrency = binding.textViewCurrencyLabel.getText().toString();
 
-                // Проверяем, что валюта выбрана
                 if (selectedCurrency.isEmpty()) {
-                    binding.sum.setText("Выберите валюту.");
+                    binding.sum.setText(getString(R.string.currency_error_select));
                     return;
                 }
 
                 String apiKey = "87986aa7d23ce4bca64d81bbdd909517";
 
-                // Устанавливаем флаг запроса в процессе
                 isRequestInProgress = true;
 
-                // Конвертация валюты через API
                 ApiClient.convertCurrency(apiKey, selectedCurrency, defaultCurrency, inputAmount)
                         .enqueue(new Callback<ConversionResponse>() {
                             @Override
                             public void onResponse(Call<ConversionResponse> call, Response<ConversionResponse> response) {
-                                // Сбрасываем флаг запроса
+
                                 isRequestInProgress = false;
 
                                 if (response.isSuccessful() && response.body() != null) {
                                     double convertedAmount = response.body().getResult();
 
-                                    // Форматирование результата с использованием NumberFormat
                                     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
-                                    numberFormat.setMaximumFractionDigits(2);  // Ограничиваем до 2 знаков после запятой
-                                    numberFormat.setMinimumFractionDigits(2);  // Минимум 2 знака после запятой
+                                    numberFormat.setMaximumFractionDigits(2);
+                                    numberFormat.setMinimumFractionDigits(2);
 
                                     String formattedAmount = numberFormat.format(convertedAmount);
 
                                     binding.sum.setText(formattedAmount);
                                 } else {
-                                    binding.sum.setText("Ошибка при получении данных.");
+                                    binding.sum.setText(getString(R.string.currency_error_request));
                                 }
                             }
 
                             @Override
                             public void onFailure(Call<ConversionResponse> call, Throwable t) {
-                                // Сбрасываем флаг запроса
-                                isRequestInProgress = false;
 
-                                binding.sum.setText("Ошибка: " + t.getMessage());
+                                isRequestInProgress = false;
+                                binding.sum.setText(getString(R.string.currency_error_failure, t.getMessage()));
                             }
                         });
             } catch (NumberFormatException e) {
-                // Если введенная строка не является числом
-                binding.sum.setText("Неверный формат суммы.");
+
+                binding.sum.setText(getString(R.string.currency_error_invalid_amount));
             }
         } else {
-            binding.sum.setText(""); // Если поле пустое
+            binding.sum.setText("");
         }
     }
 
@@ -523,7 +523,7 @@ public class AddTransactionFragment extends Fragment {
 
     private void saveTransaction() {
         if (!isAdded()) return;
-
+        showLoadingDialog();
         String type = currentTransactionType;
         String category = categoryAdapter.getSelectedCategory();
         String dateStr = binding.date.getText() != null ? binding.date.getText().toString() : "";
@@ -532,21 +532,25 @@ public class AddTransactionFragment extends Fragment {
 
         if (selectedAccountId == null || selectedAccountId.isEmpty()) {
             Toast.makeText(getContext(), R.string.toast_select_account, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
         if (category == null || category.isEmpty()) {
             Toast.makeText(getContext(), R.string.toast_select_category, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
         if (dateStr.isEmpty()) {
             Toast.makeText(getContext(), R.string.toast_select_date, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
         if (amountStr.isEmpty()) {
             Toast.makeText(getContext(), R.string.toast_enter_amount, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
@@ -556,6 +560,7 @@ public class AddTransactionFragment extends Fragment {
             amount = Double.parseDouble(amountStr);
         } catch (NumberFormatException e) {
             Toast.makeText(getContext(), R.string.toast_invalid_amount, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
@@ -563,25 +568,146 @@ public class AddTransactionFragment extends Fragment {
         Date date = parseDate(dateStr);
         if (date == null) {
             Toast.makeText(getContext(), R.string.toast_invalid_date, Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
             return;
         }
 
-        Transaction transaction = createTransaction(type, category, selectedAccountId, date, amount, currency, selectedGoalId);  // Pass account ID
+        Transaction transaction = createTransaction(type, category, selectedAccountId, date, amount, currency, selectedGoalId);
         TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
 
         transactionRepository.addTransaction(transaction)
                 .addOnSuccessListener(transactionId -> {
                     if (!isAdded()) return;
                     transaction.id = transactionId;
-                    Toast.makeText(getContext(), getString(R.string.toast_save_success, transactionId), Toast.LENGTH_SHORT).show();
-                    clearFields();
-                    NavController navController = Navigation.findNavController(getView());
-                    navController.popBackStack();
+
+                    if (selectedGoalId != null && !selectedGoalId.isEmpty()) {
+                        GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+                        goalRepository.getGoalById(selectedGoalId).thenAccept(goal -> {
+                            if (goal != null) {
+                                transactionRepository.getTransactionsForGoalId(goal.id).thenAccept(transactions -> {
+                                    double totalProgress = 0.0;
+                                    for (Transaction t : transactions) {
+                                        if (t.currency.equals(goal.currency)) {
+                                            totalProgress += t.amount;
+                                        } else {
+                                            double convertedAmount = convertCurrency(t.amount, t.currency, goal.currency);
+                                            totalProgress += convertedAmount;
+                                        }
+                                    }
+
+                                    goal.progress = totalProgress;
+                                    goal.isCompleted = totalProgress >= goal.targetAmount;
+
+                                    goalRepository.updateGoalProgress(goal.id, totalProgress).addOnSuccessListener(aVoid -> {
+                                        goalRepository.updateGoalCompletionStatus(goal.id, goal.isCompleted);
+                                        Toast.makeText(getContext(), getString(R.string.toast_save_success), Toast.LENGTH_SHORT).show();
+                                        clearFields();
+                                        NavController navController = Navigation.findNavController(getView());
+                                        navController.popBackStack();
+                                    }).addOnFailureListener(e -> {
+                                        Toast.makeText(getContext(), "R.string.toast_update_goal_failure", Toast.LENGTH_SHORT).show();
+                                    });
+                                });
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getContext(), getString(R.string.toast_save_success), Toast.LENGTH_SHORT).show();
+                        clearFields();
+                        NavController navController = Navigation.findNavController(getView());
+                        navController.popBackStack();
+                    }
+
+                    progressDialog.dismiss();
                 })
                 .addOnFailureListener(e -> {
                     if (!isAdded()) return;
-                    Toast.makeText(getContext(), getString(R.string.toast_save_failure, e.getMessage()), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.toast_save_failure), Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
                 });
+    }
+
+    private double convertCurrency(double amount, String fromCurrency, String toCurrency) {
+        if (fromCurrency == null || toCurrency == null || fromCurrency.equals(toCurrency)) {
+            return amount;
+        }
+
+        double rate = 1.0;
+
+        if (fromCurrency.equals("USD")) {
+            if (toCurrency.equals("EUR")) {
+                rate = 0.85;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 70.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 2.6;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 27.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 3.7;
+            }
+        } else if (fromCurrency.equals("EUR")) {
+            if (toCurrency.equals("USD")) {
+                rate = 1.18;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 82.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 3.1;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 4.3;
+            }
+        } else if (fromCurrency.equals("RUB")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.014;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.012;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 0.36;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.05;
+            }
+        } else if (fromCurrency.equals("BYN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.38;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.32;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 11.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 1.4;
+            }
+        } else if (fromCurrency.equals("UAH")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.037;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 2.8;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.091;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.12;
+            }
+        } else if (fromCurrency.equals("PLN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.27;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.23;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 20.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.71;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 8.3;
+            }
+        }
+
+        return amount * rate;
     }
 
     private Transaction createTransaction(String type, String category, String accountId, Date date, double amount, String currency, String goalId) {
@@ -592,7 +718,7 @@ public class AddTransactionFragment extends Fragment {
         Transaction transaction = new Transaction();
         transaction.type = type;
         transaction.category = category;
-        transaction.accountId = accountId;  // Store account ID
+        transaction.accountId = accountId;
         transaction.date = date;
         transaction.amount = amount;
         transaction.currency = currency;
@@ -605,7 +731,13 @@ public class AddTransactionFragment extends Fragment {
         return transaction;
     }
 
-
+    private void showLoadingDialog() {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.load));
+        progressDialog.setCancelable(false);
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+    }
 
     private String getAccountBackground(String accountName) {
         if (accountName == null) return "account_fon1";

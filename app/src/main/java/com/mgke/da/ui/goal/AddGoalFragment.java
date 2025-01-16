@@ -1,6 +1,7 @@
 package com.mgke.da.ui.goal;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -183,7 +184,6 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             return;
         }
 
-        // Проверка на корректность введенной суммы
         double targetAmount;
         try {
             targetAmount = Double.parseDouble(targetAmountStr);
@@ -205,8 +205,19 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             return;
         }
 
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.save));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
         Goal newGoal = new Goal(UUID.randomUUID().toString(), goalName, targetAmount, 0.0, userId, dateEnd, false, note, currency);
-        goalRepository.addGoal(newGoal);
+
+        // Синхронное сохранение цели в репозитории
+        goalRepository.addGoal(newGoal);  // Сохраняем цель
+
+        progressDialog.dismiss();  // Закрываем ProgressDialog
+
+        // Показ сообщения и закрытие фрагмента
         Toast.makeText(getContext(), R.string.goal_added, Toast.LENGTH_SHORT).show();
         closeFragment();
     }
@@ -225,7 +236,6 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             return;
         }
 
-        // Проверка на корректность введенной суммы
         double targetAmount;
         try {
             targetAmount = Double.parseDouble(targetAmountStr);
@@ -247,15 +257,37 @@ public class AddGoalFragment extends Fragment implements GoalAdapter.OnGoalClick
             return;
         }
 
+        // Создаем и показываем прогресс-диалог
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.save)); // Строка для прогресса
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        // Проверка прогресса
+        if (goal.progress < targetAmount) {
+            goal.isCompleted = false;  // Если прогресс меньше целевой суммы, обновляем статус на false
+        }
+
+        // Обновление данных цели
         goal.goalName = goalName;
         goal.targetAmount = targetAmount;
         goal.dateEnd = dateEnd;
         goal.note = note;
         goal.currency = currency;
-        goalRepository.updateGoal(goal);
-        Toast.makeText(getContext(), R.string.goal_updated, Toast.LENGTH_SHORT).show();
-        closeFragment();
+
+        // Сохранение изменений в репозитории (с прогрессом)
+        goalRepository.updateGoal(goal)
+                .addOnSuccessListener(aVoid -> {
+                    progressDialog.dismiss(); // Скрытие прогресс-диалога после успешного обновления
+                    Toast.makeText(getContext(), R.string.goal_updated, Toast.LENGTH_SHORT).show();
+                    closeFragment();
+                })
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss(); // Скрытие прогресс-диалога при ошибке
+                    Toast.makeText(getContext(), R.string.error_updating_goal, Toast.LENGTH_SHORT).show();
+                });
     }
+
 
     private void setupDatePicker() {
         editTextDateEnd.setFocusable(false);

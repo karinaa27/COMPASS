@@ -4,7 +4,7 @@ public class Category {
     public String id;
     public String categoryNameRu;
     public String categoryNameEn;
-    public int categoryImage;
+    public String categoryImage;
     public int categoryColor;
     public String type;
     public String userId;
@@ -14,7 +14,7 @@ public class Category {
     public Category() {
     }
 
-    public Category(String id, String categoryNameRu, String categoryNameEn, int categoryImage, int categoryColor, String type, String userId, boolean isDefault,  String name) {
+    public Category(String id, String categoryNameRu, String categoryNameEn, String categoryImage, int categoryColor, String type, String userId, boolean isDefault,  String name) {
         this.id = id;
         this.categoryNameRu = categoryNameRu;
         this.categoryNameEn = categoryNameEn;

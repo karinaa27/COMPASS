@@ -60,6 +60,29 @@ public class GoalRepository {
         });
         return future;
     }
+
+    public CompletableFuture<List<Goal>> getUserGoalsByStatus(String userId, boolean isCompleted) {
+        CompletableFuture<List<Goal>> future = new CompletableFuture<>();
+        List<Goal> goals = new ArrayList<>();
+
+        goalCollection.whereEqualTo("userId", userId)
+                .whereEqualTo("isCompleted", isCompleted)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Goal goal = document.toObject(Goal.class);
+                            goals.add(goal);
+                        }
+                        future.complete(goals);
+                    } else {
+                        future.completeExceptionally(task.getException());
+                    }
+                });
+        return future;
+    }
+
+
     public CompletableFuture<Goal> getGoalById(String id) {
         CompletableFuture<Goal> future = new CompletableFuture<>();
         goalCollection.document(id).get().addOnCompleteListener(task -> {

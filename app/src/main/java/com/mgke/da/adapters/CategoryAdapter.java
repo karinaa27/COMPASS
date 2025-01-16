@@ -1,6 +1,7 @@
 package com.mgke.da.adapters;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -17,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mgke.da.R;
 import com.mgke.da.models.Category;
 import com.mgke.da.repository.CategoryRepository;
+import com.mgke.da.ui.categories.ExpensesFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,13 +72,34 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             Category category = categories.get(position);
             String categoryName = category.getNameLan(language);
             ((CategoryViewHolder) holder).categoryText.setText(categoryName);
-            ((CategoryViewHolder) holder).categoryIcon.setImageResource(category.categoryImage);
-            ((CategoryViewHolder) holder).categoryIcon.setBackgroundTintList(ColorStateList.valueOf(category.categoryColor));
 
+            // Получаем имя изображения из строки и загружаем его
+            String categoryImageName = category.categoryImage;  // Теперь это строка с именем ресурса
+
+            // Получаем идентификатор ресурса по имени
+            int imageResourceId = context.getResources().getIdentifier(categoryImageName, "drawable", context.getPackageName());
+
+            // Устанавливаем изображение, если ресурс найден
+            if (imageResourceId != 0) {
+                ((CategoryViewHolder) holder).categoryIcon.setImageResource(imageResourceId);
+            } else {
+                // Если изображения нет, устанавливаем изображение по умолчанию
+                ((CategoryViewHolder) holder).categoryIcon.setImageResource(R.drawable.ic_other);
+            }
+
+            // Устанавливаем цвет фона для иконки
+            if (category.categoryColor != 0) {
+                ((CategoryViewHolder) holder).categoryIcon.setBackgroundTintList(ColorStateList.valueOf(category.categoryColor));
+            } else {
+                // Если нет цвета, устанавливаем цвет по умолчанию
+                ((CategoryViewHolder) holder).categoryIcon.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.lavander)));
+            }
+
+            // Логика выбора категории
             if (selectedCategory != null && selectedCategory.equals(categoryName)) {
                 holder.itemView.setScaleX(1.1f);
                 holder.itemView.setScaleY(1.1f);
-                selectedCategoryImage = category.categoryImage;
+                selectedCategoryImage = imageResourceId;  // Обновляем выбранное изображение
                 selectedCategoryColor = category.categoryColor;
             } else {
                 holder.itemView.setScaleX(1.0f);
@@ -96,7 +121,14 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             holder.itemView.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
                 Bundle bundle = new Bundle();
-                bundle.putString("category_type", "income");
+
+                // Проверяем, какой тип категории должен быть передан
+                if (fragment instanceof ExpensesFragment) {
+                    bundle.putString("category_type", "expense");
+                } else {
+                    bundle.putString("category_type", "income");
+                }
+
                 navController.navigate(R.id.addCategoryFragment, bundle);
             });
         }
@@ -112,9 +144,30 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     .setTitle(R.string.confirmation_title)
                     .setMessage(String.format(context.getString(R.string.confirmation_message)))
                     .setPositiveButton(R.string.confirm, (dialog, which) -> {
+                        // Показываем ProgressDialog перед удалением
+                        ProgressDialog progressDialog = new ProgressDialog(context);
+                        progressDialog.setMessage(context.getString(R.string.deleting_category));
+                        progressDialog.setCancelable(false); // Диалог не отменяется пользователем
+                        progressDialog.show();
+
+                        // Удаляем категорию
                         categoryRepository.removeCategory(category, currentLanguage);
-                        categories.remove(position);
-                        notifyItemRemoved(position);
+
+                        // Ждем завершения удаления
+                        categoryRepository.deleteCategory(category.id)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Скрываем ProgressDialog после успешного удаления
+                                    progressDialog.dismiss();
+                                    categories.remove(position);
+                                    notifyItemRemoved(position);
+                                })
+                                .addOnFailureListener(e -> {
+                                    // Скрываем ProgressDialog в случае ошибки
+                                    progressDialog.dismiss();
+                                    // Показываем ошибку
+                                    Toast.makeText(context, context.getString(R.string.delete_category_error), Toast.LENGTH_SHORT).show();
+                                });
+
                     })
                     .setNegativeButton(R.string.cancel, null)
                     .show();

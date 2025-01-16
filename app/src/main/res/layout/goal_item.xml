@@ -105,7 +105,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
-        android:textStyle="italic"
+        android:textStyle="normal"
         style="@style/TextColor"
         android:textSize="14sp"/>
 

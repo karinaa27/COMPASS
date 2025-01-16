@@ -34,6 +34,7 @@
 
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tabLayout"
+                    app:tabIndicatorColor="@color/white"
                     android:layout_gravity="center"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
@@ -209,6 +210,7 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="12sp"
+                android:layout_gravity="center"
                 android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/emptyStateImageView" />
 
@@ -216,11 +218,13 @@
             <com.github.mikephil.charting.charts.HorizontalBarChart
                 android:id="@+id/horizontalBarChart"
                 android:layout_width="match_parent"
+                android:layout_height="250dp"
                 android:layout_gravity="center"
-                android:layout_height="170dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/pieChart" />
+                app:layout_constraintTop_toBottomOf="@+id/pieChart"
+                android:layout_margin="10dp"/>
+
             <com.github.mikephil.charting.charts.RadarChart
                 android:id="@+id/radarChart"
                 android:layout_width="match_parent"

@@ -1,5 +1,7 @@
 package com.mgke.da.ui.accounts;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -82,81 +84,107 @@ public class AddAccountFragment extends Fragment {
             if (accountToEdit != null) {
                 String accountId = accountToEdit.id;
                 if (accountId != null) {
-                    AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
-                    accountRepository.deleteAccount(accountId)
-                            .thenRun(() -> {
-                                Toast.makeText(getActivity(), R.string.account_deleted, Toast.LENGTH_SHORT).show();
-                                NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-                                navController.navigate(R.id.navigation_accounts);
+                    // Показываем диалоговое окно подтверждения
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(R.string.confirm_deletion)
+                            .setMessage(R.string.are_you_sure_delete_account)
+                            .setPositiveButton(R.string.yes, (dialog, which) -> {
+                                // Показываем ProgressDialog
+                                ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                                progressDialog.setMessage(getString(R.string.deleting_account));
+                                progressDialog.setCancelable(false); // Чтобы нельзя было отменить
+                                progressDialog.show();
+
+                                // Выполняем удаление
+                                AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
+                                accountRepository.deleteAccount(accountId)
+                                        .thenRun(() -> {
+                                            // После успешного удаления
+                                            progressDialog.dismiss();
+                                            Toast.makeText(getActivity(), R.string.account_deleted, Toast.LENGTH_SHORT).show();
+                                            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+                                            navController.navigate(R.id.navigation_accounts);
+                                        })
+                                        .exceptionally(e -> {
+                                            // В случае ошибки
+                                            progressDialog.dismiss();
+                                            Toast.makeText(getActivity(), getString(R.string.error_deleting_account) + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            return null;
+                                        });
                             })
-                            .exceptionally(e -> {
-                                Toast.makeText(getActivity(), getString(R.string.error_deleting_account) + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                return null;
-                            });
+                            .setNegativeButton(R.string.no, (dialog, which) -> {
+                                // Ничего не делаем, если пользователь отменил удаление
+                                dialog.dismiss();
+                            })
+                            .show();
                 } else {
                     Toast.makeText(getActivity(), R.string.error_account_id_not_available, Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+
         saveAccountButton.setOnClickListener(v -> {
             String accountName = accountNameEditText.getText().toString().trim();
             String accountAmountString = accountAmountEditText.getText().toString().trim();
-            if (accountToEdit != null) {
-                boolean nameChanged = !accountName.equals(accountToEdit.accountName);
-                boolean backgroundChanged = selectedBackground != null && !selectedBackground.equals(accountToEdit.background);
-                if (accountName.isEmpty()) {
-                    Toast.makeText(getActivity(), R.string.error_empty_account_name, Toast.LENGTH_SHORT).show();
-                } else if (selectedBackground == null) {
-                    Toast.makeText(getActivity(), R.string.error_select_background, Toast.LENGTH_SHORT).show();
-                } else {
-                    double accountAmount = parseAccountAmount(accountAmountString);
-                    AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
-                    if (nameChanged) {
-                        accountToEdit.accountName = accountName;
-                    }
-                    if (!accountAmountString.isEmpty()) {
-                        accountToEdit.accountAmount = accountAmount;
-                    }
-                    if (backgroundChanged) {
-                        accountToEdit.background = selectedBackground;
-                    }
+
+            if (accountName.isEmpty()) {
+                Toast.makeText(getActivity(), R.string.error_empty_account_name, Toast.LENGTH_SHORT).show();
+            } else if (selectedBackground == null) {
+                Toast.makeText(getActivity(), R.string.error_select_background, Toast.LENGTH_SHORT).show();
+            } else {
+                double accountAmount = parseAccountAmount(accountAmountString);
+                AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
+
+                // Показываем ProgressDialog перед сохранением
+                ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                progressDialog.setMessage(getString(R.string.save)); // Используем строковый ресурс
+                progressDialog.setCancelable(false); // Невозможно отменить прогресс
+                progressDialog.show();
+
+                if (accountToEdit != null) {
+                    // Update existing account logic
+                    accountToEdit.accountName = accountName;
+                    accountToEdit.accountAmount = accountAmount;
+                    accountToEdit.background = selectedBackground;
                     accountRepository.updateAccount(accountToEdit)
                             .addOnSuccessListener(aVoid -> {
+                                // Скрываем ProgressDialog после успешного обновления
+                                progressDialog.dismiss();
                                 Toast.makeText(getActivity(), R.string.account_updated, Toast.LENGTH_SHORT).show();
                                 NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-                                navController.navigate(R.id.navigation_accounts);
+                                navController.popBackStack(); // Возврат к предыдущему фрагменту
                             })
                             .addOnFailureListener(e -> {
+                                // Скрываем ProgressDialog в случае ошибки
+                                progressDialog.dismiss();
                                 Toast.makeText(getActivity(), getString(R.string.error_updating_account) + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                             });
-                }
-            } else {
-                if (accountName.isEmpty()) {
-                    Toast.makeText(getActivity(), R.string.error_empty_account_name, Toast.LENGTH_SHORT).show();
-                } else if (selectedBackground == null) {
-                    Toast.makeText(getActivity(), R.string.error_select_background, Toast.LENGTH_SHORT).show();
                 } else {
-                    double accountAmount = parseAccountAmount(accountAmountString);
+                    // Create new account logic
                     Account newAccount = new Account();
                     newAccount.accountName = accountName;
                     newAccount.accountAmount = accountAmount;
                     newAccount.userId = getCurrentUserId();
                     newAccount.currency = currencySpinner.getSelectedItem().toString();
                     newAccount.background = selectedBackground;
-                    AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
                     accountRepository.addAccount(newAccount)
                             .addOnSuccessListener(aVoid -> {
+                                // Скрываем ProgressDialog после успешного добавления
+                                progressDialog.dismiss();
                                 Toast.makeText(getActivity(), R.string.account_added, Toast.LENGTH_SHORT).show();
                                 NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-                                navController.navigate(R.id.navigation_accounts);
+                                navController.popBackStack(); // Возврат к предыдущему фрагменту
                             })
                             .addOnFailureListener(e -> {
+                                // Скрываем ProgressDialog в случае ошибки
+                                progressDialog.dismiss();
                                 Toast.makeText(getActivity(), getString(R.string.error_adding_account) + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                             });
                 }
             }
         });
+
 
         auth = FirebaseAuth.getInstance();
         loadUserCurrency();

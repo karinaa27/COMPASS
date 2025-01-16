@@ -1,4 +1,4 @@
-package com.mgke.da;
+package com.mgke.da.activity;
 
 public class Constants {
     public static final String EXPENSE = "RACHOD";

@@ -23,7 +23,7 @@
             categoryCollection = db.collection("category");
         }
 
-        public CompletableFuture<Void> addCategory(String categoryName, String type, int categoryImage, int categoryColor, String userId) {
+        public CompletableFuture<Void> addCategory(String categoryName, String type, String categoryImage, int categoryColor, String userId) {
             CompletableFuture<Void> future = new CompletableFuture<>();
             Category category = new Category();
 
@@ -31,7 +31,7 @@
             category.id = id;
             category.name = categoryName;
             category.type = type;
-            category.categoryImage = categoryImage;
+            category.categoryImage = categoryImage;  // Используем строку для имени ресурса
             category.categoryColor = categoryColor;
             category.userId = userId;
 
@@ -42,15 +42,11 @@
             return future;
         }
 
-        public Task<Void> deleteCategory(String id) {
-            return categoryCollection.document(id).delete();
-        }
-
-        public CompletableFuture<Void> updateCategory(Category category, int categoryImage, int categoryColor) {
+        public CompletableFuture<Void> updateCategory(Category category, String categoryImage, int categoryColor) {
             CompletableFuture<Void> future = new CompletableFuture<>();
 
             // Update the category with the new values
-            category.categoryImage = categoryImage;
+            category.categoryImage = categoryImage;  // Используем строку для имени ресурса
             category.categoryColor = categoryColor;
 
             // Update the document in Firestore
@@ -62,6 +58,9 @@
             return future;
         }
 
+        public Task<Void> deleteCategory(String id) {
+            return categoryCollection.document(id).delete();
+        }
 
         public void removeCategory(Category category, String language) {
             String categoryName = category.name;
@@ -139,29 +138,29 @@
 
                             if (type.equals("income")) {
                                 if (!existingCategoryNames.contains("Зарплата")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Зарплата", "Salary", R.drawable.ic_salary, Color.parseColor("#F7EC2E"), "income", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Зарплата", "Salary", "ic_salary", Color.parseColor("#F7EC2E"), "income", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Подарок")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Подарок", "Gift", R.drawable.ic_gift, Color.parseColor("#C1559B"), "income", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Подарок", "Gift", "ic_gift", Color.parseColor("#C1559B"), "income", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Инвестиции")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Инвестиции", "Investments", R.drawable.category_ic_investment, Color.parseColor("#33B7B6"), "income", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Инвестиции", "Investments", "category_ic_investment", Color.parseColor("#33B7B6"), "income", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Другое")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "income", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Другое", "Other", "ic_other", Color.parseColor("#704F9B"), "income", userId, true, null));
                                 }
                             } else if (type.equals("expense")) {
                                 if (!existingCategoryNames.contains("Продукты")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Продукты", "Groceries", R.drawable.category_ic_food, Color.parseColor("#00A55D"), "expense", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Продукты", "Groceries", "category_ic_food", Color.parseColor("#00A55D"), "expense", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Транспорт")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Транспорт", "Transport", R.drawable.category_ic_taxi, Color.parseColor("#1EB0E6"), "expense", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Транспорт", "Transport", "category_ic_taxi", Color.parseColor("#1EB0E6"), "expense", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Развлечения")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Развлечения", "Entertainment", R.drawable.category_ic_entertainment, Color.parseColor("#ED407B"), "expense", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Развлечения", "Entertainment", "category_ic_entertainment", Color.parseColor("#ED407B"), "expense", userId, true, null));
                                 }
                                 if (!existingCategoryNames.contains("Другое")) {
-                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Другое", "Other", R.drawable.ic_other, Color.parseColor("#704F9B"), "expense", userId, true, null));
+                                    defaultCategories.add(new Category(categoryCollection.document().getId(), "Другое", "Other", "ic_other", Color.parseColor("#704F9B"), "expense", userId, true, null));
                                 }
                             }
 
@@ -190,8 +189,6 @@
 
             return future;
         }
-
-
 
         public CompletableFuture<List<Category>> getAllCategories(String userId) {
             CompletableFuture<List<Category>> future = new CompletableFuture<>();

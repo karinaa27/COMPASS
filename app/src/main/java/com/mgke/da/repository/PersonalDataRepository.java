@@ -73,56 +73,6 @@ public class PersonalDataRepository {
         return future;
     }
 
-    public CompletableFuture<List<PersonalData>> getAllPersonalData() {
-        CompletableFuture<List<PersonalData>> future = new CompletableFuture<>();
-        List<PersonalData> personalDatas = new ArrayList<>();
 
-        personalDataCollection.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    PersonalData personalData = document.toObject(PersonalData.class);
-                    personalDatas.add(personalData);
-                }
-                future.complete(personalDatas);
-            } else {
-                future.completeExceptionally(task.getException());
-            }
-        });
-        return future;
-    }
 
-    public CompletableFuture<PersonalData> getUserByEmail(String email) {
-        CompletableFuture<PersonalData> future = new CompletableFuture<>();
-
-        personalDataCollection.whereEqualTo("email", email).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                DocumentSnapshot document = task.getResult().getDocuments().get(0);
-                PersonalData personalData = document.toObject(PersonalData.class);
-                future.complete(personalData);
-            } else {
-                future.complete(null);
-            }
-        });
-
-        return future;
-    }
-
-    public void addUserDataChangeListener(String userId, UserDataChangeListener listener) {
-        DocumentReference userRef = personalDataCollection.document(userId);
-        userRef.addSnapshotListener((snapshot, e) -> {
-            if (e != null) {
-                Log.e("PersonalDataRepository", "Listen failed.", e);
-                return;
-            }
-
-            if (snapshot != null && snapshot.exists()) {
-                PersonalData updatedData = snapshot.toObject(PersonalData.class);
-                listener.onUserDataChanged(updatedData);
-            }
-        });
-    }
-
-    public interface UserDataChangeListener {
-        void onUserDataChanged(PersonalData updatedData);
-    }
 }

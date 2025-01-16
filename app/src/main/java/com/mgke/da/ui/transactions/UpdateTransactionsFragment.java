@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -290,13 +291,14 @@ public class UpdateTransactionsFragment extends Fragment {
 
     private void updateTransaction() {
         String accountId = selectedAccountId;
-        String currency = binding.editTextCurrency.getText().toString();
+        String currency = binding.currencyTextView.getText() != null ? binding.currencyTextView.getText().toString() : "";
         String amountStr = binding.sum.getText().toString();
         String dateStr = binding.date.getText().toString();
         String category = categoryAdapter.getSelectedCategory();
 
         // Проверка на обязательные поля
         if (currency.isEmpty() || amountStr.isEmpty() || dateStr.isEmpty() || category == null || category.isEmpty()) {
+            Toast.makeText(getContext(), R.string.toast_fill_all_fields, Toast.LENGTH_SHORT).show();
             return; // Возврат, если какие-либо обязательные поля пустые
         }
 
@@ -334,29 +336,147 @@ public class UpdateTransactionsFragment extends Fragment {
         transaction.categoryColor = categoryColor;
         transaction.goalId = selectedGoalId;
 
+        // Создаем и показываем прогресс-диалог
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.saving_transaction)); // Сообщение для прогресса
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
         TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
         transactionRepository.updateTransaction(transaction)
                 .addOnSuccessListener(aVoid -> {
                     if (!isAdded()) return;
+                    progressDialog.dismiss(); // Скрываем прогресс-диалог после успешного сохранения
                     NavController navController = Navigation.findNavController(getView());
                     navController.popBackStack();
                 })
                 .addOnFailureListener(e -> {
                     if (!isAdded()) return;
+                    progressDialog.dismiss(); // Скрываем прогресс-диалог в случае ошибки
+                    Toast.makeText(getContext(), R.string.error_updating_transaction, Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private double convertCurrency(double amount, String fromCurrency, String toCurrency) {
+        if (fromCurrency == null || toCurrency == null || fromCurrency.equals(toCurrency)) {
+            return amount;
+        }
+
+        double rate = 1.0;
+
+        if (fromCurrency.equals("USD")) {
+            if (toCurrency.equals("EUR")) {
+                rate = 0.85;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 70.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 2.6;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 27.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 3.7;
+            }
+        } else if (fromCurrency.equals("EUR")) {
+            if (toCurrency.equals("USD")) {
+                rate = 1.18;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 82.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 3.1;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 4.3;
+            }
+        } else if (fromCurrency.equals("RUB")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.014;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.012;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 0.36;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.05;
+            }
+        } else if (fromCurrency.equals("BYN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.38;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.32;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 31.0;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 11.0;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 1.4;
+            }
+        } else if (fromCurrency.equals("UAH")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.037;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.032;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 2.8;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.091;
+            } else if (toCurrency.equals("PLN")) {
+                rate = 0.12;
+            }
+        } else if (fromCurrency.equals("PLN")) {
+            if (toCurrency.equals("USD")) {
+                rate = 0.27;
+            } else if (toCurrency.equals("EUR")) {
+                rate = 0.23;
+            } else if (toCurrency.equals("RUB")) {
+                rate = 20.0;
+            } else if (toCurrency.equals("BYN")) {
+                rate = 0.71;
+            } else if (toCurrency.equals("UAH")) {
+                rate = 8.3;
+            }
+        }
+
+        return amount * rate;
     }
 
     private void deleteTransaction(String id) {
         if (id == null || id.isEmpty()) {
             return;
         }
-        transactionRepository.deleteTransaction(id).addOnSuccessListener(aVoid -> {
-            NavController navController = Navigation.findNavController(getView());
-            navController.popBackStack();
+        new AlertDialog.Builder(getContext())
+                .setMessage(getString(R.string.confirm_delete_transaction)) // Строка для подтверждения
+                .setTitle(getString(R.string.confirm_delete)) // Заголовок
+                .setPositiveButton(getString(R.string.yes), (dialog, which) -> {
+                    // Создаем и показываем ProgressDialog
+                    ProgressDialog progressDialog = new ProgressDialog(getContext());
+                    progressDialog.setMessage(getString(R.string.deleting_transaction)); // Строка для удаления
+                    progressDialog.setCancelable(false); // Диалог нельзя отменить пользователем
+                    progressDialog.show();
 
-        }).addOnFailureListener(e -> {
-        });
+                    // Выполняем удаление
+                    transactionRepository.deleteTransaction(id)
+                            .addOnSuccessListener(aVoid -> {
+                                // Скрываем ProgressDialog после успешного удаления
+                                progressDialog.dismiss();
+                                NavController navController = Navigation.findNavController(getView());
+                                navController.popBackStack();
+                            })
+                            .addOnFailureListener(e -> {
+                                // Скрываем ProgressDialog в случае ошибки
+                                progressDialog.dismiss();
+                                // Показать сообщение об ошибке пользователю
+                                Toast.makeText(getContext(), getString(R.string.delete_transaction_error), Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> {
+                    // Пользователь отказался от удаления, закрываем диалог
+                    dialog.dismiss();
+                })
+                .show();
     }
+
     private void showSelectGoalDialog(Transaction transaction) { // Передаем объект Transaction
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -436,12 +556,10 @@ public class UpdateTransactionsFragment extends Fragment {
         dialog.show();
     }
 
-    // Предположим, что у вас есть метод для получения идентификатора текущего пользователя
     private String getCurrentUserId() {
         // Логика для получения идентификатора текущего пользователя
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
-
 
     private void showDatePickerDialog() {
         final Calendar calendar = Calendar.getInstance();

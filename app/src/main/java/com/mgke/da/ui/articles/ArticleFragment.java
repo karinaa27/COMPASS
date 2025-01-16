@@ -1,5 +1,6 @@
     package com.mgke.da.ui.articles;
 
+    import android.app.AlertDialog;
     import android.app.ProgressDialog;
     import android.os.Bundle;
     import android.text.TextUtils;
@@ -11,7 +12,11 @@
     import android.widget.ImageButton;
     import android.widget.ImageView;
     import android.widget.TextView;
+    import android.widget.Toast;
+
     import androidx.fragment.app.Fragment;
+    import androidx.navigation.NavController;
+    import androidx.navigation.Navigation;
     import androidx.navigation.fragment.NavHostFragment;
     import androidx.recyclerview.widget.LinearLayoutManager;
     import androidx.recyclerview.widget.RecyclerView;
@@ -27,6 +32,9 @@
     import com.mgke.da.repository.CommentRepository;
     import com.mgke.da.repository.LikeRepository;
     import com.mgke.da.repository.PersonalDataRepository;
+
+    import java.text.SimpleDateFormat;
+    import java.util.Date;
     import java.util.Locale;
     import java.util.concurrent.CompletableFuture;
 
@@ -45,6 +53,7 @@
         private EditText commentEditText;
         private ImageButton sendCommentButton;
         private boolean isLiked = false;
+        private ImageView backButton;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -56,7 +65,6 @@
             likeRepository = new LikeRepository(FirebaseFirestore.getInstance());
             commentRepository = new CommentRepository(FirebaseFirestore.getInstance());
         }
-
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,7 +82,7 @@
             commentsRecyclerView = root.findViewById(R.id.commentsRecyclerView);
             commentEditText = root.findViewById(R.id.commentEditText);
             sendCommentButton = root.findViewById(R.id.sendCommentButton);
-
+            ImageView backButton = root.findViewById(R.id.backButton);
             ImageView deleteButton = root.findViewById(R.id.deleteButton);
             ImageView editButton = root.findViewById(R.id.editButton);
             checkIfUserIsAdmin(deleteButton, editButton);
@@ -88,6 +96,11 @@
             // В методе onCreateView()
             deleteButton.setOnClickListener(v -> showDeleteConfirmationDialog());
             editButton.setOnClickListener(v -> editArticle()); // Обработчик для редактирования статьи
+
+            backButton.setOnClickListener(v -> {
+                NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+                navController.popBackStack();
+            });
 
             return root;
         }
@@ -107,13 +120,10 @@
                         }
 
                         // Логирование перед установкой даты
-                        String formattedDate = article.getFormattedTimestamp();
-                        Log.d("ArticleFragment", "Formatted Date: " + formattedDate); // Логируем дату
+                        long timestamp = article.timestamp.getTime();  // Преобразуем Date в long (миллисекунды)
+                        String formattedDate = formatDate(timestamp);
 
                         articleDate.setText(formattedDate);
-
-                        // Логирование URL изображения для отладки
-                        Log.d("ArticleFragment", "Image URL: " + article.image);
 
                         Glide.with(getActivity())
                                 .load(article.image)
@@ -122,15 +132,21 @@
                                 .skipMemoryCache(true)
                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .into(articleImage);
-
                         break;
                     }
                 }
             }).exceptionally(ex -> {
-                Log.e("ArticleFragment", "Error loading article details", ex);
                 return null;
             });
         }
+
+        private String formatDate(long timestamp) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault()); // Укажите нужный формат
+            Date date = new Date(timestamp);
+            return sdf.format(date);
+        }
+
+
         private void checkIfUserIsAdmin(ImageView deleteButton, ImageView editButton) {
             FirebaseAuth auth = FirebaseAuth.getInstance();
             String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -146,7 +162,6 @@
                         editButton.setVisibility(View.GONE);
                     }
                 }).exceptionally(ex -> {
-                    Log.e("ArticleFragment", "Failed to fetch user data", ex);
                     return null;
                 });
             }
@@ -154,21 +169,61 @@
         // Метод для отображения диалога подтверждения удаления
         private void showDeleteConfirmationDialog() {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Подтвердите удаление")
-                    .setMessage("Вы уверены, что хотите удалить эту статью?")
-                    .setPositiveButton("Удалить", (dialog, which) -> deleteArticle())
-                    .setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss())
+                    .setTitle(getString(R.string.article_delete_confirmation_title))
+                    .setMessage(getString(R.string.article_delete_confirmation_message))
+                    .setPositiveButton(getString(R.string.article_delete_button), (dialog, which) -> deleteArticle())
+                    .setNegativeButton(getString(R.string.article_cancel_button), (dialog, which) -> dialog.dismiss())
                     .setCancelable(false)  // Не позволяет закрыть диалог другим способом
                     .show();
         }
 
         private void deleteArticle() {
-            if (articleId != null) {
-                articleRepository.deleteArticle(articleId);
-
-                getActivity().onBackPressed();
+            if (articleId == null) {
+                return;
             }
+
+            // Определяем текущий язык и выбираем соответствующие строки
+            String deletingMessage = getString(R.string.deleting_article);
+            String errorMessage = getString(R.string.delete_article_error);
+            String confirmMessage = getString(R.string.confirm_delete_article); // Сообщение для подтверждения
+
+            // Создаем и показываем диалоговое окно для подтверждения удаления
+            new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.confirm_delete) // Заголовок диалога
+                    .setMessage(confirmMessage) // Сообщение
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                        // Если пользователь подтвердил, показываем ProgressDialog и начинаем удаление
+                        ProgressDialog progressDialog = new ProgressDialog(getContext());
+                        progressDialog.setMessage(deletingMessage);
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+
+                        articleRepository.deleteArticle(articleId);
+
+                        FirebaseFirestore.getInstance().collection("article").document(articleId)
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    // Скрываем ProgressDialog после успешного удаления
+                                    progressDialog.dismiss();
+                                    getActivity().onBackPressed();
+                                })
+                                .addOnFailureListener(e -> {
+                                    // Скрываем ProgressDialog в случае ошибки
+                                    progressDialog.dismiss();
+                                    // Отображаем сообщение об ошибке
+                                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                                });
+                    })
+                    .setNegativeButton(R.string.no, (dialog, which) -> {
+                        // Если пользователь отменил, просто закрываем диалог
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
         }
+
+
+
         private void editArticle() {
             articleRepository.getArticleById(articleId).thenAccept(article -> {
                 if (article != null) {
@@ -176,10 +231,10 @@
                     bundle.putSerializable("article", article);
                     NavHostFragment.findNavController(this).navigate(R.id.action_articleFragment_to_addArticleFragment, bundle);
                 } else {
-                    Log.e("ArticleFragment", "Статья с id " + articleId + " не найдена.");
+
                 }
             }).exceptionally(e -> {
-                Log.e("ArticleFragment", "Ошибка при загрузке статьи с id " + articleId, e);
+
                 return null;
             });
         }
@@ -209,7 +264,7 @@
             }
 
             future.exceptionally(ex -> {
-                Log.e("ArticleFragment", "Error toggling like", ex);
+
                 return null;
             });
         }
@@ -218,7 +273,7 @@
             getActivity().runOnUiThread(() -> {
                 updateLikeIcon();
                 updateLikeCount(delta); // Обновляем счетчик лайков
-                Log.d("ArticleFragment", "Like status updated: " + isLiked);
+
             });
         }
 
@@ -290,17 +345,19 @@
 
         private void loadComments() {
             commentRepository.getCommentsForArticle(articleId).thenAccept(comments -> {
-                // Dismiss the loading dialog once comments are loaded
+
+                comments.sort((comment1, comment2) -> Long.compare(comment2.getTimestamp().getTime(), comment1.getTimestamp().getTime()));
+
                 dismissLoadingDialog();
+
                 commentsAdapter.setComments(comments);
             }).exceptionally(ex -> {
-                // Dismiss the loading dialog in case of an error
+
                 dismissLoadingDialog();
-                Log.e("ArticleFragment", "Error loading comments", ex);
+
                 return null;
             });
         }
-
 
         private void setupSendCommentButton() {
             sendCommentButton.setOnClickListener(v -> {
@@ -324,7 +381,6 @@
                                 });
                             }
                         }).exceptionally(ex -> {
-                            Log.e("SetupSendComment", "Failed to fetch user data", ex);
                             return null;
                         });
                     }

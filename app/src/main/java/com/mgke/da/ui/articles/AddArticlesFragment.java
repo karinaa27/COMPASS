@@ -63,14 +63,6 @@ public class AddArticlesFragment extends Fragment {
                 }
             });
 
-    public static AddArticlesFragment newInstance(Article article) {
-        AddArticlesFragment fragment = new AddArticlesFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("article", article);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -177,7 +169,8 @@ public class AddArticlesFragment extends Fragment {
                             }
                         }
                     })
-                    .addOnFailureListener(e -> Log.e("AddArticlesFragment", "Ошибка при получении данных пользователя", e));
+                    .addOnFailureListener(e ->
+                            Log.e("AddArticlesFragment", "Ошибка при получении данных пользователя", e));
         }
     }
 
@@ -206,11 +199,9 @@ public class AddArticlesFragment extends Fragment {
                     EditText imageUrlEditText = getView().findViewById(R.id.article_image);
                     imageUrlEditText.setText(imageUrl);
                 }).addOnFailureListener(e -> {
-                    Log.e("Firebase", "Ошибка при получении URL изображения", e);
                     progressDialog.dismiss();
                 });
             }).addOnFailureListener(e -> {
-                Log.e("Firebase", "Ошибка при загрузке изображения", e);
                 progressDialog.dismiss();
             });
         }
@@ -228,11 +219,7 @@ public class AddArticlesFragment extends Fragment {
             article = new Article();
         }
 
-        // Всегда устанавливаем метку времени в текущее время
         article.timestamp = new Date();
-
-        // Логируем используемую дату
-        Log.d("AddArticlesFragment", "Article Timestamp: " + article.timestamp);
 
         article.nameRu = nameRu;
         article.nameEn = nameEn;
@@ -242,22 +229,28 @@ public class AddArticlesFragment extends Fragment {
         article.textEn = textEn;
         article.image = imageUrl;
 
+        // Инициализация и отображение ProgressDialog
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage(getString(R.string.saving_article));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
         articleRepository.addOrUpdateArticle(article)
                 .thenAccept(savedArticle -> {
-                    Toast.makeText(getActivity(), "Статья успешно сохранена", Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss(); // Скрытие ProgressDialog после успешного сохранения
+                    Toast.makeText(getActivity(), R.string.article_saved_successfully, Toast.LENGTH_SHORT).show();
                     closeFragment();
                 })
                 .exceptionally(e -> {
-                    Log.e("ArticleRepo", "Ошибка при сохранении статьи: " + e.toString());
-                    Toast.makeText(getActivity(), "Не удалось сохранить статью", Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss(); // Скрытие ProgressDialog в случае ошибки
+                    Toast.makeText(getActivity(), R.string.article_save_error, Toast.LENGTH_SHORT).show();
                     return null;
                 });
     }
 
-
     private boolean validateInputs(String nameRu, String nameEn, String descriptionRu, String descriptionEn, String textRu, String textEn) {
         if (nameRu.isEmpty() || nameEn.isEmpty() || descriptionRu.isEmpty() || descriptionEn.isEmpty() || textRu.isEmpty() || textEn.isEmpty()) {
-            Toast.makeText(getActivity(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.fill_all_fields, Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

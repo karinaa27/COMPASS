@@ -49,13 +49,28 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
         Category category = categories.get(position);
         String categoryName = category.getNameLan(Locale.getDefault().getLanguage());
         holder.categoryText.setText(categoryName);
-        holder.categoryIcon.setImageResource(category.categoryImage);
+
+        // Получаем имя изображения из строки
+        String categoryImageName = category.categoryImage;  // Строка с именем изображения
+
+        // Получаем идентификатор ресурса изображения
+        int imageResourceId = context.getResources().getIdentifier(categoryImageName, "drawable", context.getPackageName());
+
+        // Устанавливаем изображение, если ресурс найден
+        if (imageResourceId != 0) {
+            holder.categoryIcon.setImageResource(imageResourceId);
+        } else {
+            // Если изображения нет, устанавливаем изображение по умолчанию
+            holder.categoryIcon.setImageResource(R.drawable.ic_other);
+        }
+
+        // Устанавливаем цвет фона для иконки
         holder.categoryIcon.setBackgroundTintList(ColorStateList.valueOf(category.categoryColor));
 
         if (selectedCategory != null && selectedCategory.equals(categoryName)) {
             holder.itemView.setScaleX(1.1f);
             holder.itemView.setScaleY(1.1f);
-            selectedCategoryImage = category.categoryImage;
+            selectedCategoryImage = imageResourceId;  // Обновляем выбранное изображение
             selectedCategoryColor = category.categoryColor;
         } else {
             holder.itemView.setScaleX(1.0f);
@@ -76,6 +91,7 @@ public class SimpleCategoryAdapter extends RecyclerView.Adapter<SimpleCategoryAd
             return true;
         });
     }
+
 
     private void showDeleteConfirmationDialog(Category category, int position) {
         String categoryName = categoryRepository.getCategoryName(category);

@@ -1,5 +1,6 @@
 package com.mgke.da.ui.categories;
 
+import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
@@ -13,6 +14,8 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.Toast;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorListener;
@@ -26,9 +29,9 @@ public class AddCategoryFragment extends Fragment {
     private Button addCategoryButton;
     private ImageView backButton;
     private CategoryRepository categoryRepository;
+    private String selectedImageName;
     private GridLayout iconGrid;
     private int selectedColor;
-    private int selectedImageResId;
     private ColorPickerView colorPicker;
 
     public AddCategoryFragment() {
@@ -39,14 +42,12 @@ public class AddCategoryFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_category, container, false);
 
-        // Инициализация элементов
         iconGrid = view.findViewById(R.id.iconGrid);
         categoryNameEditText = view.findViewById(R.id.categoryNameEditText);
         incomeExpenseRadioGroup = view.findViewById(R.id.incomeExpenseRadioGroup);
         addCategoryButton = view.findViewById(R.id.addCategoryButton);
         backButton = view.findViewById(R.id.backButton);
         colorPicker = view.findViewById(R.id.colorPickerView);
-
         categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
 
         View selectedColorView = view.findViewById(R.id.selectedColorView);
@@ -62,13 +63,11 @@ public class AddCategoryFragment extends Fragment {
         setupIconSelection();
         updateIconBackgrounds();
 
-        // Возвращаемся на предыдущий экран при нажатии на backButton
         backButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-            navController.popBackStack(); // Возврат на предыдущий фрагмент
+            navController.popBackStack();
         });
 
-        // Проверка переданного аргумента для выбора категории (доход или расход)
         if (getArguments() != null) {
             String categoryType = getArguments().getString("category_type", "");
             if ("income".equals(categoryType)) {
@@ -78,7 +77,6 @@ public class AddCategoryFragment extends Fragment {
             }
         }
 
-        // Сохранение категории и возврат на предыдущий экран
         addCategoryButton.setOnClickListener(v -> {
             String categoryName = categoryNameEditText.getText().toString();
             boolean isIncome = incomeExpenseRadioGroup.getCheckedRadioButtonId() == R.id.radioIncome;
@@ -94,7 +92,7 @@ public class AddCategoryFragment extends Fragment {
             icon.setOnClickListener(v -> {
                 String tag = icon.getTag() != null ? icon.getTag().toString() : null;
                 if (tag != null) {
-                    selectedImageResId = getResources().getIdentifier(tag, "drawable", getActivity().getPackageName());
+                    selectedImageName = tag;
                     highlightSelectedIcon(icon);
                 }
             });
@@ -102,7 +100,21 @@ public class AddCategoryFragment extends Fragment {
     }
 
     private void addCategory(String categoryName, boolean isIncome) {
-        if (categoryName.isEmpty() || selectedImageResId == 0) {
+        // Проверка, что поле для имени категории не пустое
+        if (categoryName.isEmpty()) {
+            Toast.makeText(getContext(), R.string.enter_category_name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Проверка, что иконка была выбрана
+        if (selectedImageName == null) {
+            Toast.makeText(getContext(), R.string.select_category_icon, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Проверка, что тип категории выбран (должен быть "income" или "expense")
+        if (incomeExpenseRadioGroup.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(getContext(), R.string.select_category_type, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -115,16 +127,27 @@ public class AddCategoryFragment extends Fragment {
 
         String type = isIncome ? "income" : "expense";
 
-        categoryRepository.addCategory(categoryName, type, selectedImageResId, selectedColor, userId)
+        // Создаем и показываем прогресс-диалог
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage(getString(R.string.save)); // Строка для прогресса
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        categoryRepository.addCategory(categoryName, type, selectedImageName, selectedColor, userId)
                 .thenAccept(aVoid -> {
-                    // Навигация назад после успешного добавления
+                    // После успешного добавления категории, вернемся на предыдущий экран
+                    progressDialog.dismiss(); // Скрытие прогресс-диалога после успешного сохранения
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
                     navController.popBackStack();
                 })
-                .exceptionally(e -> {
+                .exceptionally(throwable -> {
+                    // Обработка ошибок
+                    progressDialog.dismiss(); // Скрытие прогресс-диалога в случае ошибки
+                    Toast.makeText(getContext(), R.string.error_adding_category, Toast.LENGTH_SHORT).show();
                     return null;
                 });
     }
+
 
     private void updateIconBackgrounds() {
         if (iconGrid == null) return;
@@ -142,16 +165,25 @@ public class AddCategoryFragment extends Fragment {
     }
 
     private void highlightSelectedIcon(ImageView selectedIcon) {
+        // Фон для обычных иконок (не выделенных)
         int backgroundResource = isDarkTheme() ? R.drawable.category_bg_night : R.drawable.category_bg;
 
+        // Проходим по всем иконкам и сбрасываем их масштаб и фон
         for (int i = 0; i < iconGrid.getChildCount(); i++) {
             ImageView icon = (ImageView) iconGrid.getChildAt(i);
+
+            // Сбрасываем масштаб для всех иконок
             icon.setScaleX(1f);
             icon.setScaleY(1f);
+
+            // Возвращаем обычный фон
             icon.setBackgroundResource(backgroundResource);
         }
+
+        // Применяем новый фон и увеличиваем выбранную иконку
         selectedIcon.setBackgroundResource(R.drawable.category_selected_icon);
-        selectedIcon.setScaleX(1.2f);
-        selectedIcon.setScaleY(1.2f);
+        selectedIcon.setScaleX(1.1f);  // Увеличиваем только выбранную иконку
+        selectedIcon.setScaleY(1.1f);  // Увеличиваем только выбранную иконку
     }
+
 }

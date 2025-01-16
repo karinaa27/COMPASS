@@ -41,13 +41,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:id="@+id/etUsername"
-            android:inputType="textCapSentences"
-            style="@style/EdittextLogin"
-            android:drawableLeft="@drawable/baseline_person_24"
-            android:layout_marginTop="20dp"
-            android:padding="8dp"
-            android:fontFamily="@font/montserrat"
-            android:hint="@string/hint_username" />
+                android:inputType="textCapSentences"
+                style="@style/EdittextLogin"
+                android:drawableLeft="@drawable/baseline_person_24"
+                android:layout_marginTop="20dp"
+                android:padding="8dp"
+                android:fontFamily="@font/montserrat"
+                android:hint="@string/hint_username"
+                android:maxLength="10" />
 
 
             <EditText

@@ -29,4 +29,9 @@ public class Goal implements Serializable {
         this.note = note;
         this.currency = currency;
     }
+
+    public boolean isOverdue() {
+        return !isCompleted && dateEnd.before(new Date());
+    }
+
 }

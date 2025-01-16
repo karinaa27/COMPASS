@@ -5,11 +5,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,12 +30,19 @@ public class CategoryFragment extends Fragment {
     private CategoryRepository categoryRepository;
     private FirebaseUser currentUser;
     private String userId;
+    private ImageView backButton;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d("CategoryFragment", "onCreateView called");
         binding = FragmentCategoryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        backButton = binding.backButton;
+
+        backButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+            navController.popBackStack();
+        });
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         userId = currentUser != null ? currentUser.getUid() : null;

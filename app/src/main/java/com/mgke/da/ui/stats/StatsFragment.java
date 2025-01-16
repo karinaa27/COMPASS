@@ -3,6 +3,7 @@ package com.mgke.da.ui.stats;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,10 @@ import android.widget.LinearLayout;
 import com.bumptech.glide.Glide;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LegendEntry;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.google.firebase.auth.FirebaseUser;
 import com.mgke.da.models.Goal;
 import android.widget.TextView;
@@ -53,6 +57,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -85,12 +90,11 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         NavHostFragment.findNavController(this).navigate(R.id.AddGoalFragment, bundle);
     }
 
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentStatsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
+        Log.d("StatsFragment", "onCreateView call");
         pieChart = binding.pieChart;
         horizontalBarChart = binding.horizontalBarChart;
         radarChart = binding.radarChart;
@@ -111,8 +115,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         setupPieChart();
         setupHorizontalBarChart();
 
-        setSelectedButtonGoal(processBtn, completedBtn);
-
         tabLayout = binding.tabLayout;
         statisticsContainer = binding.statisticsContainer;
         goalsContainer = binding.goalsContainer;
@@ -130,6 +132,8 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                     case 1:
                         statisticsContainer.setVisibility(View.GONE);
                         goalsContainer.setVisibility(View.VISIBLE);
+                        setSelectedButtonGoal(processBtn, completedBtn);
+                        loadGoals(false);
                         break;
                 }
             }
@@ -290,7 +294,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         return amount * rate;
     }
 
-
     private void loadStatsData() {
         if (selectedTab == 0) {
             loadDailyTransactions();
@@ -355,14 +358,12 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                         }
                     }
                     updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums);
+                    updateHorizontalBarChart(categorySums, targetCurrency);
                 })
                 .exceptionally(e -> {
                     return null;
                 });
     }
-
-
 
     private void loadDailyTransactions() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
@@ -418,7 +419,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                         }
                     }
                     updatePieChart(categorySums);
-                    updateHorizontalBarChart(categorySums);
+                    updateHorizontalBarChart(categorySums, targetCurrency);
                 })
                 .exceptionally(e -> {
                     return null;
@@ -492,12 +493,9 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                 });
     }
 
-
-
     private boolean isDarkTheme() {
         return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
-
 
     private void setupGoalsButtonListeners() {
 
@@ -518,13 +516,14 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         unselected.setBackgroundResource(R.drawable.transaction_add_default_selector);
         unselected.setTextColor(isDarkTheme() ? Color.WHITE : Color.BLACK);
     }
+
     private void loadGoals(boolean showCompleted) {
         String currentUserId = getCurrentUserId();
-
+        Log.d("StatsFragment", "Цели call");
         goalRepository.getUserGoals(currentUserId).thenAccept(goals -> {
             goalList.clear();
+
             for (Goal goal : goals) {
-                checkGoalCompletion(goal);
                 if (showCompleted && goal.isCompleted) {
                     goalList.add(goal);
                 } else if (!showCompleted && !goal.isCompleted) {
@@ -550,13 +549,6 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     private String getCurrentUserId() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         return currentUser != null ? currentUser.getUid() : null;
-    }
-
-    private void checkGoalCompletion(Goal goal) {
-        if (goal.progress >= goal.targetAmount) {
-            goal.isCompleted = true;
-            goalRepository.updateGoal(goal);
-        }
     }
 
     private void setupButtonListeners() {
@@ -661,8 +653,11 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
         pieChart.setEntryLabelColor(isDarkTheme ? Color.WHITE : Color.BLACK);
         pieChart.setEntryLabelTextSize(12f);
+        pieChart.setCenterText("%");
+        pieChart.setCenterTextSize(20f);
 
         Legend legend = pieChart.getLegend();
+
         legend.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
         legend.setTextSize(12f);
         legend.setForm(Legend.LegendForm.CIRCLE);
@@ -787,6 +782,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             emptyStateTextView.setVisibility(View.GONE);
         }
 
+        // Настройки диаграммы
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(Color.TRANSPARENT);
         pieChart.setTransparentCircleColor(Color.WHITE);
@@ -799,6 +795,13 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         pieChart.setCenterTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
 
+        // Настройки легенды
+        pieChart.getLegend().setWordWrapEnabled(true); // Включаем перенос слов в легенде
+        pieChart.getLegend().setOrientation(Legend.LegendOrientation.HORIZONTAL); // Горизонтальная ориентация
+
+        // Настройка отступов для диаграммы и легенды
+        pieChart.setExtraOffsets(5f, 5f, 5f, 5f); // Отступы для диаграммы и легенды
+
         PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
         dataSet.setValueTextSize(16f);
@@ -806,11 +809,13 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
 
         PieData pieData = new PieData(dataSet);
         pieChart.setData(pieData);
-        pieChart.invalidate();
-        pieChart.animateY(1000, Easing.EaseInOutQuad);
+
+        // Отрисовка диаграммы
+        pieChart.invalidate();  // Перерисовываем диаграмму с новыми настройками
+        pieChart.animateY(1500, Easing.EaseInOutQuad);
     }
 
-    private void updateHorizontalBarChart(Map<String, Float> categorySums) {
+    private void updateHorizontalBarChart(Map<String, Float> categorySums, String currency) {
         FragmentStatsBinding binding = FragmentStatsBinding.bind(getView());
         ImageView noDataImageView = binding.noDataImageView;
         TextView emptyStateTextView = binding.emptyStateTextView;
@@ -818,10 +823,15 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         List<String> labels = new ArrayList<>();
 
         int index = 0;
+        float maxCategoryValue = 0f;
+
         for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
             if (entry.getValue() > 0) {
                 entries.add(new BarEntry(index++, entry.getValue()));
                 labels.add(entry.getKey());
+                if (entry.getValue() > maxCategoryValue) {
+                    maxCategoryValue = entry.getValue();
+                }
             }
         }
 
@@ -837,44 +847,77 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             emptyStateTextView.setVisibility(View.GONE);
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "");
+        // Определяем цвет текста в зависимости от темы
+        int textColor = isDarkTheme() ? Color.WHITE : Color.BLACK;
+
+        BarDataSet dataSet = new BarDataSet(entries, "Категории");
         dataSet.setColors(getBarChartColors(entries));
-
-        boolean isDarkTheme = (getActivity().getResources().getConfiguration().uiMode &
-                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        dataSet.setValueTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
-        dataSet.setValueTextSize(12f);
+        dataSet.setValueTextColor(textColor);
+        dataSet.setValueTextSize(10f);
         dataSet.setDrawValues(true);
+        dataSet.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return String.format("%.1f %s", value, currency);
+            }
+        });
 
-        float barWidth = 0.25f;
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(barWidth);
+        barData.setBarWidth(0.2f);
         horizontalBarChart.setData(barData);
 
+        // Настройка оси X
         XAxis xAxis = horizontalBarChart.getXAxis();
         xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
         xAxis.setGranularity(1f);
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawAxisLine(false);
-        xAxis.setDrawGridLines(false);
-        xAxis.setTextColor(Color.TRANSPARENT);
-        xAxis.setLabelCount(0, true);
+        xAxis.setTextSize(12f);
+        xAxis.setTextColor(textColor); // Устанавливаем цвет текста для оси X
+        xAxis.setDrawAxisLine(true);
+        xAxis.setDrawGridLines(true);
+        xAxis.setGridColor(Color.LTGRAY);
+        xAxis.setLabelRotationAngle(-90);
+        xAxis.setDrawLabels(false);
 
+        // Настройка оси Y (слева)
         YAxis yAxisLeft = horizontalBarChart.getAxisLeft();
-        yAxisLeft.setEnabled(false);
-        yAxisLeft.setGranularity(0.2f);
-        yAxisLeft.setLabelCount(5, true);
-        yAxisLeft.setTextColor(isDarkTheme ? Color.WHITE : Color.BLACK);
-        yAxisLeft.setDrawGridLines(false);
+        yAxisLeft.setGranularity(1f);
+        yAxisLeft.setDrawGridLines(true);
+        yAxisLeft.setGridColor(Color.LTGRAY);
+        yAxisLeft.setTextColor(textColor); // Устанавливаем цвет текста для оси Y
+        yAxisLeft.setTextSize(12f);
+        yAxisLeft.setAxisMinimum(0f);
 
+        float maxValue = maxCategoryValue * 1.2f;
+
+        // Настройка оси Y (справа)
         YAxis yAxisRight = horizontalBarChart.getAxisRight();
-        yAxisRight.setEnabled(false);
-        xAxis.setAxisMinimum(0f);
-        horizontalBarChart.animateY(1000);
+        yAxisRight.setTextColor(textColor); // Устанавливаем цвет текста для правой оси Y
+        yAxisRight.setTextSize(12f); // Устанавливаем размер текста для правой оси Y
+        yAxisRight.setDrawGridLines(false); // Отключаем линии сетки для правой оси Y
+        yAxisRight.setAxisMinimum(0f); // Устанавливаем минимум для правой оси Y
+        yAxisRight.setAxisMaximum(maxValue); // Устанавливаем максимум для правой оси Y
+
+        yAxisLeft.setAxisMaximum(maxValue);
+
+        yAxisLeft.setDrawLabels(true);
+        yAxisLeft.setLabelCount(5, false);
+
+        horizontalBarChart.setScaleEnabled(false);
+        horizontalBarChart.setHighlightPerTapEnabled(false);
+        horizontalBarChart.setDragEnabled(false);
+        horizontalBarChart.setPinchZoom(false);
         horizontalBarChart.getLegend().setEnabled(false);
         horizontalBarChart.setDescription(null);
+        horizontalBarChart.setDrawValueAboveBar(true);
         horizontalBarChart.setDrawGridBackground(false);
-        horizontalBarChart.setDrawBarShadow(false);
+        horizontalBarChart.setDrawValueAboveBar(true);
+        horizontalBarChart.setExtraOffsets(0, 5, 20, 5);
+
+        // Анимация
+        horizontalBarChart.animateY(1500, Easing.EaseInOutQuad);
+
+        // Обновление графика
         horizontalBarChart.invalidate();
     }
 

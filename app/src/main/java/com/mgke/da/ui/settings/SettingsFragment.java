@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +45,6 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
@@ -55,28 +53,21 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.R;
-import com.mgke.da.activity.SignUpActivity;
 import com.mgke.da.databinding.FragmentSettingsBinding;
 import com.mgke.da.models.Account;
 import com.mgke.da.models.Category;
-import com.mgke.da.models.Comment;
 import com.mgke.da.models.Goal;
 import com.mgke.da.models.PersonalData;
 import com.mgke.da.models.Transaction;
 import com.mgke.da.repository.AccountRepository;
 import com.mgke.da.repository.CategoryRepository;
-import com.mgke.da.repository.CommentRepository;
 import com.mgke.da.repository.GoalRepository;
-import com.mgke.da.repository.LikeRepository;
 import com.mgke.da.repository.PersonalDataRepository;
 import com.mgke.da.repository.TransactionRepository;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
@@ -87,7 +78,6 @@ public class SettingsFragment extends Fragment {
     private FragmentSettingsBinding binding;
     private FirebaseAuth auth;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private static final int GALLERY_REQUEST_CODE = 1000;
     private final String[] currencies = {"BYN", "USD", "RUB", "UAH", "PLN", "EUR"};
     private FirebaseAuth.AuthStateListener authStateListener;
     private static final int RC_GOOGLE_SIGN_IN = 9001;
@@ -117,7 +107,6 @@ public class SettingsFragment extends Fragment {
         setupImagePickerLauncher();
         setupCurrencySpinner();
         setupPasswordSettingsClick();
-        setupNotificationSettingsClick();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id)) // Убедитесь, что у вас есть правильный ID клиента
@@ -186,7 +175,7 @@ public class SettingsFragment extends Fragment {
     private void showLoadingDialog() {
         loadingDialog = new ProgressDialog(getContext());
         loadingDialog.setMessage(getString(R.string.image_upload_progress));
-        loadingDialog.setCancelable(false); // Диалог нельзя закрыть кнопкой "Назад"
+        loadingDialog.setCancelable(false);
         loadingDialog.show();
     }
 
@@ -194,6 +183,13 @@ public class SettingsFragment extends Fragment {
         if (loadingDialog != null && loadingDialog.isShowing()) {
             loadingDialog.dismiss();
         }
+    }
+
+    private void showLoadingDialogDelete() {
+        loadingDialog = new ProgressDialog(getContext());
+        loadingDialog.setMessage(getString(R.string.delete_upload_progress));
+        loadingDialog.setCancelable(false);
+        loadingDialog.show();
     }
 
     private void saveImageUrlToFirestore(String imageUrl) {
@@ -507,104 +503,144 @@ public class SettingsFragment extends Fragment {
 
     private void setupExitButtonClick() {
         binding.ExitUser.setOnClickListener(v -> {
-            new AlertDialog.Builder(getContext())
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
                     .setTitle(R.string.logout_title)
                     .setMessage(R.string.logout_message)
-                    .setPositiveButton(R.string.yes, (dialog, which) -> {
-                        auth.signOut(); // Выход из аккаунта
-                        showToast(R.string.logged_out); // Сообщение об успешном выходе
-                        navigateToLoginActivity(); // Переход к LoginActivity
+                    .setPositiveButton(R.string.yes, (dialogInterface, which) -> {
+                        auth.signOut();
+                        showToast(R.string.logged_out);
+                        navigateToLoginActivity();
                     })
                     .setNegativeButton(R.string.no, null)
-                    .show();
+                    .create();
+            dialog.setOnShowListener(d -> {
+
+                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                positiveButton.setTextColor(ContextCompat.getColor(getContext(), R.color.lavander));
+                negativeButton.setTextColor(ContextCompat.getColor(getContext(), R.color.lavander));
+            });
+
+            dialog.show();
         });
     }
 
     private void setupDeleteAccountButtonClick() {
         binding.DeleteUser.setOnClickListener(v -> {
-            new AlertDialog.Builder(getContext())
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
                     .setTitle(R.string.delete_account_title)
                     .setMessage(R.string.delete_account_message)
-                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    .setPositiveButton(R.string.yes, (dialogInterface, which) -> {
                         FirebaseUser currentUser = auth.getCurrentUser();
                         if (currentUser != null) {
                             String userId = currentUser.getUid();
-                            TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
-                            CategoryRepository categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
-                            GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
-                            AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
 
-                            // Получаем все транзакции пользователя
-                            transactionRepository.getTransactionsForUserId(userId).thenAccept(transactions -> {
-                                // Удаляем каждую транзакцию с использованием Task
-                                List<Task<Void>> deleteTransactionTasks = new ArrayList<>();
-                                for (Transaction transaction : transactions) {
-                                    deleteTransactionTasks.add(transactionRepository.deleteTransaction(transaction.id));
-                                }
+                            showLoadingDialogDelete();
 
-                                // Ждем завершения всех операций удаления транзакций
-                                Tasks.whenAllSuccess(deleteTransactionTasks).addOnCompleteListener(task -> {
-                                    // Получаем все категории пользователя
-                                    categoryRepository.getAllCategories(userId).thenAccept(categories -> {
-                                        // Удаляем каждую категорию с использованием Task
-                                        List<Task<Void>> deleteCategoryTasks = new ArrayList<>();
-                                        for (Category category : categories) {
-                                            deleteCategoryTasks.add(categoryRepository.deleteCategory(category.id));
-                                        }
+                            // Получаем пароль пользователя из Firestore
+                            PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
+                            personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
+                                String userPassword = personalData.password; // Извлекаем пароль
 
-                                        // Ждем завершения всех операций удаления категорий
-                                        Tasks.whenAllSuccess(deleteCategoryTasks).addOnCompleteListener(taskDeleteCategories -> {
-                                            // Удаляем все цели пользователя
-                                            goalRepository.getUserGoals(userId).thenAccept(goals -> {
-                                                // Удаляем каждую цель
-                                                List<CompletableFuture<Void>> deleteGoalFutures = new ArrayList<>();
-                                                for (Goal goal : goals) {
-                                                    deleteGoalFutures.add(goalRepository.deleteGoal(goal.id));
-                                                }
+                                // Повторная авторизация пользователя
+                                AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), userPassword);
+                                currentUser.reauthenticate(credential).addOnCompleteListener(reAuthTask -> {
+                                    if (reAuthTask.isSuccessful()) {
+                                        TransactionRepository transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
+                                        CategoryRepository categoryRepository = new CategoryRepository(FirebaseFirestore.getInstance());
+                                        GoalRepository goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
+                                        AccountRepository accountRepository = new AccountRepository(FirebaseFirestore.getInstance());
 
-                                                // Ждем завершения всех операций удаления целей
-                                                CompletableFuture.allOf(deleteGoalFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
-                                                    // Получаем все счета пользователя
-                                                    accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
-                                                        // Удаляем каждый счет
-                                                        List<CompletableFuture<Void>> deleteAccountFutures = new ArrayList<>();
-                                                        for (Account account : accounts) {
-                                                            deleteAccountFutures.add(accountRepository.deleteAccount(account.id));
-                                                        }
+                                        transactionRepository.getTransactionsForUserId(userId).thenAccept(transactions -> {
+                                            List<Task<Void>> deleteTransactionTasks = new ArrayList<>();
+                                            for (Transaction transaction : transactions) {
+                                                deleteTransactionTasks.add(transactionRepository.deleteTransaction(transaction.id));
+                                            }
 
-                                                        // Ждем завершения всех операций удаления счетов
-                                                        CompletableFuture.allOf(deleteAccountFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
-                                                            // Теперь удаляем пользователя
-                                                            currentUser.delete().addOnCompleteListener(taskDelete -> {
-                                                                if (taskDelete.isSuccessful()) {
-                                                                    PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
-                                                                    personalDataRepository.deletePersonalData(userId);
-                                                                    showToast(R.string.account_deleted2);
-                                                                    navigateToLoginActivity();
-                                                                } else {
-                                                                    showToast(R.string.error_account_deletion);
-                                                                }
+                                            // Переименована переменная 'task' в 'deleteTransactionTask'
+                                            Tasks.whenAllSuccess(deleteTransactionTasks).addOnCompleteListener(deleteTransactionTask -> {
+                                                // Получаем все категории пользователя
+                                                categoryRepository.getAllCategories(userId).thenAccept(categories -> {
+                                                    // Удаляем каждую категорию с использованием Task
+                                                    List<Task<Void>> deleteCategoryTasks = new ArrayList<>();
+                                                    for (Category category : categories) {
+                                                        deleteCategoryTasks.add(categoryRepository.deleteCategory(category.id));
+                                                    }
+
+                                                    // Переименована переменная 'task' в 'deleteCategoryTask'
+                                                    Tasks.whenAllSuccess(deleteCategoryTasks).addOnCompleteListener(deleteCategoryTask -> {
+                                                        // Удаляем все цели пользователя
+                                                        goalRepository.getUserGoals(userId).thenAccept(goals -> {
+                                                            // Удаляем каждую цель
+                                                            List<CompletableFuture<Void>> deleteGoalFutures = new ArrayList<>();
+                                                            for (Goal goal : goals) {
+                                                                deleteGoalFutures.add(goalRepository.deleteGoal(goal.id));
+                                                            }
+
+                                                            // Переименована переменная 'task' в 'deleteGoalTask'
+                                                            CompletableFuture.allOf(deleteGoalFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
+                                                                // Получаем все счета пользователя
+                                                                accountRepository.getAccountsByUserId(userId).thenAccept(accounts -> {
+                                                                    // Удаляем каждый счет
+                                                                    List<CompletableFuture<Void>> deleteAccountFutures = new ArrayList<>();
+                                                                    for (Account account : accounts) {
+                                                                        deleteAccountFutures.add(accountRepository.deleteAccount(account.id));
+                                                                    }
+
+                                                                    // Переименована переменная 'task' в 'deleteAccountTask'
+                                                                    CompletableFuture.allOf(deleteAccountFutures.toArray(new CompletableFuture[0])).thenRun(() -> {
+                                                                        // Теперь удаляем пользователя
+                                                                        currentUser.delete().addOnCompleteListener(deleteTask -> {
+                                                                            // Закрываем диалог загрузки после завершения всех операций
+                                                                            loadingDialog.dismiss();
+
+                                                                            if (deleteTask.isSuccessful()) {
+                                                                                PersonalDataRepository personalDataRepository1 = new PersonalDataRepository(FirebaseFirestore.getInstance());
+                                                                                personalDataRepository1.deletePersonalData(userId);
+                                                                                showToast(R.string.account_deleted2);
+                                                                                navigateToLoginActivity();
+                                                                            } else {
+                                                                                showToast(R.string.error_account_deletion);
+                                                                            }
+                                                                        });
+                                                                    });
+                                                                });
                                                             });
                                                         });
                                                     });
                                                 });
                                             });
                                         });
-                                    });
+                                    } else {
+                                        loadingDialog.dismiss();  // Закрываем диалог загрузки, если что-то пошло не так
+                                    }
                                 });
                             });
                         }
                     })
                     .setNegativeButton(R.string.no, null)
-                    .show();
+                    .create(); // Создаем диалог
+
+            // Получаем доступ к кнопкам и изменяем их цвет
+            dialog.setOnShowListener(d -> {
+                // Получаем кнопки
+                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                // Устанавливаем цвет текста для кнопок
+                positiveButton.setTextColor(ContextCompat.getColor(getContext(), R.color.lavander));
+                negativeButton.setTextColor(ContextCompat.getColor(getContext(), R.color.lavander));
+            });
+
+            dialog.show(); // Показываем диалог
         });
     }
 
-
     private void navigateToLoginActivity() {
-        Intent intent = new Intent(getActivity(), SignUpActivity.class);
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivity(intent);
-        requireActivity().finish(); // Закрываем текущую активность
+        requireActivity().finish();
     }
 
     private void setupCategoriesSettingsClick() {
@@ -612,14 +648,6 @@ public class SettingsFragment extends Fragment {
         categoriesSettings.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
             navController.navigate(R.id.navigation_settings_category);
-        });
-    }
-
-    private void setupNotificationSettingsClick() {
-        RelativeLayout notificationSettings = binding.NotificationsSettings;
-        notificationSettings.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
-            navController.navigate(R.id.fragment_notification);
         });
     }
 
@@ -720,6 +748,7 @@ public class SettingsFragment extends Fragment {
             });
         }
     }
+
     private boolean isNightMode() {
         int nightModeFlags = getContext().getResources().getConfiguration().uiMode &
                 android.content.res.Configuration.UI_MODE_NIGHT_MASK;
@@ -836,13 +865,11 @@ public class SettingsFragment extends Fragment {
         dialog.show();
     }
 
-    // Метод для проверки сложности пароля
     private boolean isValidPassword(String password) {
         // Минимум 8 символов, одна строчная, одна заглавная буква, одна цифра и один специальный символ
         String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$";
         return password.matches(passwordPattern);
     }
-
 
     private void saveNewPasswordToFirestore(String userId, String newPassword) {
         PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());

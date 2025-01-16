@@ -1,5 +1,6 @@
 package com.mgke.da.ui.articles;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mgke.da.R;
+import com.mgke.da.activity.LoginActivity;
 import com.mgke.da.adapters.ArticleAdapter;
 import com.mgke.da.models.Article;
 import com.mgke.da.models.PersonalData;
@@ -44,8 +46,18 @@ public class ArticlesFragment extends Fragment {
 
         emptyStateImageView = root.findViewById(R.id.emptyStateImageView); // Инициализация ImageView
         firestore = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
+            // Пользователь не авторизован, запускаем LoginActivity
+            Intent intent = new Intent(requireContext(), LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            requireActivity().finish(); // Завершаем текущую Activity, чтобы пользователь не мог вернуться назад
+            return root;
+        }
+
+        String userId = auth.getCurrentUser().getUid();
         articleRepository = new ArticleRepository(firestore);
 
         loadArticles();
@@ -55,6 +67,8 @@ public class ArticlesFragment extends Fragment {
 
         return root;
     }
+
+
 
     private void loadArticles() {
         articleRepository.getAllArticles().thenAccept(articles -> {

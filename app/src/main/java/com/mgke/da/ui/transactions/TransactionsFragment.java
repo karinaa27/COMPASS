@@ -1,5 +1,7 @@
     package com.mgke.da.ui.transactions;
 
+    import android.animation.ObjectAnimator;
+    import android.animation.ValueAnimator;
     import android.content.Context;
     import android.content.SharedPreferences;
     import android.content.res.Configuration;
@@ -12,6 +14,7 @@
     import android.widget.ImageView;
     import android.widget.TextView;
     import androidx.annotation.NonNull;
+    import androidx.cardview.widget.CardView;
     import androidx.fragment.app.Fragment;
     import androidx.navigation.NavController;
     import androidx.navigation.Navigation;
@@ -22,7 +25,7 @@
     import com.google.firebase.firestore.ListenerRegistration;
     import com.google.firebase.firestore.Query;
     import com.google.firebase.firestore.QueryDocumentSnapshot;
-    import com.mgke.da.Constants;
+    import com.mgke.da.activity.Constants;
     import com.mgke.da.R;
     import com.mgke.da.adapters.TransactionAdapter;
     import com.mgke.da.databinding.FragmentTransactionsBinding;
@@ -52,6 +55,8 @@
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater,
                                  ViewGroup container, Bundle savedInstanceState) {
+            String currentLocaleCode = getResources().getConfiguration().locale.getLanguage();
+            Log.d("LoginActivity", "Начало TF: " + currentLocaleCode);
             binding = FragmentTransactionsBinding.inflate(inflater, container, false);
             View root = binding.getRoot();
 
@@ -82,14 +87,27 @@
             });
 
             loadUserData();
+            applyFloatingAnimationToCardView();
 
             return root;
         }
 
+        private void applyFloatingAnimationToCardView() {
+            CardView cardView = binding.cardView; // Здесь указывайте ссылку на ваш CardView
+            ObjectAnimator animator = ObjectAnimator.ofFloat(cardView, "translationY", -10f, 10f);
+            animator.setDuration(1000);  // Длительность анимации
+            animator.setRepeatCount(ValueAnimator.INFINITE);  // Бесконечное повторение
+            animator.setRepeatMode(ValueAnimator.REVERSE);  // Реверсировать анимацию после завершения
+            animator.start();
+        }
+
         private void setLocaleFromPreferences() {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
-            String selectedLanguage = sharedPreferences.getString("selectedLanguage", "en");
+            String selectedLanguage = sharedPreferences.getString("selectedLanguage", "ru");
+            Log.d("LocaleCheck", "Selected language: " + selectedLanguage);
             setLocale(selectedLanguage);
+            Log.d("LocaleCheck", "Selected language2: " + selectedLanguage);
+
         }
 
         private void setLocale(String languageCode) {

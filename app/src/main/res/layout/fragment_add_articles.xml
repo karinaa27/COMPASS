@@ -54,7 +54,7 @@
             android:layout_marginTop="16dp"
             android:maxLength="35"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Title (Russian)"
+            android:hint="@string/article_title_ru_hint"
             android:inputType="text" />
 
         <!-- Title in English -->
@@ -66,7 +66,7 @@
             android:layout_marginTop="16dp"
             android:maxLength="35"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Title (English)"
+            android:hint="@string/article_title_en_hint"
             android:inputType="text" />
 
         <!-- Description in Russian -->
@@ -78,7 +78,7 @@
             android:layout_marginTop="16dp"
             android:maxLength="80"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Description (Russian)"
+            android:hint="@string/article_description_ru_hint"
             android:inputType="text" />
 
         <!-- Description in English -->
@@ -90,7 +90,7 @@
             android:layout_marginTop="16dp"
             android:maxLength="80"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Description (English)"
+            android:hint="@string/article_description_en_hint"
             android:inputType="text" />
 
         <!-- Image URL -->
@@ -104,7 +104,7 @@
             android:focusable="false"
             android:clickable="true"
             android:fontFamily="@font/montserrat"
-            android:hint="Image URL"
+            android:hint="@string/article_image_hint"
             android:inputType="text" />
 
         <!-- Article Text in Russian -->
@@ -115,7 +115,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Text (Russian)"
+            android:hint="@string/article_text_ru_hint"
             android:inputType="textMultiLine"
             android:minLines="5" />
 
@@ -127,7 +127,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/montserrat"
-            android:hint="Article Text (English)"
+            android:hint="@string/article_text_en_hint"
             android:inputType="textMultiLine"
             android:minLines="5" />
 

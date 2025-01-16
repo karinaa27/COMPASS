@@ -18,26 +18,44 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/text_category"
+    <LinearLayout
+        android:id="@+id/topContainer2"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        style="@style/BackgroundTopStats"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/backButton"
+            app:tint="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            style="@style/Arrow" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/text_category"
+            style="@style/TextColor"
+            android:textColor="@color/white"
+            android:textStyle="bold"
             android:text="@string/Categories"
             android:textSize="24sp"
-            android:textColor="@color/white"
             android:fontFamily="@font/montserrat"
-            android:textStyle="bold"
-            style="@style/TextColor"
-            android:layout_marginTop="10dp"
             android:gravity="center" />
+
+    </LinearLayout>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
+            app:tabIndicatorColor="@color/white"
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-           app:tabTextColor="@color/white"
+            app:tabTextColor="@color/white"
             android:background="@android:color/transparent"
             android:layout_width="350dp"
             android:layout_height="wrap_content"

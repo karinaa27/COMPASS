@@ -70,39 +70,46 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         }
 
         public void bind(Comment comment, Context context) {
+            // Отображаем имя пользователя
             userName.setText(comment.getUserName());
             commentText.setText(comment.getText());
 
             // Форматируем дату в зависимости от языка
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm", getLocale(context));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MMM.yy", getLocale(context));
             String formattedDate = dateFormat.format(comment.getTimestamp());
             commentDate.setText(formattedDate);
 
             // Загружаем персональные данные пользователя по userId
             PersonalDataRepository repository = new PersonalDataRepository(FirebaseFirestore.getInstance());
             repository.getPersonalDataById(comment.getUserId()).thenAccept(personalData -> {
-                if (personalData != null && personalData.avatarUrl != null && !personalData.avatarUrl.isEmpty()) {
-                    // Если URL аватара доступен, загружаем его с округлением
-                    Glide.with(itemView.getContext())
-                            .load(personalData.avatarUrl)
-                            .circleCrop() // Применяем округление только для пользовательского изображения
-                            .placeholder(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
-                            .error(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
-                            .into(userImage);
-                } else {
-                    // Если аватар отсутствует, устанавливаем дефолтное изображение без округления
-                    Glide.with(itemView.getContext())
-                            .load(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
-                            .into(userImage);
+                if (personalData != null) {
+                    // Обновляем имя пользователя, если оно изменилось
+                    if (personalData.username != null && !personalData.username.isEmpty()) {
+                        userName.setText(personalData.username);  // Обновляем имя пользователя
+                    }
+                    // Загружаем аватар, если он существует
+                    if (personalData.avatarUrl != null && !personalData.avatarUrl.isEmpty()) {
+                        Glide.with(itemView.getContext())
+                                .load(personalData.avatarUrl)
+                                .circleCrop()
+                                .placeholder(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
+                                .error(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
+                                .into(userImage);
+                    } else {
+                        Glide.with(itemView.getContext())
+                                .load(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
+                                .into(userImage);
+                    }
                 }
             }).exceptionally(e -> {
-                // Логируем ошибку, но оставляем стандартное изображение
+                // Логируем ошибку, но оставляем стандартное изображение и имя
                 Glide.with(itemView.getContext())
                         .load(isDarkMode(context) ? R.drawable.user_icon_night : R.drawable.user_icon)
                         .into(userImage);
                 return null;
             });
         }
+
 
         private boolean isDarkMode(Context context) {
             int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;

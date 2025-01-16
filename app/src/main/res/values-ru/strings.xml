@@ -25,7 +25,6 @@
     <string name="add_category">Создание категории</string>
     <string name="select_icon">Выберите иконку</string>
     <string name="select_color">Выберите цвет</string>
-    <string name="enter_category_name">Введите Название Категории</string>
     <string name="Categories">Категории</string>
     <string name="button_add_category">Добавить</string>
     <string name="tab_expenses">Расходы</string>
@@ -240,7 +239,7 @@
         <item>Зимбабве</item>
     </string-array>
     <string name="select_country">Выберите страну</string>
-    <string name="cancel">Отмена</string>
+
     <string name="stats">Статистика</string>
     <string name="_3_months">3 Месяца</string>
 
@@ -275,10 +274,12 @@
     <string name="password">Пароль</string>
     <string name="forgot_password">Забыли пароль?</string>
     <string name="not_yet_registered_sign_up">Нет аккаунта? Создать</string>
-    <string name="login_error">Ошибка входа: %1$s</string>
+    <string name="login_error">Ошибка входа</string>
     <string name="google_signin_success">Вход через Google успешен</string>
     <string name="google_auth_error">Ошибка аутентификации: %1$s</string>
     <string name="email_exists_prompt">Пожалуйста, введите пароль для входа.</string>
+    <string name="email_not_found">Email не найден в системе</string>
+    <string name="no_accounts_message">Добавьте счёт</string>
 
     <string name="email_error">Введите корректный email</string>
     <string name="password_error">Пароль должен содержать от 8 до 20 символов и включать хотя бы одну заглавную букву, одну строчную букву, одну цифру и один специальный символ.</string>
@@ -288,10 +289,13 @@
     <string name="registration_error">Ошибка регистрации: %1$s</string>
     <string name="google_sign_in_error">GoogleSignInClient не инициализирован</string>
     <string name="sign_in_error">Ошибка входа: %1$s</string>
-    <string name="verification_email_sent">Письмо для подтверждения отправлено на %1$s</string>
+    <string name="verification_email_sent">Письмо для подтверждения отправлено</string>
     <string name="verification_email_failed">Не удалось отправить письмо для подтверждения.</string>
     <string name="google_sign_in_success">Вход через Google успешен</string>
     <string name="auth_error">Ошибка аутентификации: %1$s</string>
+
+
+    <string name="delete_upload_progress">Удаление аккаунта...</string>
 
     <string name="first_name_error">Имя должно начинаться с заглавной буквы</string>
     <string name="last_name_error">Фамилия должна начинаться с заглавной буквы</string>
@@ -309,14 +313,16 @@
     <string name="completion_date">Дата завершения</string>
     <string name="note">Заметка</string>
     <string name="add_goal">Добавить цель</string>
-
+    <string name="article_title_ru_hint">Заголовок статьи (на русском)</string>
+    <string name="article_title_en_hint">Заголовок статьи (на английском)</string>
+    <string name="article_description_ru_hint">Описание статьи (на русском)</string>
+    <string name="article_description_en_hint">Описание статьи (на английском)</string>
+    <string name="article_image_hint">Ссылка на изображение</string>
+    <string name="article_text_ru_hint">Текст статьи (на русском)</string>
+    <string name="article_text_en_hint">Текст статьи (на английском)</string>
     <string name="confirmation_title">Подтверждение удаления</string>
     <string name="confirmation_message">Вы действительно хотите удалить категорию?</string>
     <string name="confirm">Да</string>
-
-    <string name="delete_goal_title">Удалить цель</string>
-    <string name="delete_goal_message">Вы уверены, что хотите удалить эту цель?</string>
-    <string name="delete">Удалить</string>
 
     <string name="user_not_authenticated">Пользователь не аутентифицирован</string>
     <string name="fill_all_fields">Пожалуйста, заполните все поля</string>
@@ -370,19 +376,31 @@
     <string name="toast_enter_amount">Пожалуйста, введите сумму</string>
     <string name="toast_invalid_amount">Некорректно введенная сумма</string>
     <string name="toast_invalid_date">Некорректно введенная дата</string>
-    <string name="toast_save_success">Транзакция успешно сохранена: %1$s</string>
-    <string name="toast_save_failure">Не удалось сохранить транзакцию: %1$s</string>
+
+    <string name="toast_save_success">Транзакция успешно сохранена</string>
+    <string name="toast_save_failure">Не удалось сохранить транзакцию</string>
+
+    <string name="goal_target_amount">Цель: %.2f</string>
+    <string name="goal_progress">Прогресс: %.2f</string>
+
     <string name="toast_currency_conversion_error">Ошибка конвертации валюты</string>
     <string name="currency_label_select">Выберите валюту</string>
     <string name="goal_label_select">Выберите цель</string>
+
+    <string name="currency_error_select">Выберите валюту.</string>
+    <string name="currency_error_request">Ошибка при получении данных.</string>
+    <string name="currency_error_invalid_amount">Неверный формат суммы.</string>
+    <string name="currency_error_response">Ошибка при получении данных.</string>
+    <string name="currency_loading">Загрузка...</string>
+    <string name="currency_error_failure">Ошибка: %1$s</string>
 
     <string name="current_password">Текущий пароль</string>
     <string name="new_password">Новый пароль</string>
     <string name="repeat_new_password">Повторите новый пароль</string>
     <string name="create_an_account">Создать аккаунт</string>
-    <string name="enter_the_account_name">Введите имя аккаунта</string>
+    <string name="enter_the_account_name">Введите имя счёта</string>
     <string name="select_background">Выберите фон</string>
-    <string name="amount_account">Сумма аккаунта</string>
+    <string name="amount_account">Сумма счёта</string>
     <string name="add_new_goal">Добавить новую цель</string>
     <string name="personaldata">Персональные данные</string>
     <string name="first_name">Имя</string>
@@ -397,13 +415,17 @@
     <string name="article_name_hint">Название статьи</string>
     <string name="article_description_hint">Описание статьи</string>
     <string name="article_text_hint">Текст статьи</string>
-    <string name="article_image_hint">URL изображения</string>
+
     <string name="add_article">Добавить статью</string>
-    <string name="add_new_article">Добавьте новую статью</string>
+    <string name="add_new_article">Статья</string>
     <string name="fill_in_all_the_fields">Заполните все поля</string>
     <string name="delete_account">Удалить счёт</string>
     <string name="no_goal_selected">Сбросить выбор</string>
 
+    <string name="deleting_transaction">Удаление транзакции...</string>
+    <string name="delete_transaction_error">Ошибка при удалении транзакции</string>
+
+    <string name="saving_article">Сохранение статьи...</string>
     <string name="new_email">Новая почта</string>
 
         <string name="email_empty_error">Электронная почта не может быть пустой!</string>
@@ -413,14 +435,18 @@
     <string name="new_email_saved">Новая почта сохранена</string>
 
     <string name="error_updating_email">Ошибка при обновлении почты. Пожалуйста, попробуйте еще раз.</string>
-
+    <string name="saving_transaction">Сохранение транзакции...</string>
+    <string name="error_updating_transaction">Ошибка при обновлении транзакции</string>
+    <string name="toast_fill_all_fields">Заполните все обязательные поля</string>
     <string name="error_fetching_data">Ошибка при извлечении данных. Пожалуйста, попробуйте позже.</string>
     <string name="invalid_password">Пароль должен содержать минимум 8 символов, заглавные и строчные буквы, цифры и специальные символы</string>
     <string name="image_upload_progress">Загрузка изображения...</string>
     <string name="image_upload_success">Изображение успешно загружено!</string>
     <string name="image_upload_error">Ошибка загрузки изображения</string>
     <string name="image_saving_url_error">Ошибка при сохранении URL изображения</string>
-
+    <string name="enter_category_name">Введите имя категории</string>
+    <string name="select_category_icon">Выберите иконку категории</string>
+    <string name="select_category_type">Выберите тип категории</string>
     <string name="google_auth_message">Чтобы подтвердить, что это вы, авторизуйтесь с помощью учетной записи Google</string>
     <string name="google_sign_in_button">Войдите через Google</string>
     <string name="current_email_hint">Текущая почта</string>
@@ -432,7 +458,36 @@
     <string name="skip">Пропустить</string>
     <string name="back">Назад</string>
     <string name="next">Далее</string>
-
+    <string name="article_saved_successfully">Статья успешно сохранена</string>
+    <string name="article_save_error">Не удалось сохранить статью</string>
+    <string name="deleting_article">Удаление статьи...</string>
+    <string name="delete_article_error">Ошибка при удалении статьи</string>
+    <string name="delete_goal_title">Удалить цель?</string>
+    <string name="delete_goal_message">Вы уверены, что хотите удалить эту цель?</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+    <string name="deleting_goal">Удаление цели...</string>
+    <string name="delete_goal_error">Ошибка при удалении цели.</string>
+    <string name="confirm_deletion">Подтвердите удаление</string>
+    <string name="are_you_sure_delete_account">Вы уверены, что хотите удалить этот счет?</string>
+    <string name="confirm_delete_transaction">Вы уверены, что хотите удалить эту транзакцию?</string>
+    <string name="confirm_delete_article">Вы уверены, что хотите удалить эту статью?</string>
+    <string name="confirm_delete">Подтвердите удаление</string>
+    <string name="deleting_category">Удаление категории...</string>
+    <string name="delete_category_error">Ошибка при удалении категории</string>
+    <string name="save">Сохранение</string>
+    <string name="deleting_account">Удаление счета...</string>
+    <string name="error_updating_goal">Ошибка при обновлении цели</string>
+    <string name="article_delete_confirmation_title">Подтвердите удаление</string>
+    <string name="article_delete_confirmation_message">Вы уверены, что хотите удалить эту статью?</string>
+    <string name="article_delete_button">Удалить</string>
+    <string name="article_cancel_button">Отмена</string>
+    <string name="article_not_found">Статья с id %1$s не найдена.</string>
+    <string name="article_load_error">Ошибка при загрузке статьи</string>
+    <string name="like_status_updated">Статус лайка обновлен: %1$s</string>
+    <string name="error_toggling_like">Ошибка при переключении лайка</string>
+    <string name="error_fetching_user_data">Не удалось получить данные пользователя</string>
+    <string name="error_adding_goal">Ошибка при добавлении цели</string>
     <string name="onboarding_welcome_title">Добро пожаловать в ваш цифровой финансовый компас!</string>
     <string name="onboarding_welcome_description">Держите свои финансы под контролем и достигайте финансовых целей без лишних усилий.</string>
     <string name="onboarding_tracking_title">Учет денег стал проще</string>
@@ -441,9 +496,9 @@
     <string name="onboarding_goals_description">Создавайте и отслеживайте финансовые цели, чтобы всегда быть уверенными в своем будущем.</string>
     <string name="onboarding_analytics_title">Ваш финансовый помощник</string>
     <string name="onboarding_analytics_description">Просматривайте аналитику, следите за бюджетом и получайте полезные рекомендации для улучшения финансового здоровья.</string>
-
+    <string name="agg_tr_more">Для отображения статистики добавьте больше транзакций</string>
     <string name="finish">Завершить</string>
-
+    <string name="error_adding_category">Ошибка при добавлении категории</string>
     <string name="welcome_4_title">Вы готовы начать?</string>
     <string name="welcome_4_desc">Управляйте своими финансами, достигайте целей и живите свободно. Давайте начнем прямо сейчас!</string>
     <string name="get_started">Начать</string>

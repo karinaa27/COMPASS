@@ -40,6 +40,7 @@ public class PersonalDataFragment extends Fragment {
     private ImageView closeButton;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
+    private String currentUsername = "";
     private PersonalDataRepository personalDataRepository;
     private ListenerRegistration registration;
     private AutoCompleteTextView etCountry;
@@ -115,6 +116,7 @@ public class PersonalDataFragment extends Fragment {
 
     private void loadPersonalData() {
         FirebaseUser currentUser = auth.getCurrentUser();
+
         if (currentUser != null) {
             String userId = currentUser.getUid();
             registration = db.collection("personalData").document(userId)
@@ -122,6 +124,7 @@ public class PersonalDataFragment extends Fragment {
                         if (snapshot != null && snapshot.exists()) {
                             PersonalData data = snapshot.toObject(PersonalData.class);
                             if (data != null) {
+                                currentUsername = data.username;  // Сохраняем текущий никнейм
                                 etUsername.setText(data.username);
                                 etFirstName.setText(data.firstName);
                                 etLastName.setText(data.lastName);
@@ -160,16 +163,18 @@ public class PersonalDataFragment extends Fragment {
             String selectedBirthday = etBirthday.getText().toString().trim();
             String gender = radioGroupGender.getCheckedRadioButtonId() == R.id.radioMale ? "male" : "female";
 
-            // Сохраняем данные, если имя пользователя не изменилось
-            if (username.equals(currentUser.getDisplayName())) {
+            // Проверка, изменился ли ник
+            if (username.equals(currentUsername)) {
+                // Если ник не изменился, пропускаем проверку уникальности
                 updatePersonalData(userId, username, firstName, lastName, country, profession, notes, selectedBirthday, gender);
             } else {
-                // Проверка уникальности имени пользователя
+                // Если ник изменился, проверяем его уникальность
                 personalDataRepository.isUsernameUnique(username).thenAccept(isUnique -> {
                     if (!isUnique) {
                         etUsername.setError(getString(R.string.username_taken_error));
                         return; // Прерываем выполнение, если имя пользователя уже занято
                     }
+                    // Если ник уникален, обновляем данные
                     updatePersonalData(userId, username, firstName, lastName, country, profession, notes, selectedBirthday, gender);
                 }).exceptionally(e -> {
                     Toast.makeText(getContext(), getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();

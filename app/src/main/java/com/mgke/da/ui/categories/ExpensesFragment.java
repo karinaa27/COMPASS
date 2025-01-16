@@ -8,6 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -72,6 +75,12 @@ public class ExpensesFragment extends Fragment {
         });
     }
 
+    private void navigateToAddCategoryFragment() {
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main);
+        Bundle bundle = new Bundle();
+        bundle.putString("category_type", "expense"); // Указываем, что тип категории - расход
+        navController.navigate(R.id.action_expensesFragment_to_addCategoryFragment, bundle);
+    }
 
 }
 

@@ -32,13 +32,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        auth = FirebaseAuth.getInstance();
-
-        setLocale();
-
+        // Получаем SharedPreferences для проверки и сохранения языка и флага первого запуска
         SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        boolean nightMode = sharedPreferences.getBoolean("nightMode", false);
-        AppCompatDelegate.setDefaultNightMode(nightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Проверяем, первый ли это запуск
+        boolean isFirstRun = sharedPreferences.getBoolean("isFirstRun", true);
+
+        // Если это первый запуск, устанавливаем русский язык и сохраняем флаг
+        if (isFirstRun) {
+            setLocale("ru"); // Устанавливаем русский язык по умолчанию
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isFirstRun", false); // Ставим флаг, что это не первый запуск
+            editor.putString("selectedLanguage", "ru"); // Сохраняем выбранный язык
+            editor.apply();
+        } else {
+            // Если не первый запуск, просто получаем сохраненный язык
+            String languageCode = sharedPreferences.getString("selectedLanguage", "ru");
+            setLocale(languageCode); // Устанавливаем сохраненный язык
+        }
+
+        // Проверка ночного режима
+        boolean nightMode = sharedPreferences.getBoolean("nightMode", false); // Получаем сохраненный режим
+        AppCompatDelegate.setDefaultNightMode(nightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO); // Применяем режим
+
+        // Проверяем, авторизован ли пользователь
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            // Если пользователь не авторизован, перенаправляем в LoginActivity
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            startActivity(loginIntent);
+            finish(); // Завершаем текущую активность
+            return;
+        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -75,6 +100,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+    private void setLocale(String languageCode) {
+        Locale locale = new Locale(languageCode);
+        Locale.setDefault(locale);
+        Configuration config = getResources().getConfiguration();
+        config.setLocale(locale);
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+        Log.d("Locale", "Locale set to: " + Locale.getDefault().getDisplayLanguage());
+    }
+    
     private void animateSelectedItem(View item) {
         if (item.getTranslationY() == 0) {
             ObjectAnimator raiseAnimator = ObjectAnimator.ofFloat(item, "translationY", -20f);
@@ -89,16 +124,5 @@ public class MainActivity extends AppCompatActivity {
             });
             raiseAnimator.start();
         }
-    }
-
-    private void setLocale() {
-        SharedPreferences sharedPreferences = getSharedPreferences("MODE", Context.MODE_PRIVATE);
-        String languageCode = sharedPreferences.getString("selectedLanguage", "ru");
-        Locale locale = new Locale(languageCode);
-        Locale.setDefault(locale);
-        Configuration config = getResources().getConfiguration();
-        config.setLocale(locale);
-        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-        Log.d("Locale", "Locale set to: " + Locale.getDefault().getDisplayLanguage());
     }
 }

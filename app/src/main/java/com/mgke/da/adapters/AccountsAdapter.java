@@ -1,5 +1,7 @@
 package com.mgke.da.adapters;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -86,6 +88,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
                     if (totalAmount < 0) {
                         holder.accountAmountTextView.setTextColor(context.getResources().getColor(R.color.red)); // Красный цвет для отрицательной суммы
                         holder.accountAmountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Увеличиваем размер шрифта для акцента
+                        shakeAndEnlargeItem(holder.itemView);  // Применяем анимацию
                     } else {
                         holder.accountAmountTextView.setTextColor(context.getResources().getColor(R.color.green)); // Зеленый цвет для положительного баланса
                         holder.accountAmountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16); // Стандартный размер шрифта
@@ -118,6 +121,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
         holder.itemView.setOnClickListener(v -> onAccountClickListener.onAccountClick(account));
     }
 
+
     @Override
     public int getItemCount() {
         return accounts.size();
@@ -137,7 +141,24 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.Accoun
             expensesAmount = itemView.findViewById(R.id.expensesAmount);
         }
     }
+    private void shakeAndEnlargeItem(View itemView) {
+        // Анимация увеличения (масштабирование)
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(itemView, "scaleX", 1f, 1.05f, 1f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(itemView, "scaleY", 1f, 1.05f, 1f);
+        scaleX.setDuration(300);  // Время анимации (в миллисекундах)
+        scaleY.setDuration(300);
 
+        // Мягкая анимация покачивания (движение вверх-вниз с уменьшенной амплитудой)
+        ObjectAnimator shakeY = ObjectAnimator.ofFloat(itemView, "translationY", 0f, 10f, -10f, 10f, -10f, 0f);
+        shakeY.setDuration(600);  // Время одной итерации анимации
+        shakeY.setRepeatCount(ObjectAnimator.INFINITE); // Бесконечный повтор
+        shakeY.setRepeatMode(ObjectAnimator.RESTART); // Перезапуск анимации с начала
+
+        // Запускаем анимации одновременно
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.playTogether(scaleX, scaleY, shakeY);
+        animatorSet.start();
+    }
     private double convertCurrency(double amount, String fromCurrency, String toCurrency) {
         if (fromCurrency == null || toCurrency == null || fromCurrency.equals(toCurrency)) {
             return amount;

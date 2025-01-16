@@ -1,6 +1,5 @@
 package com.mgke.da.repository;
 
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -8,7 +7,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.mgke.da.models.Comment;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -84,8 +82,6 @@ public class CommentRepository {
         return future;
     }
 
-
-
     public CompletableFuture<Void> updateUserComments(String userId, String newUserName, String newUserImage) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
@@ -132,6 +128,15 @@ public class CommentRepository {
                 });
         return future;
     }
+    public CompletableFuture<Void> updateComment(String articleId, Comment comment) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        getCommentsCollection(articleId).document(comment.id)
+                .set(comment)
+                .addOnSuccessListener(aVoid -> future.complete(null))
+                .addOnFailureListener(future::completeExceptionally);
+        return future;
+    }
+
 
 
     public CompletableFuture<List<Comment>> getComments(String articleId) {

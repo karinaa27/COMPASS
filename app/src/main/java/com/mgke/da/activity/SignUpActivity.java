@@ -2,6 +2,7 @@
 
     import android.app.AlertDialog;
     import android.app.DatePickerDialog;
+    import android.app.ProgressDialog;
     import android.content.Context;
     import android.content.Intent;
     import android.content.SharedPreferences;
@@ -50,6 +51,7 @@
         private GoogleSignInClient googleSignInClient;
         private EditText signupEmail, signupPassword, signupPassword2, signupUsername, signupFirstName, signupLastName, signupBirthDate, signupCountry, signupCurrency;
         private Button signupButton;
+        private ProgressDialog progressDialog;
         private TextView loginRedirectText;
         private static final int RC_SIGN_IN = 9001;
         private PersonalDataRepository personalDataRepository;
@@ -199,6 +201,7 @@
             String currency = signupCurrency.getText().toString().trim();
             Date birthDate = getBirthDateFromInput();
 
+            // Проверка на пустые поля и корректность данных
             if (user.isEmpty() || !isValidEmail(user)) {
                 signupEmail.setError(getString(R.string.email_error));
                 return;
@@ -225,6 +228,8 @@
                     return;
                 }
 
+                showLoadingDialog();
+
                 auth.createUserWithEmailAndPassword(user, pass).addOnCompleteListener(innerTask -> {
                     if (innerTask.isSuccessful()) {
                         FirebaseUser firebaseUser = auth.getCurrentUser();
@@ -232,23 +237,36 @@
                             sendVerificationEmail();
                             String userId = firebaseUser.getUid();
                             boolean isAdmin = user.equals("markinakarina1122@gmail.com");
-                            PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency, isAdmin);
-                            personalDataRepository.addOrUpdatePersonalData(personalData);
 
-                            Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_sent), Toast.LENGTH_SHORT).show();
-
-                            startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
-                            finish();
+                            // Создаем объект PersonalData
+                            PersonalData personalData = new PersonalData(userId, username, pass, user, firstName, lastName, gender, birthDate, country, null, null, null, currency.isEmpty() ? "USD" : currency, isAdmin);
+                            personalDataRepository.addOrUpdatePersonalData(personalData)
+                                    .thenRun(() -> {
+                                        auth.signOut(); // Выйти из системы после регистрации
+                                        Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_sent), Toast.LENGTH_SHORT).show();
+                                        progressDialog.dismiss();
+                                        startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
+                                        finish();
+                                    })
+                                    .exceptionally(e -> {
+                                        Toast.makeText(SignUpActivity.this, getString(R.string.registration_error), Toast.LENGTH_SHORT).show();
+                                        progressDialog.dismiss();
+                                        return null;
+                                    });
                         }
                     } else {
                         Toast.makeText(SignUpActivity.this, getString(R.string.registration_error, innerTask.getException().getMessage()), Toast.LENGTH_SHORT).show();
+                        progressDialog.dismiss();
                     }
                 });
+
             }).exceptionally(e -> {
                 Toast.makeText(SignUpActivity.this, getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
                 return null;
             });
         }
+
         private Date getBirthDateFromInput() {
             String dateString = signupBirthDate.getText().toString().trim();
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -258,6 +276,16 @@
                 e.printStackTrace();
                 return null;
             }
+        }
+
+        private void showLoadingDialog() {
+            progressDialog = new ProgressDialog(SignUpActivity.this);
+            progressDialog.setMessage(getString(R.string.load));
+            progressDialog.setCancelable(false);
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+            findViewById(R.id.sign_up_button).setEnabled(false); // Отключаем кнопку регистрации
+            findViewById(R.id.googleSignInButton).setEnabled(false); // Отключаем кнопку Google Sign-In
         }
 
         private String getSelectedGender() {
@@ -307,7 +335,7 @@
                     firebaseAuthWithGoogle(account.getIdToken());
                 }
             } catch (ApiException e) {
-                Toast.makeText(this, getString(R.string.login_error, e.getMessage()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.login_error), Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -343,9 +371,9 @@
             if (user != null) {
                 user.sendEmailVerification().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_sent, user.getEmail()), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.verification_email_sent, Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(SignUpActivity.this, getString(R.string.verification_email_failed), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, R.string.verification_email_failed, Toast.LENGTH_SHORT).show();
                     }
                 });
             }

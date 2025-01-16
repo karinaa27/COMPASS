@@ -15,6 +15,7 @@
             app:destination="@id/addTransactionFragment" />
     </fragment>
 
+
     <fragment
         android:id="@+id/navigation_stats"
         android:name="com.mgke.da.ui.stats.StatsFragment"
@@ -45,7 +46,19 @@
         android:id="@+id/navigation_settings_category"
         android:name="com.mgke.da.ui.categories.CategoryFragment"
         android:label="Settings"
-        tools:layout="@layout/fragment_category" />
+        tools:layout="@layout/fragment_category"/>
+
+
+    <fragment
+        android:id="@+id/navigation_settings_category_expenses"
+        android:name="com.mgke.da.ui.categories.ExpensesFragment"
+        android:label="Expenses"
+        tools:layout="@layout/fragment_expenses">
+        <action
+            android:id="@+id/action_expensesFragment_to_addCategoryFragment"
+            app:destination="@id/addCategoryFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/addCategoryFragment"
         android:name="com.mgke.da.ui.categories.AddCategoryFragment"

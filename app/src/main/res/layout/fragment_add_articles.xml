@@ -40,7 +40,7 @@
                 style="@style/CalendarIcon"
                 android:layout_width="40dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginEnd="10dp"
+
                 android:layout_height="40dp"
                 android:src="@drawable/baseline_close_24" />
         </LinearLayout>
@@ -135,7 +135,7 @@
             android:id="@+id/add_article_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SAVE"
+            android:text="@string/save_article"
             style="@style/CustomButtonStyle"
             app:cornerRadius="16dp"
             app:backgroundTint="@null"

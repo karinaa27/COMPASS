@@ -1,0 +1,369 @@
+@startuml
+
+skinparam linetype ortho
+
+
+    class PersonalDataRepository {
+        - FirebaseFirestore firestore
+        + void addOrUpdatePersonalData(PersonalData data)
+    }
+
+    class SignUpActivity {
+        - FirebaseAuth auth
+        - GoogleSignInClient googleSignInClient
+        - Button signupButton
+        - ProgressDialog progressDialog
+        - TextView loginRedirectText
+        - static final int RC_SIGN_IN
+        - PersonalDataRepository personalDataRepository
+        - FirebaseFirestore firestore
+        - boolean isGoogleSignUp
+        + void onCreate(Bundle savedInstanceState)
+        - void initializeGoogleSignIn()
+        - void highlightEmptyFields()
+        - void setupTextChangedListeners()
+        - void registerUser()
+        - Date getBirthDateFromInput()
+        - void showLoadingDialog()
+        - void signInWithGoogle()
+        - boolean isValidEmail(String email)
+        - boolean isValidPassword(String password)
+        - String getSelectedGender()
+        - void sendVerificationEmail()
+    }
+class PersonalDataRepository {
+    - FirebaseFirestore firestore
+    + CompletableFuture<Boolean> isUsernameUnique(String username)
+    + CompletableFuture<Void> addOrUpdatePersonalData(PersonalData personalData)
+}
+
+SignUpActivity --> PersonalDataRepository
+SignUpActivity --> FirebaseFirestore
+SignUpActivity --> PersonalData
+
+class AccountsAdapter {
+    - List<Account> accounts
+    - Context context
+    - TransactionRepository transactionRepository
+    - AccountRepository accountRepository
+    --
+    + onCreateViewHolder(ViewGroup parent, int viewType): AccountViewHolder
+    + onBindViewHolder(AccountViewHolder holder, int position)
+    + getItemCount(): int
+    + convertCurrency(double amount, String fromCurrency, String toCurrency): double
+    }
+    class TransactionRepository {
+        + getTransactionsForAccount(String accountId): CompletableFuture<List<Transaction>>
+    }
+    class AccountRepository {
+        // Define repository methods if necessary
+    }
+    AccountsAdapter o-- TransactionRepository
+    AccountsAdapter o-- AccountRepository
+    AccountsAdapter o-- Account
+    AccountsAdapter o-- Transaction
+
+           class CommentsAdapter {
+               - List<Comment> comments
+               - static SimpleDateFormat dateFormat
+               - Context context
+               --
+               + CommentsAdapter(Context context)
+               + onBindViewHolder(CommentViewHolder holder, int position)
+               + getItemCount(): int
+               + setComments(List<Comment> comments)
+           }
+
+           class CommentViewHolder {
+               - ImageView userImage
+               - TextView userName
+               - TextView commentText
+               - TextView commentDate
+               --
+               + CommentViewHolder(View itemView)
+               + bind(Comment comment, Context context)
+               - isDarkMode(Context context): boolean
+               - getLocale(Context context): Locale
+           }
+
+
+           class PersonalDataRepository {
+               + getPersonalDataById(String userId): CompletableFuture<PersonalData>
+           }
+
+           CommentViewHolder o-- PersonalDataRepository
+
+           PersonalDataRepository o-- PersonalData
+           Comment o-- PersonalDataRepository
+
+
+
+
+class Account {
+    + String id
+    + double accountAmount
+    + String accountName
+    + String userId
+    + String currency
+    + String background
+    - boolean dataLoaded
+    --
+    + Account()
+    + isDataLoaded() : boolean
+    + setDataLoaded(boolean loaded)
+}
+
+
+
+class Comment {
+    + String id
+    + String userId
+    + String userName
+    + String userImage
+    + String text
+    + Date timestamp
+    --
+    + Comment()
+}
+
+class PersonalData {
+    + String id
+    + String username
+    + String password
+    + String email
+    + String firstName
+    + String lastName
+    + String gender
+    + Date birthDate
+    + String country
+    + String profession
+    + String notes
+    + String avatarUrl
+    + String currency
+    + boolean isAdmin
+    --
+    + PersonalData()
+    + getPassword() : String
+}
+
+class Transaction {
+    + String id
+    + String type
+    + String category
+    + String accountId
+    + Date date
+    + double amount
+    + String userId
+    + String currency
+    + String goalId
+    + int categoryImage
+    + int categoryColor
+    + String accountBackground
+    --
+    + Transaction()
+    + getAmount() : double
+    + getType() : String
+}
+
+class AccountRepository {
+    - FirebaseFirestore firebaseFirestore
+    - CollectionReference accountCollection
+    - Map<String, Account> accountCache
+    + AccountRepository(FirebaseFirestore db)
+    + CompletableFuture<Void> deleteAccount(String id)
+    + Task<Void> addAccount(Account account)
+    + Task<Void> updateAccount(Account account)
+    + CompletableFuture<List<Account>> getAllAccounts()
+}
+class ArticleRepository {
+    - FirebaseFirestore db
+    - CollectionReference articleCollection
+    + ArticleRepository(FirebaseFirestore db)
+    + CompletableFuture<Article> addOrUpdateArticle(Article article)
+    + CompletableFuture<Article> getArticleById(String articleId)
+    + void deleteArticle(String id)
+    + CompletableFuture<List<Article>> getAllArticles()
+}
+ class CommentRepository {
+        - FirebaseFirestore db
+        + CommentRepository(FirebaseFirestore db)
+        + CompletableFuture<Void> deleteComment(String articleId, String commentId)
+        + CompletableFuture<Void> addComment(String articleId, Comment comment)
+        + CompletableFuture<List<Comment>> getCommentsForArticle(String articleId)
+        + CompletableFuture<Void> removeAllComments(String userId)
+        + CompletableFuture<Void> updateUserComments(String userId, String newUserName, String newUserImage)
+        + CompletableFuture<List<Comment>> getCommentsForUser(String userId)
+        + CompletableFuture<Void> updateComment(String articleId, Comment comment)
+        + CompletableFuture<List<Comment>> getComments(String articleId)
+        - CollectionReference getCommentsCollection(String articleId)
+    }
+
+    CommentRepository -> FirebaseFirestore : Uses
+
+    class LikeRepository {
+      - db: FirebaseFirestore
+      - userId: String
+      + LikeRepository(db: FirebaseFirestore)
+      + getLikesCollection(articleId: String): CollectionReference
+      + isLiked(articleId: String): CompletableFuture<Boolean>
+      + getAllLikedArticles(): CompletableFuture<List<String>>
+      + addLike(articleId: String): CompletableFuture<Void>
+      + removeAllLikes(userId: String): CompletableFuture<Void>
+      + removeLike(articleId: String): CompletableFuture<Void>
+      + getLikeCount(articleId: String): CompletableFuture<Integer>
+    }
+    class PersonalDataRepository {
+      - personalDataCollection: CollectionReference
+      + PersonalDataRepository(db: FirebaseFirestore)
+      + getNewDocumentId(): String
+      + addOrUpdatePersonalData(personalData: PersonalData): CompletableFuture<Void>
+      + isUsernameUnique(username: String): CompletableFuture<Boolean>
+      + deletePersonalData(userId: String): CompletableFuture<Void>
+      + getPersonalDataById(id: String): CompletableFuture<PersonalData>
+    }
+    class TransactionRepository {
+      - transactionCollection: CollectionReference
+      - db: FirebaseFirestore
+      + TransactionRepository(db: FirebaseFirestore)
+      + addTransaction(transaction: Transaction): Task<String>
+      + deleteTransaction(id: String): Task<Void>
+      + updateTransaction(transaction: Transaction): Task<Void>
+      + getAllTransaction(): CompletableFuture<List<Transaction>>
+      + getTransactionsForGoalId(goalId: String): CompletableFuture<List<Transaction>>
+      + getTransactionsForUserId(userId: String): CompletableFuture<List<Transaction>>
+      + getTransactionsForAccount(accountId: String): CompletableFuture<List<Transaction>>
+    }
+
+    PersonalDataRepository --> "1" PersonalData
+    TransactionRepository --> "1" Transaction
+
+
+     class AccountsAdapter {
+        }
+        class AccountRepository {
+                + AccountRepository(FirebaseFirestore db)
+                + void getAccountsByUserId(String userId)
+                + void addAccount(Account account)
+                + void updateAccount(Account account)
+                + void deleteAccount(String accountId)
+        }
+
+class AddArticlesFragment {
+        - static int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE
+        - Uri imageUri
+        - ArticleRepository articleRepository
+        - String imageUrl
+        - ProgressDialog progressDialog
+        - Article currentArticle
+        - Button addButton
+        - ImageView closeButton
+        - FirebaseFirestore db
+        - FirebaseAuth auth
+        - ActivityResultLauncher<Intent> pickImageLauncher
+        --
+        + void onCreate(Bundle savedInstanceState)
+        - void checkIfUserIsAdmin()
+        - void openGallery()
+        - void uploadImageToFirebase()
+        - void closeFragment()
+    }
+     AddArticlesFragment o-- ArticleRepository
+        AddArticlesFragment o-- FirebaseFirestore
+        AddArticlesFragment o-- FirebaseAuth
+
+class ArticleFragment {
+        - String articleId
+        - ArticleRepository articleRepository
+        - LikeRepository likeRepository
+        - CommentRepository commentRepository
+        - ProgressDialog progressDialog
+        - ImageView articleImage
+        - TextView articleTitle
+        - TextView articleDate
+        - TextView articleContent
+        - TextView likeCount
+        - ImageButton likeButton
+        - RecyclerView commentsRecyclerView
+        - CommentsAdapter commentsAdapter
+        - EditText commentEditText
+        - ImageButton sendCommentButton
+        - boolean isLiked
+        - ImageView backButton
+
+        + void onCreate(Bundle savedInstanceState)
+        - void loadArticleDetails()
+        - String formatDate(long timestamp)
+        - void checkIfUserIsAdmin(ImageView deleteButton, ImageView editButton)
+        - void showDeleteConfirmationDialog()
+        - void deleteArticle()
+        - void editArticle()
+        - void setupLikeButton()
+        - void toggleLike()
+        - void updateUIAfterLikeToggle(int delta)
+        - void updateLikeStatus()
+        - void updateLikeCount(int delta)
+        - void updateLikeIcon()
+        - void setupCommentsRecyclerView()
+    }
+
+        ArticleFragment "1" --> "1" ArticleRepository
+        ArticleFragment "1" --> "1" LikeRepository
+        ArticleFragment "1" --> "1" CommentRepository
+        ArticleFragment "1" --> "1" CommentsAdapter
+
+        FirebaseFirestore <.. ArticleRepository
+        FirebaseFirestore <.. LikeRepository
+        FirebaseFirestore <.. CommentRepository
+        FirebaseAuth <.. ArticleFragment
+
+
+class AddCategoryFragment {
+        - EditText categoryNameEditText
+        - RadioGroup incomeExpenseRadioGroup
+        - Button addCategoryButton
+        - ImageView backButton
+        - CategoryRepository categoryRepository
+        - String selectedImageName
+        - GridLayout iconGrid
+        - int selectedColor
+        - ColorPickerView colorPicker
+
+        + AddCategoryFragment()
+        - void setupIconSelection()
+        - void addCategory(String categoryName, boolean isIncome)
+        - void updateIconBackgrounds()
+        - boolean isDarkTheme()
+        - void highlightSelectedIcon(ImageView selectedIcon)
+    }
+     AddCategoryFragment -> FirebaseFirestore : uses
+        AddCategoryFragment -> FirebaseAuth : uses
+
+class PersonalDataFragment {
+        - EditText etFirstName
+        - EditText etLastName
+        - EditText etProfession
+        - EditText etNote
+        - EditText etBirthday
+        - RadioGroup radioGroupGender
+        - Button buttonSave
+        - ImageView closeButton
+        - FirebaseFirestore db
+        - FirebaseAuth auth
+        - String currentUsername
+        - PersonalDataRepository personalDataRepository
+        - ListenerRegistration registration
+        - AutoCompleteTextView etCountry
+        - EditText etUsername
+        --
+        - void showCountrySelectionDialog()
+        - void showDatePicker()
+        - void loadPersonalData()
+        - void savePersonalData()
+        - void navigateToSettings()
+        + void onDestroy()
+    }
+    PersonalDataFragment --> PersonalData
+    PersonalDataFragment --> PersonalDataRepository
+
+}
+@enduml

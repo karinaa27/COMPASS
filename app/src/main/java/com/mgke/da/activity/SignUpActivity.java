@@ -249,22 +249,26 @@
                                         finish();
                                     })
                                     .exceptionally(e -> {
+                                        Log.e("SignUpActivity", "Error saving personal data", e);
                                         Toast.makeText(SignUpActivity.this, getString(R.string.registration_error), Toast.LENGTH_SHORT).show();
                                         progressDialog.dismiss();
                                         return null;
                                     });
                         }
                     } else {
+                        Log.e("SignUpActivity", "Registration failed", innerTask.getException());
                         Toast.makeText(SignUpActivity.this, getString(R.string.registration_error, innerTask.getException().getMessage()), Toast.LENGTH_SHORT).show();
                         progressDialog.dismiss();
                     }
                 });
 
             }).exceptionally(e -> {
-                Toast.makeText(SignUpActivity.this, getString(R.string.error_checking_username), Toast.LENGTH_SHORT).show();
+                Log.e("SignUpActivity", "Error checking username uniqueness", e);
+                Toast.makeText(SignUpActivity.this, getString(R.string.error_checking_username) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
                 progressDialog.dismiss();
                 return null;
             });
+
         }
 
         private Date getBirthDateFromInput() {
@@ -285,7 +289,7 @@
             progressDialog.setIndeterminate(true);
             progressDialog.show();
             findViewById(R.id.sign_up_button).setEnabled(false); // Отключаем кнопку регистрации
-            findViewById(R.id.googleSignInButton).setEnabled(false); // Отключаем кнопку Google Sign-In
+
         }
 
         private String getSelectedGender() {

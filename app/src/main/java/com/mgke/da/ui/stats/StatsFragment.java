@@ -1,5 +1,6 @@
 package com.mgke.da.ui.stats;
 
+import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -106,7 +107,7 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
         goalRepository = new GoalRepository(FirebaseFirestore.getInstance());
         transactionRepository = new TransactionRepository(FirebaseFirestore.getInstance());
 
-        goalAdapter = new GoalAdapter(goalList, requireContext(), goalRepository,transactionRepository, currentCurrency, this);
+        goalAdapter = new GoalAdapter(goalList, requireContext(), goalRepository, transactionRepository, currentCurrency, this, this);
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewGoals.setAdapter(goalAdapter);
 
@@ -520,9 +521,17 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
     private void loadGoals(boolean showCompleted) {
         String currentUserId = getCurrentUserId();
         Log.d("StatsFragment", "Цели call");
+
+        // Показываем ProgressDialog
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Загрузка целей...");
+        progressDialog.setCancelable(false); // Чтобы пользователь не мог отменить
+        progressDialog.show();
+
         goalRepository.getUserGoals(currentUserId).thenAccept(goals -> {
             goalList.clear();
 
+            // Конвертация и фильтрация целей
             for (Goal goal : goals) {
                 if (showCompleted && goal.isCompleted) {
                     goalList.add(goal);
@@ -531,8 +540,11 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
                 }
             }
 
+            // После завершения конвертации данных, скрываем прогресс и обновляем список
+            progressDialog.dismiss();
             goalAdapter.notifyDataSetChanged();
 
+            // Если список пуст, показываем изображение
             if (goalList.isEmpty()) {
                 binding.emptyStateImageView.setVisibility(View.VISIBLE);
                 int gifResource = isDarkTheme() ? R.drawable.document_search_night : R.drawable.document_search;
@@ -543,8 +555,14 @@ public class StatsFragment extends Fragment implements GoalAdapter.OnGoalClickLi
             } else {
                 binding.emptyStateImageView.setVisibility(View.GONE);
             }
+        }).exceptionally(throwable -> {
+            // В случае ошибки, скрываем прогресс и показываем ошибку
+            progressDialog.dismiss();
+            Log.e("StatsFragment", "Ошибка при загрузке целей: " + throwable.getMessage());
+            return null;
         });
     }
+
 
     private String getCurrentUserId() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();

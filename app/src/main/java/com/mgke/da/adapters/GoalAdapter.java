@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mgke.da.R;
 import com.mgke.da.models.Goal;
@@ -35,18 +36,22 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
     private TransactionRepository transactionRepository;
     private OnGoalClickListener listener;
     private String currentCurrency;
+    private Fragment fragment;
 
     public interface OnGoalClickListener {
         void onGoalClick(Goal goal);
     }
 
-    public GoalAdapter(List<Goal> goalsList, Context context, GoalRepository goalRepository, TransactionRepository transactionRepository, String currentCurrency, OnGoalClickListener listener) {
+    public GoalAdapter(List<Goal> goalsList, Context context, GoalRepository goalRepository,
+                       TransactionRepository transactionRepository, String currentCurrency,
+                       OnGoalClickListener listener, Fragment fragment) {
         this.goalsList = goalsList;
         this.context = context;
         this.goalRepository = goalRepository;
         this.transactionRepository = transactionRepository;
         this.currentCurrency = currentCurrency;
         this.listener = listener;
+        this.fragment = fragment;
     }
 
     @NonNull
@@ -125,43 +130,38 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
             }
         });
 
+        // В методе удаления
         holder.deleteGoal.setOnClickListener(v -> {
-            // Создаем диалог для подтверждения удаления
             new AlertDialog.Builder(context)
-                    .setTitle(R.string.delete_goal_title) // Заголовок диалога
-                    .setMessage(R.string.delete_goal_message) // Сообщение для подтверждения
+                    .setTitle(R.string.delete_goal_title)
+                    .setMessage(R.string.delete_goal_message)
                     .setPositiveButton(R.string.delete, (dialog, which) -> {
-                        // Показываем ProgressDialog
                         ProgressDialog progressDialog = new ProgressDialog(context);
-                        progressDialog.setMessage(context.getString(R.string.deleting_goal)); // Используем строковый ресурс для прогресса
-                        progressDialog.setCancelable(false); // Невозможно отменить прогресс
+                        progressDialog.setMessage(context.getString(R.string.deleting_goal));
+                        progressDialog.setCancelable(false);
                         progressDialog.show();
 
-                        // Удаляем цель
                         int currentPosition = holder.getAdapterPosition();
                         if (currentPosition != RecyclerView.NO_POSITION) {
+                            // Сначала удаляем цель из списка
+                            goalsList.remove(currentPosition);
+                            notifyItemRemoved(currentPosition);
+
+                            // Затем удаляем её из базы данных
                             goalRepository.deleteGoal(goal.id)
                                     .thenRun(() -> {
-                                        // Скрываем ProgressDialog после успешного удаления
-                                        progressDialog.dismiss();
-                                        goalsList.remove(currentPosition);
-                                        notifyItemRemoved(currentPosition);
+                                        progressDialog.dismiss(); // Скрываем прогресс
                                     })
                                     .exceptionally(e -> {
-                                        // Скрываем ProgressDialog в случае ошибки
                                         progressDialog.dismiss();
-                                        // Показываем ошибку
                                         Toast.makeText(context, context.getString(R.string.delete_goal_error), Toast.LENGTH_SHORT).show();
-                                        return null; // Возвращаем null, так как CompletableFuture требует возвращаемого значения
+                                        return null;
                                     });
                         }
                     })
                     .setNegativeButton(R.string.cancel, null)
                     .show();
         });
-
-
-
     }
 
     @Override
@@ -173,7 +173,6 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
         this.goalsList = goalsList;
         notifyDataSetChanged();  // Уведомляет адаптер о том, что данные изменились, и нужно обновить UI
     }
-
 
     private double convertCurrency(double amount, String fromCurrency, String toCurrency) {
         if (fromCurrency == null || toCurrency == null || fromCurrency.equals(toCurrency)) {

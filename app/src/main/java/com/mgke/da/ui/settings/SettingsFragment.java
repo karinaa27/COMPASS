@@ -85,6 +85,7 @@ public class SettingsFragment extends Fragment {
     private TextView googleAuthMessage;
     private EditText newEmailInput, currentEmail;
     private Button saveButton;
+    private boolean isUploading = false;
     private GoogleSignInClient googleSignInClient;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 2;
 
@@ -128,14 +129,15 @@ public class SettingsFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
+                            isUploading = true; // Блокируем повторные вызовы
                             Glide.with(this)
                                     .load(imageUri)
-                                    .circleCrop() // Применяет округлую обрезку изображения
-                                    .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Плейсхолдер на случай отсутствия аватара
-                                    .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Картинка на случай ошибки
+                                    .circleCrop()
+                                    .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon)
+                                    .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon)
                                     .into(binding.photoUser);
-                            showLoadingDialog(); // Показываем диалог загрузки
-                            uploadImageToFirebase(imageUri); // Начинаем загрузку
+                            showLoadingDialog();
+                            uploadImageToFirebase(imageUri);
                         } else {
                             showToast(R.string.error_image_retrieval);
                         }
@@ -161,14 +163,17 @@ public class SettingsFragment extends Fragment {
                             saveImageUrlToFirestore(imageUrl);
                             hideLoadingDialog(); // Закрываем диалог после успешной загрузки
                             showToast(R.string.avatar_updated);
+                            isUploading = false; // Снимаем блокировку
                         })
                         .addOnFailureListener(e -> {
                             showToast(getString(R.string.error_url_retrieval) + ": " + e.getMessage());
                             hideLoadingDialog(); // Закрываем диалог при ошибке
+                            isUploading = false; // Снимаем блокировку
                         }))
                 .addOnFailureListener(e -> {
                     showToast(getString(R.string.error_image_upload) + ": " + e.getMessage());
                     hideLoadingDialog(); // Закрываем диалог при ошибке
+                    isUploading = false; // Снимаем блокировку
                 });
     }
 
@@ -205,7 +210,7 @@ public class SettingsFragment extends Fragment {
                 personalData.avatarUrl = imageUrl;
                 personalDataRepository.addOrUpdatePersonalData(personalData).whenComplete((aVoid, updateThrowable) -> {
                     if (updateThrowable == null) {
-                        showToast(R.string.avatar_updated);
+
                     }
                 });
             }
@@ -218,21 +223,21 @@ public class SettingsFragment extends Fragment {
             navController.navigate(R.id.PersonalDataFragment);
         });
     }
+
     private void setupAvatarClick() {
         binding.photoUser.setOnClickListener(v -> {
+            if (isUploading) {
+                return;
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Для Android 10 (API 29) и выше мы можем работать с галереей без дополнительных разрешений
                 openGallery();
             } else {
-                // Для устройств с более низкими версиями проверяем разрешения
                 if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-                    // Если разрешение не предоставлено, запрашиваем его
                     ActivityCompat.requestPermissions(getActivity(),
                             new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                             REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
                 } else {
-                    // Если разрешение уже есть, сразу открываем галерею
                     openGallery();
                 }
             }

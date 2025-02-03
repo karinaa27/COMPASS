@@ -119,7 +119,7 @@ public class AddArticlesFragment extends Fragment {
             textEditTextEn.setText(currentArticle.textEn);
             imageUrl = currentArticle.image;
             imageUrlEditText.setText(imageUrl);
-            addButton.setText("SAVE");
+            addButton.setText(getText(R.string.save_article));
         }
 
         imageUrlEditText.setOnClickListener(v -> {

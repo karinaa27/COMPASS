@@ -82,7 +82,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                         binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     }
                 }).exceptionally(e -> {
-                    binding.accountLbl.setText("Ошибка загрузки аккаунта"); // Обработка ошибок
+                    binding.accountLbl.setText("Ошибка загрузки счёта"); // Обработка ошибок
                     binding.accountLbl.setBackgroundResource(R.drawable.account_fon1);
                     return null;
                 });

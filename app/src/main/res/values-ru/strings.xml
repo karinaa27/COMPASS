@@ -5,7 +5,7 @@
     <string name="title_dashboard">Панель управления</string>
     <string name="title_notifications">Уведомления</string>
     <string name="hello_blank_fragment">Привет, пустой фрагмент</string>
-    <string name="balance">Баланс</string>
+    <string name="balance">Итог</string>
     <string name="wed_01_nov">Ср 01, Ноя</string>
     <string name="pkr_88_500_00">PKR 88,500.00</string>
     <string name="income">Доходы</string>
@@ -39,7 +39,7 @@
     <string name="income1">Доход</string>
     <string name="expense1">Расход</string>
     <string name="select">Выбрать</string>
-
+    <string name="save_article">Сохранить</string>
     <string name="DeleteUser">Удалить аккаунт</string>
     <string name="exit">Выйти</string>
 
@@ -397,11 +397,11 @@
     <string name="current_password">Текущий пароль</string>
     <string name="new_password">Новый пароль</string>
     <string name="repeat_new_password">Повторите новый пароль</string>
-    <string name="create_an_account">Создать аккаунт</string>
+    <string name="create_an_account">Счёт</string>
     <string name="enter_the_account_name">Введите имя счёта</string>
     <string name="select_background">Выберите фон</string>
     <string name="amount_account">Сумма счёта</string>
-    <string name="add_new_goal">Добавить новую цель</string>
+    <string name="add_new_goal">Цель</string>
     <string name="personaldata">Персональные данные</string>
     <string name="first_name">Имя</string>
     <string name="last_name">Фамилия</string>

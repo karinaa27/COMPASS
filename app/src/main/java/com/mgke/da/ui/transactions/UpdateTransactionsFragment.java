@@ -329,6 +329,7 @@ public class UpdateTransactionsFragment extends Fragment {
         }
 
         transaction.currency = currency;
+        transaction.type = currentTransactionType;
         transaction.amount = currentTransactionType.equals(EXPENSE) ? -Math.abs(amount) : Math.abs(amount);
         transaction.date = date;
         transaction.category = category;

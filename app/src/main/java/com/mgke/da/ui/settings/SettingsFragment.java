@@ -731,21 +731,36 @@ public class SettingsFragment extends Fragment {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
+            String authEmail = currentUser.getEmail(); // Берем текущую почту из FirebaseAuth
+
             PersonalDataRepository personalDataRepository = new PersonalDataRepository(FirebaseFirestore.getInstance());
             personalDataRepository.getPersonalDataById(userId).thenAccept(personalData -> {
                 if (personalData != null) {
+                    // Если email в Firestore пустой или отличается от email в Auth, обновляем его
+                    if (personalData.email == null || !personalData.email.equals(authEmail)) {
+                        personalData.email = authEmail;
+                        personalDataRepository.updateUserEmail(userId, authEmail); // Обновляем email в Firestore
+                    }
+
+                    // Устанавливаем email
                     binding.textUserEmail.setText(personalData.email);
+
+                    // Устанавливаем имя пользователя, если оно есть
                     if (personalData.username != null && !personalData.username.isEmpty()) {
                         binding.textUser.setText(personalData.username);
                     }
+
+                    // Загружаем аватар, если он есть
                     if (personalData.avatarUrl != null) {
                         Glide.with(this)
                                 .load(personalData.avatarUrl)
-                                .circleCrop() // Применяет округлую обрезку изображения
-                                .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Плейсхолдер на случай отсутствия аватара
-                                .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon) // Картинка на случай ошибки
+                                .circleCrop()
+                                .placeholder(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon)
+                                .error(isNightMode() ? R.drawable.user_icon_night : R.drawable.user_icon)
                                 .into(binding.photoUser);
                     }
+
+                    // Загружаем валюту пользователя
                     loadUserCurrency(personalData);
                 }
             }).exceptionally(e -> {

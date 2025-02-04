@@ -3,10 +3,7 @@
 skinparam linetype ortho
 
 
-    class PersonalDataRepository {
-        - FirebaseFirestore firestore
-        + void addOrUpdatePersonalData(PersonalData data)
-    }
+
 
     class SignUpActivity {
         - FirebaseAuth auth
@@ -38,7 +35,7 @@ class PersonalDataRepository {
 }
 
 SignUpActivity --> PersonalDataRepository
-SignUpActivity --> FirebaseFirestore
+
 SignUpActivity --> PersonalData
 
 class AccountsAdapter {
@@ -63,16 +60,6 @@ class AccountsAdapter {
     AccountsAdapter o-- Account
     AccountsAdapter o-- Transaction
 
-           class CommentsAdapter {
-               - List<Comment> comments
-               - static SimpleDateFormat dateFormat
-               - Context context
-               --
-               + CommentsAdapter(Context context)
-               + onBindViewHolder(CommentViewHolder holder, int position)
-               + getItemCount(): int
-               + setComments(List<Comment> comments)
-           }
 
            class CommentViewHolder {
                - ImageView userImage
@@ -198,7 +185,6 @@ class ArticleRepository {
         - CollectionReference getCommentsCollection(String articleId)
     }
 
-    CommentRepository -> FirebaseFirestore : Uses
 
     class LikeRepository {
       - db: FirebaseFirestore
@@ -268,7 +254,7 @@ class AddArticlesFragment {
         - void closeFragment()
     }
      AddArticlesFragment o-- ArticleRepository
-        AddArticlesFragment o-- FirebaseFirestore
+
         AddArticlesFragment o-- FirebaseAuth
 
 class ArticleFragment {
@@ -309,11 +295,9 @@ class ArticleFragment {
         ArticleFragment "1" --> "1" ArticleRepository
         ArticleFragment "1" --> "1" LikeRepository
         ArticleFragment "1" --> "1" CommentRepository
-        ArticleFragment "1" --> "1" CommentsAdapter
 
-        FirebaseFirestore <.. ArticleRepository
-        FirebaseFirestore <.. LikeRepository
-        FirebaseFirestore <.. CommentRepository
+
+
         FirebaseAuth <.. ArticleFragment
 
 
@@ -335,7 +319,7 @@ class AddCategoryFragment {
         - boolean isDarkTheme()
         - void highlightSelectedIcon(ImageView selectedIcon)
     }
-     AddCategoryFragment -> FirebaseFirestore : uses
+
         AddCategoryFragment -> FirebaseAuth : uses
 
 class PersonalDataFragment {

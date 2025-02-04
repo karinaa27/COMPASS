@@ -60,6 +60,17 @@ public class PersonalDataRepository {
                 });
         return future;
     }
+
+    public CompletableFuture<Void> updateUserEmail(String userId, String newEmail) {
+        return CompletableFuture.runAsync(() -> {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("personalData").document(userId)
+                    .update("email", newEmail)
+                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "Email успешно обновлен"))
+                    .addOnFailureListener(e -> Log.e("Firestore", "Ошибка обновления email", e));
+        });
+    }
+
     public CompletableFuture<PersonalData> getPersonalDataById(String id) {
         CompletableFuture<PersonalData> future = new CompletableFuture<>();
         personalDataCollection.document(id).get().addOnCompleteListener(task -> {

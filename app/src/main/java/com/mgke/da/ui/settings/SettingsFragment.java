@@ -683,18 +683,31 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupNightModeSwitch() {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
+        if (getActivity() == null || binding == null) return;
+
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("MODE", Context.MODE_PRIVATE);
         boolean nightMode = sharedPreferences.getBoolean("nightMode", false);
-        AppCompatDelegate.setDefaultNightMode(nightMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         binding.switchNightMode.setChecked(nightMode);
 
         binding.switchNightMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (getActivity() == null) return;
+
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean("nightMode", isChecked);
             editor.apply();
-            AppCompatDelegate.setDefaultNightMode(isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
+            new Handler(Looper.getMainLooper()).post(() -> {
+                try {
+                    AppCompatDelegate.setDefaultNightMode(isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+                    requireActivity().recreate();
+                } catch (IllegalStateException e) {
+                    e.printStackTrace(); // Можно заменить на логирование, если используешь Firebase Crashlytics
+                }
+            });
         });
     }
+
+
 
     private void setLocale(String languageCode) {
         Locale locale = new Locale(languageCode);

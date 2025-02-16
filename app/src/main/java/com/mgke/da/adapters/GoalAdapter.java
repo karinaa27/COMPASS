@@ -183,75 +183,75 @@ public class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder
 
         if (fromCurrency.equals("USD")) {
             if (toCurrency.equals("EUR")) {
-                rate = 0.85;
+                rate = 0.97;
             } else if (toCurrency.equals("RUB")) {
-                rate = 70.0;
+                rate = 97.83;
             } else if (toCurrency.equals("BYN")) {
-                rate = 2.6;
+                rate = 3.38;
             } else if (toCurrency.equals("UAH")) {
-                rate = 27.0;
+                rate = 41.69;
             } else if (toCurrency.equals("PLN")) {
-                rate = 3.7;
+                rate = 4.0;
             }
         } else if (fromCurrency.equals("EUR")) {
             if (toCurrency.equals("USD")) {
-                rate = 1.18;
+                rate = 1.03;
             } else if (toCurrency.equals("RUB")) {
-                rate = 82.0;
+                rate = 101.02;
             } else if (toCurrency.equals("BYN")) {
-                rate = 3.1;
+                rate = 3.49;
             } else if (toCurrency.equals("UAH")) {
-                rate = 31.0;
+                rate = 42.95;
             } else if (toCurrency.equals("PLN")) {
-                rate = 4.3;
+                rate = 4.2;
             }
         } else if (fromCurrency.equals("RUB")) {
             if (toCurrency.equals("USD")) {
-                rate = 0.014;
+                rate = 0.01;
             } else if (toCurrency.equals("EUR")) {
-                rate = 0.012;
+                rate = 0.01;
             } else if (toCurrency.equals("BYN")) {
-                rate = 0.032;
+                rate = 0.035;
             } else if (toCurrency.equals("UAH")) {
-                rate = 0.36;
+                rate = 0.43;
             } else if (toCurrency.equals("PLN")) {
-                rate = 0.05;
+                rate = 0.04;
             }
         } else if (fromCurrency.equals("BYN")) {
             if (toCurrency.equals("USD")) {
-                rate = 0.38;
+                rate = 0.3;
             } else if (toCurrency.equals("EUR")) {
-                rate = 0.32;
+                rate = 0.3;
             } else if (toCurrency.equals("RUB")) {
-                rate = 31.0;
+                rate = 28.93;
             } else if (toCurrency.equals("UAH")) {
-                rate = 11.0;
+                rate = 12.34;
             } else if (toCurrency.equals("PLN")) {
-                rate = 1.4;
+                rate = 1.2;
             }
         } else if (fromCurrency.equals("UAH")) {
             if (toCurrency.equals("USD")) {
-                rate = 0.037;
+                rate = 0.024;
             } else if (toCurrency.equals("EUR")) {
-                rate = 0.032;
+                rate = 0.023;
             } else if (toCurrency.equals("RUB")) {
-                rate = 2.8;
+                rate = 2.33;
             } else if (toCurrency.equals("BYN")) {
-                rate = 0.091;
+                rate = 0.08;
             } else if (toCurrency.equals("PLN")) {
-                rate = 0.12;
+                rate = 0.1;
             }
         } else if (fromCurrency.equals("PLN")) {
             if (toCurrency.equals("USD")) {
-                rate = 0.27;
+                rate = 0.25;
             } else if (toCurrency.equals("EUR")) {
-                rate = 0.23;
+                rate = 0.24;
             } else if (toCurrency.equals("RUB")) {
-                rate = 20.0;
+                rate = 24.1;
             } else if (toCurrency.equals("BYN")) {
-                rate = 0.71;
+                rate = 0.83;
             } else if (toCurrency.equals("UAH")) {
-                rate = 8.3;
+                rate = 10.26;
             }
         }
 

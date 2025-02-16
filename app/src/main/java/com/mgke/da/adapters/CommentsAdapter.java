@@ -75,7 +75,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             commentText.setText(comment.getText());
 
             // Форматируем дату в зависимости от языка
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MMM.yy", getLocale(context));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy", getLocale(context));
             String formattedDate = dateFormat.format(comment.getTimestamp());
             commentDate.setText(formattedDate);
 
